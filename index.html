@@ -133,6 +133,25 @@
     </div>
 
     <!-- Scripts -->
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDrmpFYKxDnVSbA7LjUFhKbZRBVJp7hzEI",
+    authDomain: "club-futbol-app.firebaseapp.com",
+    projectId: "club-futbol-app",
+    storageBucket: "club-futbol-app.firebasestorage.app",
+    messagingSenderId: "358353146872",
+    appId: "1:358353146872:web:271f773cdc3ee6991d3c0d"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  const auth = firebase.auth();
+</script>
     <script src="main.js"></script>
 </body>
 
