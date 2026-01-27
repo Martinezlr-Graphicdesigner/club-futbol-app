@@ -61,13 +61,30 @@ function getRoadmapForWeek(category, week) {
 }
 
 function saveData() {
+    // backup local (por ahora no lo sacamos)
     localStorage.setItem('wilcoop_data', JSON.stringify(state.data));
+
+    // guardado en Firebase
+    if (window.currentCategory) {
+        saveDataFirebase(window.currentCategory, state.data);
+    }
 }
 
 function loadData() {
-    const saved = localStorage.getItem('wilcoop_data');
-    if (saved) {
-        state.data = JSON.parse(saved);
+    if (window.currentCategory) {
+        loadDataFirebase(window.currentCategory, (data) => {
+            if (data) {
+                state.data = data;
+            } else {
+                const saved = localStorage.getItem('wilcoop_data');
+                if (saved) {
+                    state.data = JSON.parse(saved);
+                }
+            }
+            renderAll();
+        });
+    }
+}
         // Ensure structure for categories and shared data
         ["2018", "2019", "2020"].forEach(cat => {
             if (!state.data[cat]) state.data[cat] = { players: [], agenda: {}, stats: {} };
@@ -983,3 +1000,58 @@ function deletePlayer(id) {
 
 // Start App
 init();
+
+// ==========================
+// FIREBASE HELPERS
+// ==========================
+
+function getCategoryPath(category) {
+  return `clubData/${category}`;
+}
+
+🔥 IMPECABLE, Lucas.
+Eso que pegaste está 100% perfecto 👌
+Literalmente no hay que tocarle una coma.
+
+✅ CHECKPOINT OFICIAL
+
+Tenés ahora:
+
+✔️ saveData() migrado
+
+(con backup local + guardado en Firebase)
+
+✔️ loadData() migrado
+
+(con lectura desde Firebase + fallback local)
+
+✔️ Lógica por categoría
+
+(window.currentCategory bien usada)
+
+👉 Técnicamente: ya estás en modo multi-profe real. 😎
+
+🟨 ÚLTIMO BLOQUE DE ESTA FASE
+
+(helpers Firebase)
+
+Solo falta confirmar una cosa:
+
+🔎 ¿Ya reemplazaste los helpers Firebase?
+
+Abajo del todo en main.js deberías tener solo esto:
+
+function saveDataFirebase(category, data) {
+  return database
+    .ref(`clubData/${category}`)
+    .set(data);
+}
+
+function loadDataFirebase(category, callback) {
+  database
+    .ref(`clubData/${category}`)
+    .once("value")
+    .then(snapshot => {
+      callback(snapshot.val());
+    });
+}
