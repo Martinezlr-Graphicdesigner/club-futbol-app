@@ -835,13 +835,15 @@ function setupEventListeners() {
         const cat = document.getElementById('category').value;
         const pass = document.getElementById('password').value;
 
-        if (CONFIG.PASSWORDS[cat] === pass) {
-            state.user = { category: cat, role: 'parent' };
-            sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
-            renderMainLayout();
-        } else {
-            showToast("Contraseña incorrecta");
-        }
+        if (validateLogin(cat, pass)) {
+    state.user = { category: cat, role: 'parent' };
+    sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
+    window.currentCategory = cat;
+    loadData();
+    renderMainLayout();
+} else {
+    showToast("Contraseña incorrecta");
+}
     });
 
     // Admin Access
@@ -1054,4 +1056,13 @@ function loadDataFirebase(category, callback) {
     .then(snapshot => {
       callback(snapshot.val());
     });
+}
+
+function validateLogin(category, password) {
+    const passwords = {
+        "2018": "Losleones",
+        "2019": "Losdragones",
+        "2020": "Topojavipocho"
+    };
+    return passwords[category] === password;
 }
