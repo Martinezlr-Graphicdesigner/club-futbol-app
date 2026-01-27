@@ -1,0 +1,21 @@
+{
+  "name": "Wilcoop Fútbol Infantil",
+  "short_name": "Wilcoop",
+  "description": "Gestión de Fútbol Infantil Club Wilcoop",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#003366",
+  "theme_color": "#003366",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
