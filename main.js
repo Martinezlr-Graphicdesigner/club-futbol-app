@@ -167,7 +167,6 @@ function showToast(msg) {
 // --- APP LOGIC ---
 
 function init() {
-    loadData();
     setupEventListeners();
     checkSession();
 }
@@ -842,12 +841,17 @@ function setupEventListeners() {
     state.user = { category: cat, role: 'parent' };
     sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
     window.currentCategory = cat;
-    loadData();
-    renderMainLayout();
+
+    loadDataFirebase(cat, (data) => {
+        if (data) {
+            state.data = data;
+        }
+        renderMainLayout();
+    });
 } else {
     showToast("Contraseña incorrecta");
-}
-    });
+ }
+});
 
     // Admin Access
     document.getElementById('btn-admin-login').addEventListener('click', () => {
