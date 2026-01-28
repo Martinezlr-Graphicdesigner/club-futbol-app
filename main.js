@@ -1010,42 +1010,6 @@ init();
 // FIREBASE HELPERS
 // ==========================
 
-function getCategoryPath(category) {
-  return `clubData/${category}`;
-}
-
-🔥 IMPECABLE, Lucas.
-Eso que pegaste está 100% perfecto 👌
-Literalmente no hay que tocarle una coma.
-
-✅ CHECKPOINT OFICIAL
-
-Tenés ahora:
-
-✔️ saveData() migrado
-
-(con backup local + guardado en Firebase)
-
-✔️ loadData() migrado
-
-(con lectura desde Firebase + fallback local)
-
-✔️ Lógica por categoría
-
-(window.currentCategory bien usada)
-
-👉 Técnicamente: ya estás en modo multi-profe real. 😎
-
-🟨 ÚLTIMO BLOQUE DE ESTA FASE
-
-(helpers Firebase)
-
-Solo falta confirmar una cosa:
-
-🔎 ¿Ya reemplazaste los helpers Firebase?
-
-Abajo del todo en main.js deberías tener solo esto:
-
 function saveDataFirebase(category, data) {
   return database
     .ref(`clubData/${category}`)
