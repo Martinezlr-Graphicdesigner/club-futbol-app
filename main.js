@@ -115,13 +115,11 @@ function ensureDataStructure() {
    ========================== */
 
 function ensureAgendaTemplate() {
-    const cat = state.user?.category;
-    if (!cat) return;
 
-    // si ya existe agenda → no tocar nada
-    if (state.data[cat].agenda && Object.keys(state.data[cat].agenda).length > 0) {
-        return;
-    }
+    // Si ya hay agenda en cualquier categoría → no hacer nada
+    if (
+        state.data["2018"]?.agenda && Object.keys(state.data["2018"].agenda).length > 0
+    ) return;
 
     const templateAgenda = {
         1: { title: "Adaptación", dates: "27, 29 Ene", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
@@ -151,10 +149,12 @@ function ensureAgendaTemplate() {
         25:{ title: "Cierre Pre-Receso", dates: "14, 16 Jul", day1: "Definición + Partidos", day2: "5 VS 4" }
     };
 
-    state.data[cat].agenda = JSON.parse(JSON.stringify(templateAgenda));
+    ["2018", "2019", "2020"].forEach(cat => {
+        state.data[cat].agenda = JSON.parse(JSON.stringify(templateAgenda));
+    });
+
     saveData();
 }
-
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
