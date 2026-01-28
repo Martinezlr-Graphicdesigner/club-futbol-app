@@ -69,93 +69,91 @@ function saveData() {
         saveDataFirebase(window.currentCategory, state.data);
     }
 }
+ function loadData() {
+    if (!window.currentCategory) return;
 
-function loadData() {
-    if (window.currentCategory) {
-        loadDataFirebase(window.currentCategory, (data) => {
-            if (data) {
-                state.data = data;
+    loadDataFirebase(window.currentCategory, (data) => {
+        if (data) {
+            state.data = data;
+        } else {
+            const saved = localStorage.getItem('wilcoop_data');
+            if (saved) {
+                state.data = JSON.parse(saved);
             } else {
-                const saved = localStorage.getItem('wilcoop_data');
-                if (saved) {
-                    state.data = JSON.parse(saved);
-                }
+                state.data = {};
             }
-            renderAll();
-        });
-    }
-}
-        // Ensure structure for categories and shared data
-        ["2018", "2019", "2020"].forEach(cat => {
-            if (!state.data[cat]) state.data[cat] = { players: [], agenda: {}, stats: {} };
-        });
-        if (!state.data.shared) state.data.shared = { matches: [] };
-    } else {
-        state.data.shared = { matches: [] };
-        // Template Agenda from images (W1 - W44)
-        const templateAgenda = {
-            1: { title: "Adaptación", dates: "27, 29 Ene", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
-            2: { title: "Coordinación Motriz", dates: "3, 5 Feb", day1: "Circuito Coordinación + Traslado (Conos)", day2: "1 VS 1" },
-            3: { title: "Agilidad y Reacción", dates: "10, 12 Feb", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
-            4: { title: "Coordinación avanzada", dates: "19 Feb*", day1: "Circuito + Traslado (Conos) (*17/02 Feriado)", day2: "1 VS 1" },
-            5: { title: "Iniciación a la Pisada", dates: "24, 26 Feb", day1: "Circuito Coordinación + Pivotear", day2: "1 VS 1 -> 3 VS 2" },
-            6: { title: "Técnica de Pisada", dates: "3, 5 Mar", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
-            7: { title: "Control y Pase", dates: "10, 12 Mar", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
-            8: { title: "Perfilación", dates: "17, 19 Mar", day1: "Pivotear + Pase filtrado (inic.)", day2: "3 VS 2" },
-            9: { title: "Control en movimiento", dates: "26 Mar*", day1: "Pivotear + Traslado Conos (*24/03 Feriado)", day2: "3 VS 2" },
-            10: { title: "Salida desde fondo", dates: "31, 2 Abr*", day1: "Pivotear + Toco y Voy (*02/04 Feriado)", day2: "3 VS 2" },
-            11: { title: "Definición Técnica", dates: "7, 9 Abr", day1: "Definición Cara Interna + Toco y Voy", day2: "3 VS 2 -> 5 VS 4" },
-            12: { title: "Precisión de Remate", dates: "14, 16 Abr", day1: "Definición Cara Interna + Pase filtrado", day2: "5 VS 4 (Libre)" },
-            13: { title: "Salida y Traslado", dates: "21, 23 Abr", day1: "Traslado Conos + Pivotear", day2: "5 VS 4 (Libre)" },
-            14: { title: "Control Orientado", dates: "28, 30 Abr", day1: "Toco y Voy + Definición Cara Interna", day2: "5 VS 4 (Libre)" },
-            15: { title: "Juego en Equipo", dates: "5, 7 May", day1: "Pase y Recepción Grupal (1 bola) + Rondo", day2: "5 VS 4 (Libre)" },
-            16: { title: "Reacción Grupal", dates: "12, 14 May", day1: "Pase Grupal (2 bolas) + Rondo (2 toques)", day2: "5 VS 4 (Libre)" },
-            17: { title: "Posesión", dates: "19, 21 May", day1: "Rondo (1 toque) + Definición Cara Interna", day2: "5 VS 4 (Libre)" },
-            18: { title: "Roles y Espacio", dates: "26, 28 May", day1: "Pase Grupal (3 bolas) + Rondo", day2: "5 VS 4 (Libre)" },
-            19: { title: "Visión Periférica", dates: "2, 4 Jun", day1: "Rondo (pierna cambiada) + Pivotear", day2: "5 VS 4 (Libre)" },
-            20: { title: "Ocupación de Espacio", dates: "9, 11 Jun", day1: "Pase Grupal + Definición Cara Interna", day2: "5 VS 4 (Libre)" },
-            21: { title: "Marcaje", dates: "16, 18 Jun", day1: "Rondo + Traslado (Colores)", day2: "5 VS 4 (Libre)" },
-            22: { title: "Técnica de Salida", dates: "23, 25 Jun", day1: "Toco y Voy + Pivotear", day2: "5 VS 4 (Libre)" },
-            23: { title: "Repaso Etapa 1", dates: "30, 2 Jul", day1: "Circuito Integrado (Todos los ejercicios)", day2: "5 VS 4 (Libre)" },
-            24: { title: "Juegos Recreativos", dates: "7 Jul*", day1: "Jornada de partidos reducidos (*09/07 Feriado)", day2: "5 VS 4 (Libre)" },
-            25: { title: "Cierre Pre-Receso", dates: "14, 16 Jul", day1: "Definición Cara Interna + Partidos", day2: "5 VS 4 (Libre)" },
-            26: { title: "Cambio de Chip", dates: "4, 6 Ago", day1: "2 VS 1 (Obligatorio pase) + Toco y voy", day2: "1 VS 1 -> 3 VS 2" },
-            27: { title: "Transición Rápida", dates: "11, 13 Ago", day1: "2 VS 1 + Pase Filtrado", day2: "3 VS 2" },
-            28: { title: "Contraataque", dates: "18, 20 Ago", day1: "Pase Filtrado + Definición Cara Interna", day2: "5 VS 4 (Libre)" },
-            29: { title: "Resolución 2v1", dates: "25, 27 Ago", day1: "2 VS 1 + Traslado Conos", day2: "5 VS 4 (Libre)" },
-            30: { title: "Saque Lateral", dates: "1, 3 Sep", day1: "Laterales con Compañero + Centro Atrás", day2: "5 VS 4 (Libre)" },
-            31: { title: "Laterales y Centro", dates: "8, 10 Sep", day1: "Laterales con Compañero + Centro Atrás", day2: "5 VS 4 (Libre)" },
-            32: { title: "Estrategia de Banda", dates: "15, 17 Sep", day1: "Centro Atrás + Rondo", day2: "5 VS 4 (Libre)" },
-            33: { title: "Definición por Banda", dates: "22, 24 Sep", day1: "Centro Atrás + 2 VS 1", day2: "5 VS 4 (Libre)" },
-            34: { title: "Repaso Estrategia", dates: "29, 1 Oct*", day1: "Laterales + Centro Atrás", day2: "5 VS 4 (Libre)" },
-            35: { title: "Iniciación Aérea", dates: "6, 8 Oct", day1: "Iniciación con Globos + Traslado Colores", day2: "1 VS 1" },
-            36: { title: "Salto y Cabeceo", dates: "13, 15 Oct", day1: "Rechazo de Frente (Postes) + Toco y voy", day2: "3 VS 2" },
-            37: { title: "Rechazo", dates: "20, 22 Oct", day1: "Rechazo de Frente + Toco y voy", day2: "5 VS 4 (Libre)" },
-            38: { title: "Perfiles (Frontal)", dates: "27, 29 Oct", day1: "Rechazo de Frente + Definición Cara Interna", day2: "5 VS 4 (Libre)" },
-            39: { title: "Segunda Pelota", dates: "3, 5 Nov", day1: "Disputa de Rebote + Rondo", day2: "5 VS 4 (Libre)" },
-            40: { title: "Anticipación", dates: "10, 12 Nov", day1: "Disputa de Rebote + Pase filtrado", day2: "5 VS 4 (Libre)" },
-            41: { title: "Salida con Cabeceo", dates: "17, 19 Nov", day1: "Rechazo de Frente + Traslado Conos", day2: "5 VS 4 (Libre)" },
-            42: { title: "Recobro Post-Saque", dates: "24, 26 Nov", day1: "Disputa de Rebote + Pivotear", day2: "5 VS 4 (Libre)" },
-            43: { title: "Repaso General", dates: "1, 3 Dic", day1: "Circuito + 2 vs 1 + Centro Atrás", day2: "5 VS 4 (Libre)" },
-            44: { title: "Cierre y Fiesta", dates: "10 Dic*", day1: "Jornada de recreación y premios (*08/12 Feriado)", day2: "5 VS 4 (Libre)" }
-        };
+        }
 
-        // Apply template to ALL categories
-        Object.keys(CONFIG.PASSWORDS).forEach(cat => {
+        ensureDataStructure();
+        ensureAgendaTemplate();
+        renderAll();
+    });
+}
+
+/* ==========================
+   ESTRUCTURA BASE
+   ========================== */
+
+function ensureDataStructure() {
+    ["2018", "2019", "2020"].forEach(cat => {
+        if (!state.data[cat]) {
             state.data[cat] = {
-                players: cat === "2019" ? [
-                    { id: 1, name: "Mateo", lastName: "García", category: "2019", dob: "15/05/2019" },
-                    { id: 2, name: "Thiago", lastName: "López", category: "2019", dob: "02/08/2019" },
-                    { id: 3, name: "Benjamín", lastName: "Sosa", category: "2019", dob: "21/01/2019" }
-                ] : [],
-                agenda: JSON.parse(JSON.stringify(templateAgenda)), // Deep clone template
+                players: [],
+                agenda: {},
                 stats: {}
             };
-        });
+        }
+    });
 
-        saveData();
+    if (!state.data.shared) {
+        state.data.shared = { matches: [] };
     }
 }
+
+/* ==========================
+   AGENDA ANUAL (UNA SOLA VEZ)
+   ========================== */
+
+function ensureAgendaTemplate() {
+
+    // si ya existe agenda → no tocar nada
+    if (Object.keys(state.data["2019"].agenda || {}).length > 0) return;
+
+    const templateAgenda = {
+        1: { title: "Adaptación", dates: "27, 29 Ene", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
+        2: { title: "Coordinación Motriz", dates: "3, 5 Feb", day1: "Circuito Coordinación + Traslado (Conos)", day2: "1 VS 1" },
+        3: { title: "Agilidad y Reacción", dates: "10, 12 Feb", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
+        4: { title: "Coordinación avanzada", dates: "19 Feb*", day1: "Circuito + Traslado (Conos)", day2: "1 VS 1" },
+        5: { title: "Iniciación a la Pisada", dates: "24, 26 Feb", day1: "Circuito + Pivotear", day2: "1 VS 1 → 3 VS 2" },
+        6: { title: "Técnica de Pisada", dates: "3, 5 Mar", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
+        7: { title: "Control y Pase", dates: "10, 12 Mar", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
+        8: { title: "Perfilación", dates: "17, 19 Mar", day1: "Pivotear + Pase filtrado", day2: "3 VS 2" },
+        9: { title: "Control en movimiento", dates: "26 Mar*", day1: "Pivotear + Traslado Conos", day2: "3 VS 2" },
+        10:{ title: "Salida desde fondo", dates: "31 Mar, 2 Abr*", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
+        11:{ title: "Definición Técnica", dates: "7, 9 Abr", day1: "Definición + Toco y Voy", day2: "3 VS 2 → 5 VS 4" },
+        12:{ title: "Precisión de Remate", dates: "14, 16 Abr", day1: "Definición + Pase filtrado", day2: "5 VS 4" },
+        13:{ title: "Salida y Traslado", dates: "21, 23 Abr", day1: "Traslado + Pivotear", day2: "5 VS 4" },
+        14:{ title: "Control Orientado", dates: "28, 30 Abr", day1: "Toco y Voy + Definición", day2: "5 VS 4" },
+        15:{ title: "Juego en Equipo", dates: "5, 7 May", day1: "Pase Grupal + Rondo", day2: "5 VS 4" },
+        16:{ title: "Reacción Grupal", dates: "12, 14 May", day1: "Pase + Rondo", day2: "5 VS 4" },
+        17:{ title: "Posesión", dates: "19, 21 May", day1: "Rondo + Definición", day2: "5 VS 4" },
+        18:{ title: "Roles y Espacio", dates: "26, 28 May", day1: "Pase + Rondo", day2: "5 VS 4" },
+        19:{ title: "Visión Periférica", dates: "2, 4 Jun", day1: "Rondo pierna cambiada", day2: "5 VS 4" },
+        20:{ title: "Ocupación de Espacio", dates: "9, 11 Jun", day1: "Pase + Definición", day2: "5 VS 4" },
+        21:{ title: "Marcaje", dates: "16, 18 Jun", day1: "Rondo + Traslado", day2: "5 VS 4" },
+        22:{ title: "Técnica de Salida", dates: "23, 25 Jun", day1: "Toco y Voy + Pivotear", day2: "5 VS 4" },
+        23:{ title: "Repaso Etapa 1", dates: "30 Jun, 2 Jul", day1: "Circuito Integrado", day2: "5 VS 4" },
+        24:{ title: "Juegos Recreativos", dates: "7 Jul*", day1: "Partidos Reducidos", day2: "5 VS 4" },
+        25:{ title: "Cierre Pre-Receso", dates: "14, 16 Jul", day1: "Definición + Partidos", day2: "5 VS 4" }
+    };
+
+    Object.keys(CONFIG.PASSWORDS).forEach(cat => {
+        state.data[cat].agenda = JSON.parse(JSON.stringify(templateAgenda));
+    });
+
+    saveData();
+}
+
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
