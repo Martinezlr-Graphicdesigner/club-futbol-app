@@ -116,11 +116,18 @@ function ensureDataStructure() {
 
 function ensureAgendaTemplate() {
 
-    // Si ya hay agenda en cualquier categoría → no hacer nada
-    if (
-        state.data["2018"]?.agenda && Object.keys(state.data["2018"].agenda).length > 0
-    ) return;
+    // 1. Asegurar estructura base SIEMPRE
+    ensureDataStructure();
 
+    // 2. Si ya hay agenda (con que una la tenga alcanza) → no tocar nada
+    if (
+        state.data["2018"]?.agenda &&
+        Object.keys(state.data["2018"].agenda).length > 0
+    ) {
+        return;
+    }
+
+    // 3. Template Agenda
     const templateAgenda = {
         1: { title: "Adaptación", dates: "27, 29 Ene", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
         2: { title: "Coordinación Motriz", dates: "3, 5 Feb", day1: "Circuito Coordinación + Traslado (Conos)", day2: "1 VS 1" },
@@ -149,10 +156,12 @@ function ensureAgendaTemplate() {
         25:{ title: "Cierre Pre-Receso", dates: "14, 16 Jul", day1: "Definición + Partidos", day2: "5 VS 4" }
     };
 
+    // 4. Copiar la agenda a TODAS las categorías
     ["2018", "2019", "2020"].forEach(cat => {
         state.data[cat].agenda = JSON.parse(JSON.stringify(templateAgenda));
     });
 
+    // 5. Guardar una sola vez
     saveData();
 }
 function showToast(msg) {
