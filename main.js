@@ -835,6 +835,9 @@ function setupEventListeners() {
         const cat = document.getElementById('category').value;
         const pass = document.getElementById('password').value;
 
+    alert("Categoria seleccionada: [" + cat + "]");
+    alert("Password ingresado: [" + pass + "]");
+
         if (validateLogin(cat, pass)) {
     state.user = { category: cat, role: 'parent' };
     sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
