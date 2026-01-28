@@ -835,20 +835,16 @@ function setupEventListeners() {
     alert("Categoria seleccionada: [" + cat + "]");
     alert("Password ingresado: [" + pass + "]");
 
-        if (validateLogin(cat, pass)) {
+    if (validateLogin(cat, pass)) {
     state.user = { category: cat, role: 'parent' };
     sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
     window.currentCategory = cat;
 
-    loadDataFirebase(cat, (data) => {
-        if (data) {
-            state.data = data;
-        }
-        renderMainLayout();
-    });
+    loadData();           
+    renderMainLayout();   
 } else {
     showToast("Contraseña incorrecta");
- }
+}
 });
 
     // Admin Access
