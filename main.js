@@ -850,8 +850,7 @@ function setupEventListeners() {
     sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
     window.currentCategory = cat;
 
-    loadData();           
-    renderMainLayout();   
+    loadData(); // ⬅️ cuando termina, renderiza solo
 } else {
     showToast("Contraseña incorrecta");
 }
@@ -879,8 +878,9 @@ function setupEventListeners() {
 sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
 window.currentCategory = cat;
 
-loadData();
-renderMainLayout();
+document.getElementById('admin-modal').classList.add('hidden');
+
+loadData(); // ⬅️ CLAVE
 
 document.getElementById('admin-modal').classList.add('hidden');
         } else {
