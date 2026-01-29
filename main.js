@@ -128,43 +128,7 @@ function ensureAgendaTemplate() {
   saveData();
 }
 
-    // 3. Template Agenda
-    const templateAgenda = {
-        1: { title: "Adaptación", dates: "27, 29 Ene", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
-        2: { title: "Coordinación Motriz", dates: "3, 5 Feb", day1: "Circuito Coordinación + Traslado (Conos)", day2: "1 VS 1" },
-        3: { title: "Agilidad y Reacción", dates: "10, 12 Feb", day1: "Circuito Coordinación + Traslado (Colores)", day2: "1 VS 1" },
-        4: { title: "Coordinación avanzada", dates: "19 Feb*", day1: "Circuito + Traslado (Conos)", day2: "1 VS 1" },
-        5: { title: "Iniciación a la Pisada", dates: "24, 26 Feb", day1: "Circuito + Pivotear", day2: "1 VS 1 → 3 VS 2" },
-        6: { title: "Técnica de Pisada", dates: "3, 5 Mar", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
-        7: { title: "Control y Pase", dates: "10, 12 Mar", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
-        8: { title: "Perfilación", dates: "17, 19 Mar", day1: "Pivotear + Pase filtrado", day2: "3 VS 2" },
-        9: { title: "Control en movimiento", dates: "26 Mar*", day1: "Pivotear + Traslado Conos", day2: "3 VS 2" },
-        10:{ title: "Salida desde fondo", dates: "31 Mar, 2 Abr*", day1: "Pivotear + Toco y Voy", day2: "3 VS 2" },
-        11:{ title: "Definición Técnica", dates: "7, 9 Abr", day1: "Definición + Toco y Voy", day2: "3 VS 2 → 5 VS 4" },
-        12:{ title: "Precisión de Remate", dates: "14, 16 Abr", day1: "Definición + Pase filtrado", day2: "5 VS 4" },
-        13:{ title: "Salida y Traslado", dates: "21, 23 Abr", day1: "Traslado + Pivotear", day2: "5 VS 4" },
-        14:{ title: "Control Orientado", dates: "28, 30 Abr", day1: "Toco y Voy + Definición", day2: "5 VS 4" },
-        15:{ title: "Juego en Equipo", dates: "5, 7 May", day1: "Pase Grupal + Rondo", day2: "5 VS 4" },
-        16:{ title: "Reacción Grupal", dates: "12, 14 May", day1: "Pase + Rondo", day2: "5 VS 4" },
-        17:{ title: "Posesión", dates: "19, 21 May", day1: "Rondo + Definición", day2: "5 VS 4" },
-        18:{ title: "Roles y Espacio", dates: "26, 28 May", day1: "Pase + Rondo", day2: "5 VS 4" },
-        19:{ title: "Visión Periférica", dates: "2, 4 Jun", day1: "Rondo pierna cambiada", day2: "5 VS 4" },
-        20:{ title: "Ocupación de Espacio", dates: "9, 11 Jun", day1: "Pase + Definición", day2: "5 VS 4" },
-        21:{ title: "Marcaje", dates: "16, 18 Jun", day1: "Rondo + Traslado", day2: "5 VS 4" },
-        22:{ title: "Técnica de Salida", dates: "23, 25 Jun", day1: "Toco y Voy + Pivotear", day2: "5 VS 4" },
-        23:{ title: "Repaso Etapa 1", dates: "30 Jun, 2 Jul", day1: "Circuito Integrado", day2: "5 VS 4" },
-        24:{ title: "Juegos Recreativos", dates: "7 Jul*", day1: "Partidos Reducidos", day2: "5 VS 4" },
-        25:{ title: "Cierre Pre-Receso", dates: "14, 16 Jul", day1: "Definición + Partidos", day2: "5 VS 4" }
-    };
-
-    // 4. Copiar la agenda a TODAS las categorías
-    ["2018", "2019", "2020"].forEach(cat => {
-        state.data[cat].agenda = JSON.parse(JSON.stringify(templateAgenda));
-    });
-
-    // 5. Guardar una sola vez
-    saveData();
-}
+    
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
@@ -181,9 +145,12 @@ function init() {
 
 function checkSession() {
     const session = sessionStorage.getItem('wilcoop_session');
+
     if (session) {
         state.user = JSON.parse(session);
-        renderMainLayout();
+        window.currentCategory = state.user.category;
+
+        loadData(); // ⬅️ SIEMPRE primero
     } else {
         showLogin();
     }
@@ -1023,6 +990,9 @@ function deletePlayer(id) {
 }
 
 // Start App
+function renderAll() {
+    renderMainLayout();
+}
 init();
 
 // ==========================
