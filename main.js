@@ -873,9 +873,13 @@ function setupEventListeners() {
                 return;
             }
             state.user = { category: cat, role: 'admin' };
-            sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
-            document.getElementById('admin-modal').classList.add('hidden');
-            renderMainLayout();
+sessionStorage.setItem('wilcoop_session', JSON.stringify(state.user));
+window.currentCategory = cat;
+
+loadData();
+renderMainLayout();
+
+document.getElementById('admin-modal').classList.add('hidden');
         } else {
             showToast("PIN Incorrecto");
         }
