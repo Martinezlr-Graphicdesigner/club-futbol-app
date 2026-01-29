@@ -115,17 +115,18 @@ function ensureDataStructure() {
    ========================== */
 
 function ensureAgendaTemplate() {
+  ensureDataStructure();
 
-    // 1. Asegurar estructura base SIEMPRE
-    ensureDataStructure();
+  const templateAgenda = { ... }; // el mismo template que ya tenés
 
-    // 2. Si ya hay agenda (con que una la tenga alcanza) → no tocar nada
-    if (
-        state.data["2018"]?.agenda &&
-        Object.keys(state.data["2018"].agenda).length > 0
-    ) {
-        return;
+  ["2018", "2019", "2020"].forEach(cat => {
+    if (!state.data[cat].agenda || Object.keys(state.data[cat].agenda).length === 0) {
+      state.data[cat].agenda = JSON.parse(JSON.stringify(templateAgenda));
     }
+  });
+
+  saveData();
+}
 
     // 3. Template Agenda
     const templateAgenda = {
@@ -602,9 +603,11 @@ function renderTomaDeLista(data) {
             `).join('')}
         </div>
 
-        ${state.user.role === 'admin' && data.players.length > 0 ? `
-            <button onclick="saveAttendance(${week})" class="btn-primary" style="margin-top:20px; border-radius: 30px; padding: 18px;">Confirmar Lista</button>
-        ` : ''}
+        ${state.user.role !== 'parent' && data.players.length > 0 ? `
+    <button onclick="saveAttendance(${week})" class="btn-primary" style="margin-top:20px; border-radius: 30px; padding: 18px;">
+        Confirmar Lista
+    </button>
+` : ''}
     `;
 }
 
@@ -912,13 +915,20 @@ const tempAttendance = {};
 const tempMatchMinutes = {};
 
 function toggleAttendance(playerId) {
-    if (state.user.role !== 'admin') return;
+    // Solo admin y profes pueden tomar lista
+    if (state.user.role === 'parent') return;
+
     const week = state.selectedWeek;
+
     if (!state.data[state.user.category].agenda[week]) {
-        state.data[state.user.category].agenda[week] = { attendance: {}, matchStats: {} };
+        state.data[state.user.category].agenda[week] = {
+            attendance: {},
+            matchStats: {}
+        };
     }
-    const current = state.data[state.user.category].agenda[week].attendance[playerId];
-    state.data[state.user.category].agenda[week].attendance[playerId] = !current;
+
+    const attendance = state.data[state.user.category].agenda[week].attendance;
+    attendance[playerId] = !attendance[playerId];
 
     renderScreen('lista');
 }
@@ -1021,13 +1031,13 @@ init();
 
 function saveDataFirebase(category, data) {
   return database
-    .ref(`clubData/${category}`)
+    .ref(`clubData`)
     .set(data);
 }
 
 function loadDataFirebase(category, callback) {
   database
-    .ref(`clubData/${category}`)
+    .ref(`clubData`)
     .once("value")
     .then(snapshot => {
       callback(snapshot.val());
