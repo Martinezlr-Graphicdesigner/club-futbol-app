@@ -52,12 +52,14 @@ function renderMainLayout() {
 
   document.getElementById("display-category").textContent =
     `Categoría ${state.user.category}`;
+
   document.getElementById("display-role").textContent =
     state.user.role === "admin" ? "Modo Administrador" : "Modo Profesor";
 
-  navigateTo(state.currentScreen);
+  // SIEMPRE arrancar en INICIO
+  state.currentScreen = "home";
+  navigateTo("home");
 }
-
 /**************************************************
  * DATA
  **************************************************/
@@ -116,9 +118,17 @@ function ensureAgendaTemplate() {
  **************************************************/
 function navigateTo(screen) {
   state.currentScreen = screen;
+
+  // activar botón correcto
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.screen === screen);
   });
+
+  // LIMPIAR CONTENIDO ANTERIOR (CLAVE)
+  const container = document.getElementById("content-area");
+  container.innerHTML = "";
+
+  // renderizar pantalla
   renderScreen(screen);
 }
 
