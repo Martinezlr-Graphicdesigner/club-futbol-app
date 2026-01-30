@@ -59,10 +59,11 @@ function renderMainLayout() {
   document.getElementById("display-role").textContent =
     state.user.role === "admin" ? "Modo Administrador" : "Modo Profesor";
 
-  // SIEMPRE arrancar en INICIO
+ 
   state.currentScreen = "home";
   navigateTo("home");
 }
+
 /**************************************************
  * DATA
  **************************************************/
