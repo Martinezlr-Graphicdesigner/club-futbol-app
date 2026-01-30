@@ -215,20 +215,58 @@ function openWeekDetail(w) {
   const week = state.data[state.user.category].agenda[w];
   const isAdmin = state.user.role === "admin";
 
+if (week.locked && state.user.role !== "admin") {
+  alert("Esta semana está cerrada");
+  return;
+}
+
+  if (!week.attendance) {
+    week.attendance = { day1: {}, day2: {} };
+  }
+
+  const players = state.data[state.user.category].players || [];
+
   document.getElementById("modal-container").innerHTML = `
     <div class="modal-overlay">
       <div class="detail-modal">
         <h2>Semana ${w}</h2>
+
         ${isAdmin ? `
           <input id="edit-title" value="${week.title}">
           <input id="edit-dates" value="${week.dates}">
-          <textarea id="edit-day1">${week.day1}</textarea>
-          <textarea id="edit-day2">${week.day2}</textarea>
-          <button onclick="saveWeek(${w})">Guardar</button>
         ` : `
-          <p>${week.day1}</p>
-          <p>${week.day2}</p>
+          <p><strong>${week.title}</strong></p>
+          <small>${week.dates}</small>
         `}
+
+        <h3>Día 1</h3>
+        ${players.map(p => `
+          <label>
+            <input type="checkbox"
+              data-day="day1"
+              data-id="${p.id}"
+              ${week.attendance.day1[p.id] ? "checked" : ""}>
+            ${p.name}
+          </label>
+        `).join("")}
+
+        <h3>Día 2</h3>
+        ${players.map(p => `
+          <label>
+            <input type="checkbox"
+              data-day="day2"
+              data-id="${p.id}"
+              ${week.attendance.day2[p.id] ? "checked" : ""}>
+            ${p.name}
+          </label>
+        `).join("")}
+
+        <button onclick="saveAttendance(${w})">Guardar asistencia</button>
+
+        ${isAdmin ? `
+          <button onclick="lockWeek(${w})">Bloquear semana</button>
+        ` : ""}
+
         <button onclick="closeWeek()">Cerrar</button>
       </div>
     </div>
@@ -248,6 +286,26 @@ function saveWeek(w) {
   saveData();
   closeWeek();
   renderScreen("agenda");
+}
+
+function saveAttendance(w) {
+  const week = state.data[state.user.category].agenda[w];
+
+  document.querySelectorAll(".detail-modal input[type='checkbox']")
+    .forEach(cb => {
+      const day = cb.dataset.day;
+      const id = cb.dataset.id;
+      week.attendance[day][id] = cb.checked;
+    });
+
+  saveData();
+  showToast("Asistencia guardada");
+}
+
+function lockWeek(w) {
+  state.data[state.user.category].agenda[w].locked = true;
+  saveData();
+  showToast("Semana bloqueada");
 }
 
 /**************************************************
