@@ -263,14 +263,22 @@ function setupEventListeners() {
 
   document.getElementById("confirm-admin").addEventListener("click", () => {
   const pin = document.getElementById("admin-pin").value;
-  const cat = document.getElementById("category").value;
+  const catSelect = document.getElementById("category");
+  const cat = catSelect ? catSelect.value : null;
+
+  if (!cat) {
+    alert("Seleccioná una categoría primero");
+    return;
+  }
 
   if (pin === CONFIG.ADMIN_PIN) {
-    closeAdminModal();
-
     state.user = { category: cat, role: "admin" };
     sessionStorage.setItem("wilcoop_session", JSON.stringify(state.user));
     window.currentCategory = cat;
+
+    document.getElementById("admin-modal").classList.add("hidden");
+    document.getElementById("admin-pin").value = "";
+
     loadData();
   } else {
     alert("PIN incorrecto");
