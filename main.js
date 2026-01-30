@@ -136,15 +136,27 @@ function renderScreen(screen) {
   const container = document.getElementById("content-area");
   const data = state.data[state.user.category];
 
+ 
+  container.innerHTML = "";
+
   switch (screen) {
-    case "home": renderHome(container, data); break;
-    case "agenda": renderAgenda(container, data); break;
-    case "lista": renderLista(container, data); break;
-    case "plantel": renderPlantel(container, data); break;
-    case "stats": renderStats(container, data); break;
+    case "home":
+      renderHome(container, data);
+      break;
+    case "agenda":
+      renderAgenda(container, data);
+      break;
+    case "lista":
+      renderLista(container, data);
+      break;
+    case "plantel":
+      renderPlantel(container, data);
+      break;
+    case "stats":
+      renderStats(container, data);
+      break;
   }
 }
-
 /**************************************************
  * SCREENS
  **************************************************/
