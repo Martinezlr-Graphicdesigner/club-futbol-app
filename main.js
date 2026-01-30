@@ -16,6 +16,9 @@ let state = {
   agendaTab: "cronograma",
   listaTab: "toma",
   selectedWeek: 1,
+
+  selectedDate: null,
+
   data: {}
 };
 
@@ -79,7 +82,9 @@ function saveData() {
 
 function ensureDataStructure() {
   ["2018", "2019", "2020"].forEach(cat => {
-    if (!state.data[cat]) state.data[cat] = {};
+    if (!state.data[cat]) {
+      state.data[cat] = {};
+    }
 
     if (!state.data[cat].players) {
       state.data[cat].players = [];
@@ -90,23 +95,19 @@ function ensureDataStructure() {
     }
 
     if (!state.data[cat].attendance) {
-      state.data[cat].attendance = {};
+      state.data[cat].attendance = {}; 
+      // formato: { "2026-01-27": { playerId: true } }
+    }
+
+    if (!state.data[cat].matches) {
+      state.data[cat].matches = [];
+      // { date, rival, goals: { playerId: number } }
     }
 
     if (!state.data[cat].stats) {
       state.data[cat].stats = {};
     }
-
-    if (!state.data[cat].attendance) {
-    state.data[cat].attendance = {};
-    }
-
   });
-
-  
-  if (!state.data.shared) {
-    state.data.shared = { matches: [] };
-  }
 }
 
 function getAttendanceForDay(date) {
@@ -215,13 +216,13 @@ function openWeekDetail(w) {
   const week = state.data[state.user.category].agenda[w];
   const isAdmin = state.user.role === "admin";
 
-if (week.locked && state.user.role !== "admin") {
-  alert("Esta semana está cerrada");
-  return;
-}
+  if (week.locked && !isAdmin) {
+    alert("Esta semana está cerrada");
+    return;
+  }
 
   if (!week.attendance) {
-    week.attendance = { day1: {}, day2: {} };
+    week.attendance = { tuesday: {}, thursday: {} };
   }
 
   const players = state.data[state.user.category].players || [];
@@ -239,24 +240,24 @@ if (week.locked && state.user.role !== "admin") {
           <small>${week.dates}</small>
         `}
 
-        <h3>Día 1</h3>
+        <h3>Martes</h3>
         ${players.map(p => `
           <label>
             <input type="checkbox"
-              data-day="day1"
+              data-day="tuesday"
               data-id="${p.id}"
-              ${week.attendance.day1[p.id] ? "checked" : ""}>
+              ${week.attendance.tuesday[p.id] ? "checked" : ""}>
             ${p.name}
           </label>
         `).join("")}
 
-        <h3>Día 2</h3>
+        <h3>Jueves</h3>
         ${players.map(p => `
           <label>
             <input type="checkbox"
-              data-day="day2"
+              data-day="thursday"
               data-id="${p.id}"
-              ${week.attendance.day2[p.id] ? "checked" : ""}>
+              ${week.attendance.thursday[p.id] ? "checked" : ""}>
             ${p.name}
           </label>
         `).join("")}
