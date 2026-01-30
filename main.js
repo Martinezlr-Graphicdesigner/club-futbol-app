@@ -363,11 +363,13 @@ function renderLista(container, data) {
 function renderPlantel(container, data) {
   if (!data.players) data.players = [];
 
+  const canEdit = state.user.role === "admin" || state.user.role === "parent";
+
   container.innerHTML = `
     <section class="section">
       <h3>Plantel</h3>
 
-      ${state.user.role === "admin" ? `
+      ${canEdit ? `
         <button id="add-player-btn" class="btn-primary">
           ➕ Agregar jugador
         </button>
@@ -379,7 +381,7 @@ function renderPlantel(container, data) {
           : data.players.map(player => `
               <div class="player-card">
                 <span>${player.name}</span>
-                ${state.user.role === "admin" ? `
+                ${canEdit ? `
                   <button class="btn-text delete-player" data-id="${player.id}">
                     ❌
                   </button>
@@ -390,8 +392,7 @@ function renderPlantel(container, data) {
     </section>
   `;
 
-  // Agregar jugador
-  if (state.user.role === "admin") {
+    if (canEdit) {
     document.getElementById("add-player-btn")
       ?.addEventListener("click", () => {
         const name = prompt("Nombre del jugador");
@@ -407,7 +408,7 @@ function renderPlantel(container, data) {
       });
   }
 
-  // Eliminar jugador
+  
   container.querySelectorAll(".delete-player").forEach(btn => {
     btn.addEventListener("click", () => {
       if (!confirm("¿Eliminar jugador?")) return;
