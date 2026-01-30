@@ -103,6 +103,17 @@ function ensureDataStructure() {
     state.data.shared = { matches: [] };
   }
 }
+
+function getAttendanceForDay(date) {
+  const cat = state.user.category;
+
+  if (!state.data[cat].attendance[date]) {
+    state.data[cat].attendance[date] = {};
+  }
+
+  return state.data[cat].attendance[date];
+}
+
 /**************************************************
  * AGENDA BASE (UNA SOLA VEZ)
  **************************************************/
