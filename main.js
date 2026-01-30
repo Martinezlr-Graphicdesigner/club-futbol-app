@@ -248,16 +248,38 @@ function renderHome(container, data) {
   `;
 }
 function renderAgenda(container, data) {
+  const agenda = data.agenda || {};
+
+  let cards = "";
+
+  Object.keys(agenda).forEach(w => {
+    const week = agenda[w];
+
+    // Día 1 (Martes)
+    cards += `
+      <div class="annual-card" onclick="openWeekDetail(${w})">
+        <strong>W${w} · Mar</strong>
+        <div>${week.title}</div>
+        <small>${week.dates.split(",")[0]}</small>
+      </div>
+    `;
+
+    // Día 2 (Jueves)
+    if (week.dates.includes(",")) {
+      cards += `
+        <div class="annual-card" onclick="openWeekDetail(${w})">
+          <strong>W${w} · Jue</strong>
+          <div>${week.title}</div>
+          <small>${week.dates.split(",")[1]}</small>
+        </div>
+      `;
+    }
+  });
+
   container.innerHTML = `
     <h1>Cronograma</h1>
     <div class="annual-grid">
-      ${Object.keys(data.agenda).map(w => `
-        <div class="annual-card" onclick="openWeekDetail(${w})">
-          <strong>W${w}</strong>
-          <div>${data.agenda[w].title}</div>
-          <small>${data.agenda[w].dates}</small>
-        </div>
-      `).join("")}
+      ${cards}
     </div>
     <div id="modal-container"></div>
   `;
