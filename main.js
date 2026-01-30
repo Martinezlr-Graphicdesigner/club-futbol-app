@@ -254,8 +254,7 @@ function setupEventListeners() {
   const cat = document.getElementById("category").value;
 
   if (pin === CONFIG.ADMIN_PIN) {
-    
-    document.getElementById("admin-modal").classList.add("hidden");
+    closeAdminModal();
 
     state.user = { category: cat, role: "admin" };
     sessionStorage.setItem("wilcoop_session", JSON.stringify(state.user));
