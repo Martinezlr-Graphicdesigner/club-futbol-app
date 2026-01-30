@@ -250,18 +250,21 @@ function setupEventListeners() {
   });
 
   document.getElementById("confirm-admin").addEventListener("click", () => {
-    const pin = document.getElementById("admin-pin").value;
-    const cat = document.getElementById("category").value;
+  const pin = document.getElementById("admin-pin").value;
+  const cat = document.getElementById("category").value;
 
-    if (pin === CONFIG.ADMIN_PIN) {
-      state.user = { category: cat, role: "admin" };
-      sessionStorage.setItem("wilcoop_session", JSON.stringify(state.user));
-      window.currentCategory = cat;
-      loadData();
-    } else {
-      alert("PIN incorrecto");
-    }
-  });
+  if (pin === CONFIG.ADMIN_PIN) {
+    
+    document.getElementById("admin-modal").classList.add("hidden");
+
+    state.user = { category: cat, role: "admin" };
+    sessionStorage.setItem("wilcoop_session", JSON.stringify(state.user));
+    window.currentCategory = cat;
+    loadData();
+  } else {
+    alert("PIN incorrecto");
+  }
+});
 
   document.getElementById("logout-btn").addEventListener("click", () => {
     sessionStorage.removeItem("wilcoop_session");
