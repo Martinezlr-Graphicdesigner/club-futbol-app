@@ -374,6 +374,8 @@ function saveAttendance(w) {
 
   saveData();
   showToast("Asistencia guardada");
+
+  closeWeek();
 }
 
 function lockWeek(w) {
