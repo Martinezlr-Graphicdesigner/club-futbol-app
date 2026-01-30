@@ -188,14 +188,65 @@ function renderScreen(screen) {
  * SCREENS
  **************************************************/
 function renderHome(container, data) {
+  const isAdmin = state.user.role === "admin";
+
+  // Próximo partido (si existe)
+  const nextMatch = (data.matches || [])[0];
+
   container.innerHTML = `
-    <div class="card">
-      <h1>Bienvenido</h1>
-      <p>Categoría ${state.user.category}</p>
-    </div>
+    <section class="section">
+      <h2>Inicio</h2>
+
+      <div class="card">
+        <h3>Categoría ${state.user.category}</h3>
+        <p>${isAdmin ? "Modo Administrador" : "Modo Profesor"}</p>
+      </div>
+
+      <div class="quick-actions">
+        <button class="btn-primary" onclick="navigateTo('agenda')">
+          📅 Ver Agenda
+        </button>
+
+        <button class="btn-primary" onclick="navigateTo('lista')">
+          📋 Tomar Asistencia
+        </button>
+
+        <button class="btn-primary" onclick="navigateTo('plantel')">
+          👥 Plantel
+        </button>
+
+        ${isAdmin ? `
+          <button class="btn-primary" onclick="navigateTo('partidos')">
+            ⚽ Partidos
+          </button>
+        ` : ""}
+      </div>
+
+      <div class="card">
+        <h3>Próximo partido</h3>
+
+        ${nextMatch ? `
+          <p><strong>Fecha:</strong> ${nextMatch.date}</p>
+          <p><strong>Rival:</strong> ${nextMatch.rival}</p>
+          <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
+
+          ${isAdmin ? `
+            <button class="btn-outline" onclick="navigateTo('partidos')">
+              Cargar resultado
+            </button>
+          ` : ""}
+        ` : `
+          <p>No hay partidos cargados</p>
+          ${isAdmin ? `
+            <button class="btn-outline" onclick="navigateTo('partidos')">
+              Cargar partido
+            </button>
+          ` : ""}
+        `}
+      </div>
+    </section>
   `;
 }
-
 function renderAgenda(container, data) {
   container.innerHTML = `
     <h1>Cronograma</h1>
