@@ -96,6 +96,11 @@ function ensureDataStructure() {
     if (!state.data[cat].stats) {
       state.data[cat].stats = {};
     }
+
+    if (!state.data[cat].attendance) {
+    state.data[cat].attendance = {};
+    }
+
   });
 
   
@@ -250,15 +255,29 @@ function saveWeek(w) {
  **************************************************/
 function renderLista(container, data) {
   const today = new Date().toISOString().split("T")[0];
-  const attendance = getAttendanceForDay(today);
+
+  // asegurar estructura de asistencia
+  if (!data.attendance) {
+    data.attendance = {};
+  }
+  if (!data.attendance[today]) {
+    data.attendance[today] = {};
+  }
+
+  const attendance = data.attendance[today];
   const players = data.players || [];
 
   container.innerHTML = `
     <h2>Asistencia – ${today}</h2>
+
     <div class="attendance-list">
       ${players.map(p => `
         <label class="attendance-item">
-          <input type="checkbox" data-id="${p.id}" ${attendance[p.id] ? "checked" : ""}>
+          <input 
+            type="checkbox" 
+            data-id="${p.id}" 
+            ${attendance[p.id] ? "checked" : ""}
+          >
           <span>${p.name}</span>
         </label>
       `).join("")}
@@ -269,16 +288,16 @@ function renderLista(container, data) {
     </button>
   `;
 
-  document.getElementById("save-attendance").addEventListener("click", () => {
-  document.querySelectorAll(".attendance-item input").forEach(cb => {
-    attendance[cb.dataset.id] = cb.checked;
-  });
+  const saveBtn = document.getElementById("save-attendance");
+  saveBtn.onclick = () => {
+    document.querySelectorAll(".attendance-item input").forEach(cb => {
+      data.attendance[today][cb.dataset.id] = cb.checked;
+    });
 
-  saveData();
-  showToast("Asistencia guardada");
-});
+    saveData();
+    showToast("Asistencia guardada");
+  };
 }
-
 
 /**************************************************
  * PLANTEL
