@@ -94,30 +94,18 @@ function ensureDataStructure() {
       state.data[cat].agenda = {};
     }
 
-    if (!state.data[cat].attendance) {
-      state.data[cat].attendance = {}; 
-      // formato: { "2026-01-27": { playerId: true } }
-    }
-
-    if (!state.data[cat].matches) {
-      state.data[cat].matches = [];
-      // { date, rival, goals: { playerId: number } }
-    }
-
     if (!state.data[cat].stats) {
       state.data[cat].stats = {};
     }
+
+    if (!state.data[cat].attendance) {
+      state.data[cat].attendance = {};
+    }
   });
-}
 
-function getAttendanceForDay(date) {
-  const cat = state.user.category;
-
-  if (!state.data[cat].attendance[date]) {
-    state.data[cat].attendance[date] = {};
+  if (!state.data.shared) {
+    state.data.shared = { matches: [] };
   }
-
-  return state.data[cat].attendance[date];
 }
 
 /**************************************************
@@ -389,8 +377,10 @@ function lockWeek(w) {
  **************************************************/
 function renderLista(container, data) {
   const today = new Date().toISOString().split("T")[0];
+  const isAdmin = state.user.role === "admin";
 
   if (!data.attendance) data.attendance = {};
+
   if (!data.attendance[today]) {
     data.attendance[today] = {
       locked: false,
@@ -400,22 +390,24 @@ function renderLista(container, data) {
 
   const dayData = data.attendance[today];
   const players = data.players || [];
-  const isAdmin = state.user.role === "admin";
   const isLocked = dayData.locked && !isAdmin;
 
   container.innerHTML = `
     <h2>Asistencia – ${today}</h2>
 
     <div class="attendance-list">
-      ${players.map(p => `
-        <label class="attendance-item">
-          <input type="checkbox"
-            data-id="${p.id}"
-            ${dayData.players[p.id] ? "checked" : ""}
-            ${isLocked ? "disabled" : ""}>
-          <span>${p.name}</span>
-        </label>
-      `).join("")}
+      ${players.length === 0
+        ? "<p>No hay jugadores cargados.</p>"
+        : players.map(p => `
+          <label class="attendance-item">
+            <input type="checkbox"
+              data-id="${p.id}"
+              ${dayData.players[p.id] ? "checked" : ""}
+              ${isLocked ? "disabled" : ""}>
+            <span>${p.name}</span>
+          </label>
+        `).join("")
+      }
     </div>
 
     ${!dayData.locked || isAdmin ? `
@@ -433,7 +425,7 @@ function renderLista(container, data) {
         dayData.players[cb.dataset.id] = cb.checked;
       });
 
-      dayData.locked = true; 
+      dayData.locked = true;
       saveData();
       showToast("Asistencia confirmada");
       renderScreen("lista");
