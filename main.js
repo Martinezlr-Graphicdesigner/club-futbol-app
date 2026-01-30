@@ -248,19 +248,35 @@ function saveWeek(w) {
 /**************************************************
  * LISTA / PLANTEL / STATS (BÁSICO)
  **************************************************/
-function renderLista(container) {
-  container.innerHTML = `<h1>Lista (base)</h1>`;
-}
+function renderLista(container, data) {
+  const today = new Date().toISOString().split("T")[0];
+  const attendance = getAttendanceForDay(today);
+  const players = data.players || [];
 
-function renderPlantel(container, data) {
   container.innerHTML = `
-    <h1>Plantel</h1>
-    ${data.players.map(p => `<div>${p.name} ${p.lastName}</div>`).join("")}
-  `;
-}
+    <h2>Asistencia – ${today}</h2>
+    <div class="attendance-list">
+      ${players.map(p => `
+        <label class="attendance-item">
+          <input type="checkbox" data-id="${p.id}" ${attendance[p.id] ? "checked" : ""}>
+          <span>${p.name}</span>
+        </label>
+      `).join("")}
+    </div>
 
-function renderStats(container) {
-  container.innerHTML = `<h1>Stats</h1>`;
+    <button id="save-attendance" class="btn-primary">
+      Confirmar asistencia
+    </button>
+  `;
+
+  document.getElementById("save-attendance").addEventListener("click", () => {
+    document.querySelectorAll(".attendance-item input").forEach(cb => {
+      attendance[cb.dataset.id] = cb.checked;
+    });
+
+    saveData();
+    showToast("Asistencia guardada");
+  });
 }
 
 /**************************************************
