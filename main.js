@@ -390,16 +390,18 @@ function lockWeek(w) {
 function renderLista(container, data) {
   const today = new Date().toISOString().split("T")[0];
 
-  // asegurar estructura de asistencia
-  if (!data.attendance) {
-    data.attendance = {};
-  }
+  if (!data.attendance) data.attendance = {};
   if (!data.attendance[today]) {
-    data.attendance[today] = {};
+    data.attendance[today] = {
+      locked: false,
+      players: {}
+    };
   }
 
-  const attendance = data.attendance[today];
+  const dayData = data.attendance[today];
   const players = data.players || [];
+  const isAdmin = state.user.role === "admin";
+  const isLocked = dayData.locked && !isAdmin;
 
   container.innerHTML = `
     <h2>Asistencia – ${today}</h2>
@@ -407,30 +409,36 @@ function renderLista(container, data) {
     <div class="attendance-list">
       ${players.map(p => `
         <label class="attendance-item">
-          <input 
-            type="checkbox" 
-            data-id="${p.id}" 
-            ${attendance[p.id] ? "checked" : ""}
-          >
+          <input type="checkbox"
+            data-id="${p.id}"
+            ${dayData.players[p.id] ? "checked" : ""}
+            ${isLocked ? "disabled" : ""}>
           <span>${p.name}</span>
         </label>
       `).join("")}
     </div>
 
-    <button id="save-attendance" class="btn-primary">
-      Confirmar asistencia
-    </button>
+    ${!dayData.locked || isAdmin ? `
+      <button id="save-attendance" class="btn-primary">
+        Confirmar asistencia
+      </button>
+    ` : `
+      <p class="muted">Asistencia cerrada</p>
+    `}
   `;
 
-  const saveBtn = document.getElementById("save-attendance");
-  saveBtn.onclick = () => {
-    document.querySelectorAll(".attendance-item input").forEach(cb => {
-      data.attendance[today][cb.dataset.id] = cb.checked;
-    });
+  if (!isLocked) {
+    document.getElementById("save-attendance")?.addEventListener("click", () => {
+      document.querySelectorAll(".attendance-item input").forEach(cb => {
+        dayData.players[cb.dataset.id] = cb.checked;
+      });
 
-    saveData();
-    showToast("Asistencia guardada");
-  };
+      dayData.locked = true; 
+      saveData();
+      showToast("Asistencia confirmada");
+      renderScreen("lista");
+    });
+  }
 }
 
 /**************************************************
