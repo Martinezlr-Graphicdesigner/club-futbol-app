@@ -272,6 +272,17 @@ function setupEventListeners() {
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => navigateTo(btn.dataset.screen));
   });
+
+
+  document.getElementById("btn-admin-login").addEventListener("click", () => {
+    document.getElementById("admin-modal").classList.remove("hidden");
+    document.getElementById("admin-pin").value = "";
+  });
+
+  
+  document.getElementById("cancel-admin").addEventListener("click", () => {
+    document.getElementById("admin-modal").classList.add("hidden");
+  });
 }
 
 /**************************************************
