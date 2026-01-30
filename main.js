@@ -79,20 +79,30 @@ function saveData() {
 
 function ensureDataStructure() {
   ["2018", "2019", "2020"].forEach(cat => {
-    if (!state.data[cat]) {
-      state.data[cat] = {
-        players: [],
-        agenda: {},
-        stats: {}
-      };
+    if (!state.data[cat]) state.data[cat] = {};
+
+    if (!state.data[cat].players) {
+      state.data[cat].players = [];
+    }
+
+    if (!state.data[cat].agenda) {
+      state.data[cat].agenda = {};
+    }
+
+    if (!state.data[cat].attendance) {
+      state.data[cat].attendance = {};
+    }
+
+    if (!state.data[cat].stats) {
+      state.data[cat].stats = {};
     }
   });
 
+  
   if (!state.data.shared) {
     state.data.shared = { matches: [] };
   }
 }
-
 /**************************************************
  * AGENDA BASE (UNA SOLA VEZ)
  **************************************************/
