@@ -279,6 +279,141 @@ function renderLista(container, data) {
   });
 }
 
+Perfecto, ahora sí 👍 gracias por pegar el bloque completo.
+Te explico exactamente dónde, con referencia visual, sin vueltas.
+
+📍 DÓNDE ESTÁS PARADO AHORA
+
+Tu archivo main.js termina así (resumo):
+
+document.getElementById("save-attendance").addEventListener("click", () => {
+  ...
+});
+}
+
+/**************************************************
+ * EVENTS
+ **************************************************/
+function setupEventListeners() {
+  ...
+}
+
+/**************************************************
+ * FIREBASE
+ **************************************************/
+function saveDataFirebase(data) {
+  ...
+}
+
+function loadDataFirebase(cb) {
+  ...
+}
+
+/**************************************************
+ * START
+ **************************************************/
+init();
+
+
+👉 Esto es CLAVE:
+Después de init(); NO VA NADA
+Todo lo nuevo siempre va ANTES.
+
+✅ DÓNDE PEGAR renderPlantel
+🔴 NO lo pegues:
+
+❌ dentro de setupEventListeners
+
+❌ dentro de otra función
+
+❌ después de init();
+
+🟢 PEGALO ACÁ (PASO A PASO)
+
+Buscá este comentario exacto:
+
+/**************************************************
+ * EVENTS
+ **************************************************/
+
+
+JUSTO ARRIBA de ese comentario, pegás la función.
+
+Te muestro cómo debe quedar 👇
+
+🧩 ASÍ TIENE QUE QUEDAR EL ARCHIVO
+document.getElementById("save-attendance").addEventListener("click", () => {
+  document.querySelectorAll(".attendance-item input").forEach(cb => {
+    attendance[cb.dataset.id] = cb.checked;
+  });
+
+  saveData();
+  showToast("Asistencia guardada");
+});
+}
+
+
+/**************************************************
+ * PLANTEL
+ **************************************************/
+function renderPlantel(container, data) {
+  if (!data.players) data.players = [];
+
+  container.innerHTML = `
+    <section class="section">
+      <h3>Plantel</h3>
+
+      ${state.user.role === "admin" ? `
+        <button id="add-player-btn" class="btn-primary">
+          ➕ Agregar jugador
+        </button>
+      ` : ""}
+
+      <div class="player-list">
+        ${data.players.length === 0
+          ? "<p>No hay jugadores cargados.</p>"
+          : data.players.map(player => `
+              <div class="player-card">
+                <span>${player.name}</span>
+                ${state.user.role === "admin" ? `
+                  <button class="btn-text delete-player" data-id="${player.id}">
+                    ❌
+                  </button>
+                ` : ""}
+              </div>
+            `).join("")}
+      </div>
+    </section>
+  `;
+
+  // Agregar jugador
+  if (state.user.role === "admin") {
+    document.getElementById("add-player-btn")
+      ?.addEventListener("click", () => {
+        const name = prompt("Nombre del jugador");
+        if (!name) return;
+
+        data.players.push({
+          id: Date.now().toString(),
+          name
+        });
+
+        saveData();
+        renderScreen("plantel");
+      });
+  }
+
+  // Eliminar jugador
+  container.querySelectorAll(".delete-player").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (!confirm("¿Eliminar jugador?")) return;
+      data.players = data.players.filter(p => p.id !== btn.dataset.id);
+      saveData();
+      renderScreen("plantel");
+    });
+  });
+}
+
 /**************************************************
  * EVENTS
  **************************************************/
