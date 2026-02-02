@@ -150,6 +150,7 @@ function saveAttendanceDate(date){
 
 function ensureDataStructure() {
   ["2018", "2019", "2020"].forEach(cat => {
+
     if (!state.data[cat]) {
       state.data[cat] = {};
     }
@@ -169,14 +170,16 @@ function ensureDataStructure() {
     if (!state.data[cat].attendance) {
       state.data[cat].attendance = {};
     }
+
+   
+    if (!state.data[cat].sessions) {
+      state.data[cat].sessions = {};
+    }
+
   });
 
   if (!state.data.shared) {
     state.data.shared = { matches: [] };
-  }
-
-  if (!state.data[cat].sessions) {
-  state.data[cat].sessions = {};
   }
 }
 
