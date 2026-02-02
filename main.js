@@ -50,6 +50,7 @@ function showLogin() {
 }
 
 function renderMainLayout() {
+
   document.getElementById("login-screen").classList.add("hidden");
   document.getElementById("main-layout").classList.remove("hidden");
 
@@ -59,7 +60,8 @@ function renderMainLayout() {
   document.getElementById("display-role").textContent =
     state.user.role === "admin" ? "Modo Administrador" : "Modo Profesor";
 
- 
+  generateYearSessions(state.user.category);
+
   state.currentScreen = "home";
   navigateTo("home");
 }
@@ -82,11 +84,12 @@ function saveData() {
 }
 
 function getLocalDateKey(date){
+
   const y = date.getFullYear();
   const m = String(date.getMonth()+1).padStart(2,"0");
   const d = String(date.getDate()).padStart(2,"0");
 
-  return `${y}-${m}-${d}`;
+  return `${y}-${m}-${d}`; // formato ISO
 }
 
 function generateYearSessions(cat){
@@ -94,32 +97,21 @@ function generateYearSessions(cat){
   const sessions = state.data[cat].sessions;
   const year = new Date().getFullYear();
 
-  let d=new Date(year,0,1);
+  let d = new Date(year,0,1);
 
-  while(d.getFullYear()===year){
+  while(d.getFullYear() === year){
 
-    const day=d.getDay();
-    const key=getLocalDateKey(d);
+    const day = d.getDay();
 
-    // Martes/Jueves entrenamiento
-    if(day===2||day===4){
+    // martes o jueves
+    if(day===2 || day===4){
+
+      const key = getLocalDateKey(d);
+
       if(!sessions[key]){
         sessions[key]={
-          type:"training",
           closed:false,
           attendance:{}
-        };
-      }
-    }
-
-    // Sábado partido
-    if(day===6){
-      if(!sessions[key]){
-        sessions[key]={
-          type:"match",
-          closed:false,
-          attendance:{},
-          goals:{}
         };
       }
     }
@@ -130,62 +122,54 @@ function generateYearSessions(cat){
   saveData();
 }
 
-function openAttendance(date){
+;
+  function openAttendance(dateKey){
 
   const cat = state.user.category;
-  const sessions = state.data[cat].sessions;
-
-  // crear si no existe
-  if(!sessions[date]){
-    sessions[date] = {
-      type:"training",
-      closed:false,
-      attendance:{}
-    };
-  }
-
-  const session = sessions[date];
+  const session = state.data[cat].sessions[dateKey];
   const players = state.data[cat].players || [];
+
+  if(!session.attendance){
+    session.attendance={};
+  }
 
   const area = document.getElementById("attendance-area");
 
-  area.innerHTML = `
-    <h3>${formatDate(date)}</h3>
+  area.innerHTML=`
+    <h3>${formatDate(dateKey)}</h3>
 
     ${players.map(p=>`
       <label style="display:block;margin:6px 0;">
         <input type="checkbox"
           data-id="${p.id}"
           ${session.attendance[p.id]?"checked":""}>
-        ${p.number ? p.number+" - " : ""}${p.name}
+        ${p.name}
       </label>
     `).join("")}
 
     <button id="confirm-att">Confirmar asistencia</button>
   `;
 
-  document
-    .getElementById("confirm-att")
-    .addEventListener("click",()=>saveAttendanceDate(date));
+  document.getElementById("confirm-att").onclick=()=>{
+    saveAttendanceDate(dateKey);
+  };
 }
 
-function saveAttendanceDate(date){
+function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
-  const session = state.data[cat].sessions[date];
+  const session = state.data[cat].sessions[dateKey];
 
-  document
-    .querySelectorAll("#attendance-area input")
+  document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
-      session.attendance[cb.dataset.id] = cb.checked;
+      session.attendance[cb.dataset.id]=cb.checked;
     });
 
-  session.closed = true;
+  session.closed=true;
 
   saveData();
-  showToast("Asistencia guardada ✅");
+  showToast("Asistencia guardada");
 
-  document.getElementById("attendance-area").innerHTML="";
   renderScreen("lista");
 }
 
@@ -334,141 +318,56 @@ function renderHome(container, data) {
     </section>
   `;
 }
-function renderAgenda(container, data) {
+
+function renderAgenda(container, data){
+
   const agenda = data.agenda || {};
 
   let cards = "";
 
-  Object.keys(agenda).forEach(w => {
+  Object.keys(agenda).forEach(w=>{
     const week = agenda[w];
 
-    // Día 1 (Martes)
+    // Martes
     cards += `
-      <div class="annual-card" onclick="openWeekDetail(${w})">
-        <strong>W${w} · Mar</strong>
-        <div>${week.title}</div>
-        <small>${week.dates.split(",")[0]}</small>
+      <div class="annual-card">
+        <strong>Martes</strong>
+        <div>${week.title || ""}</div>
+        <small>${week.tue || "Entrenamiento"}</small>
       </div>
     `;
 
-    // Día 2 (Jueves)
-    if (week.dates.includes(",")) {
-      cards += `
-        <div class="annual-card" onclick="openWeekDetail(${w})">
-          <strong>W${w} · Jue</strong>
-          <div>${week.title}</div>
-          <small>${week.dates.split(",")[1]}</small>
-        </div>
-      `;
-    }
+    // Jueves
+    cards += `
+      <div class="annual-card">
+        <strong>Jueves</strong>
+        <div>${week.title || ""}</div>
+        <small>${week.thu || "Entrenamiento"}</small>
+      </div>
+    `;
   });
 
   container.innerHTML = `
-    <h1>Cronograma</h1>
+    <h1>Cronograma de entrenamientos</h1>
+
+    <p style="opacity:.7;margin-bottom:10px;">
+      La asistencia se registra en la sección LISTA
+    </p>
+
     <div class="annual-grid">
       ${cards}
     </div>
-    <div id="modal-container"></div>
   `;
 }
 
-function openWeekDetail(w) {
-  const week = state.data[state.user.category].agenda[w];
-  const isAdmin = state.user.role === "admin";
-
-  document.getElementById("modal-container").innerHTML = `
-    <div class="modal-overlay">
-      <div class="detail-modal">
-        <h2>Semana ${w}</h2>
-
-        ${
-          isAdmin
-          ? `
-            <input id="edit-title" value="${week.title || ""}">
-            <input id="edit-dates" value="${week.dates || ""}">
-          `
-          : `
-            <p><strong>${week.title || ""}</strong></p>
-            <small>${week.dates || ""}</small>
-          `
-        }
-
-        <h3>Martes</h3>
-        ${
-          isAdmin
-          ? `<textarea id="edit-tue">${week.tue || ""}</textarea>`
-          : `<p>${week.tue || "—"}</p>`
-        }
-
-        <h3>Jueves</h3>
-        ${
-          isAdmin
-          ? `<textarea id="edit-thu">${week.thu || ""}</textarea>`
-          : `<p>${week.thu || "—"}</p>`
-        }
-
-        ${
-          isAdmin
-          ? `<button onclick="saveWeek(${w})">Guardar</button>`
-          : ""
-        }
-
-        <button onclick="closeWeek()">Cerrar</button>
-      </div>
-    </div>
-  `;
-}
-
-function closeWeek() {
-  document.getElementById("modal-container").innerHTML = "";
-}
-
-function saveWeek(w) {
-  const week = state.data[state.user.category].agenda[w];
-
-  week.title = document.getElementById("edit-title").value;
-  week.dates = document.getElementById("edit-dates").value;
-  week.tue = document.getElementById("edit-tue").value;
-  week.thu = document.getElementById("edit-thu").value;
-
-  saveData();
-  closeWeek();
-  renderScreen("agenda");
-}
-
-function saveAttendance(w) {
-  const week = state.data[state.user.category].agenda[w];
-
-  document.querySelectorAll(".detail-modal input[type='checkbox']")
-    .forEach(cb => {
-      const day = cb.dataset.day;
-      const id = cb.dataset.id;
-      week.attendance[day][id] = cb.checked;
-    });
-
-  saveData();
-  showToast("Asistencia guardada");
-
-  closeWeek();
-}
-
-function lockWeek(w) {
-  state.data[state.user.category].agenda[w].locked = true;
-  saveData();
-  showToast("Semana bloqueada");
-}
 
 /**************************************************
  * LISTA / PLANTEL / STATS (BÁSICO)
  **************************************************/
-function formatDate(dateStr){
-  const d = new Date(dateStr + "T00:00:00");
+function formatDate(dateKey){
 
-  const day = String(d.getDate()).padStart(2,"0");
-  const month = String(d.getMonth()+1).padStart(2,"0");
-  const year = String(d.getFullYear()).slice(-2);
-
-  return `${day}/${month}/${year}`;
+  const [y,m,d] = dateKey.split("-");
+  return `${d}/${m}/${y.slice(2)}`;
 }
 
 function getMonthLabel(year,month){
@@ -490,14 +389,14 @@ function renderCalendar(container, year, month){
   const grid = document.createElement("div");
   grid.className = "cal-grid";
 
-  // Espacios vacíos
+  const cat = state.user.category;
+
+  // espacios vacíos
   for(let i=0;i<startWeekDay;i++){
     const empty=document.createElement("div");
     empty.className="cal-cell empty";
     grid.appendChild(empty);
   }
-
-  const cat = state.user.category;
 
   for(let day=1; day<=totalDays; day++){
 
@@ -505,18 +404,21 @@ function renderCalendar(container, year, month){
     const dayOfWeek = dateObj.getDay();
     const dateKey = getLocalDateKey(dateObj);
 
+    const session = state.data[cat].sessions?.[dateKey];
+
     const cell=document.createElement("div");
     let className="cal-cell";
 
-    const isTuesday = dayOfWeek===2;
-    const isThursday = dayOfWeek===4;
-    const isSaturday = dayOfWeek===6;
+    const isTraining = (dayOfWeek===2 || dayOfWeek===4);
 
-    // 👉 Tipos de día
-    if(isTuesday||isThursday) className+=" training";
-    if(isSaturday) className+=" match";
+    if(isTraining) className+=" training";
 
-    // Hoy
+    // verde si cerrado
+    if(session?.closed){
+      className+=" closed";
+    }
+
+    // hoy
     if(
       day===today.getDate() &&
       month===today.getMonth() &&
@@ -525,17 +427,10 @@ function renderCalendar(container, year, month){
       className+=" today";
     }
 
-    // Cerrado
-    const session = state.data[cat].sessions?.[dateKey];
-    if(session?.closed){
-      className+=" closed";
-    }
-
     cell.className=className;
     cell.innerHTML=`<div class="day-number">${day}</div>`;
 
-    // 👉 Click abrir asistencia
-    if(isTuesday||isThursday||isSaturday){
+    if(isTraining){
       cell.onclick=()=>{
         openAttendance(dateKey);
       };
