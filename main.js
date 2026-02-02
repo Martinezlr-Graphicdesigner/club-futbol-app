@@ -81,6 +81,14 @@ function saveData() {
   saveDataFirebase(state.data);
 }
 
+function getLocalDateKey(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,"0");
+  const d = String(date.getDate()).padStart(2,"0");
+
+  return `${y}-${m}-${d}`;
+}
+
 function generateYearSessions(cat){
   const sessions = state.data[cat].sessions;
   const year = new Date().getFullYear();
@@ -91,7 +99,7 @@ function generateYearSessions(cat){
     const day = d.getDay(); // 2=martes,4=jueves
 
     if(day === 2 || day === 4){
-      const key = d.toISOString().split("T")[0];
+      const key = getLocalDateKey(d);
 
       if(!sessions[key]){
         sessions[key]={
@@ -451,7 +459,7 @@ function lockWeek(w) {
  * LISTA / PLANTEL / STATS (BÁSICO)
  **************************************************/
 function formatDate(dateStr){
-  const d = new Date(dateStr);
+  const d = new Date(dateStr + "T00:00:00");
 
   const day = String(d.getDate()).padStart(2,"0");
   const month = String(d.getMonth()+1).padStart(2,"0");
