@@ -108,14 +108,20 @@ function generateYearSessions(cat){
 }
 
 function openAttendance(date){
+
   const cat = state.user.category;
   const session = state.data[cat].sessions[date];
-  const players = state.data[cat].players;
+  const players = state.data[cat].players || [];
+
+  // asegurar estructura
+  if(!session.attendance){
+    session.attendance = {};
+  }
 
   const area = document.getElementById("attendance-area");
 
   area.innerHTML = `
-    <h3>${date}</h3>
+    <h3>${formatDate(date)}</h3>
 
     ${players.map(p=>`
       <label>
@@ -126,25 +132,32 @@ function openAttendance(date){
       </label>
     `).join("")}
 
-    <button onclick="saveAttendanceDate('${date}')">
+    <button id="confirm-att">
       Confirmar asistencia
     </button>
   `;
+
+ 
+  document.getElementById("confirm-att").addEventListener("click", ()=>{
+    saveAttendanceDate(date);
+  });
 }
 
 function saveAttendanceDate(date){
+
   const cat = state.user.category;
   const session = state.data[cat].sessions[date];
 
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
-      session.attendance[cb.dataset.id]=cb.checked;
+      session.attendance[cb.dataset.id] = cb.checked;
     });
 
-  session.closed=true;
+  session.closed = true;
 
   saveData();
   showToast("Asistencia guardada");
+
   renderScreen("lista");
 }
 
