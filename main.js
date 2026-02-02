@@ -478,39 +478,65 @@ function renderLista(container,data){
 
   const dates = Object.keys(sessions).sort();
 
-  
+  // Agrupar por mes
   const grouped = {};
 
   dates.forEach(date=>{
     const d = new Date(date+"T00:00:00");
-    const month = d.toLocaleString("es-AR",{month:"long", year:"numeric"});
+    const monthKey = d.getFullYear()+"-"+(d.getMonth()+1);
 
-    if(!grouped[month]) grouped[month]=[];
-    grouped[month].push(date);
+    const monthLabel = d.toLocaleString("es-AR",{month:"long", year:"numeric"});
+
+    if(!grouped[monthKey]){
+      grouped[monthKey]={
+        label:monthLabel,
+        dates:[]
+      };
+    }
+
+    grouped[monthKey].dates.push(date);
   });
+
+  const monthKeys = Object.keys(grouped);
+
+  // Mes seleccionado (por defecto el primero)
+  const selectedMonth = state.selectedMonth || monthKeys[0];
+  state.selectedMonth = selectedMonth;
 
   container.innerHTML = `
     <h2>Tomar asistencia</h2>
 
-    ${
-      Object.keys(grouped).map(month=>`
-        <h3>${month}</h3>
+    <select id="month-select">
+      ${monthKeys.map(k=>`
+        <option value="${k}" ${k===selectedMonth?"selected":""}>
+          ${grouped[k].label}
+        </option>
+      `).join("")}
+    </select>
 
-        ${grouped[month].map(date=>{
-          const s = sessions[date];
+    <div class="session-list">
+      ${grouped[selectedMonth].dates.map(date=>{
+        const s = sessions[date];
 
-          return `
-            <button class="session-btn" data-date="${date}">
-              ${formatDate(date)} ${s.closed?"✅":""}
-            </button>
-          `;
-        }).join("")}
-      `).join("")
-    }
+        return `
+          <button class="session-btn" data-date="${date}">
+            ${formatDate(date)} ${s.closed?"✅":""}
+          </button>
+        `;
+      }).join("")}
+    </div>
 
     <div id="attendance-area"></div>
   `;
 
+  // Cambio de mes
+  document.getElementById("month-select")
+    .addEventListener("change",e=>{
+      state.selectedMonth = e.target.value;
+      renderScreen("lista");
+    });
+
+  // Click en fecha
   container.querySelectorAll(".session-btn").forEach(btn=>{
     btn.addEventListener("click",()=>{
       openAttendance(btn.dataset.date);
