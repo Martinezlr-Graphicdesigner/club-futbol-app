@@ -90,21 +90,36 @@ function getLocalDateKey(date){
 }
 
 function generateYearSessions(cat){
+
   const sessions = state.data[cat].sessions;
   const year = new Date().getFullYear();
 
-  let d = new Date(year,0,1);
+  let d=new Date(year,0,1);
 
-  while(d.getFullYear() === year){
-    const day = d.getDay(); // 2=martes,4=jueves
+  while(d.getFullYear()===year){
 
-    if(day === 2 || day === 4){
-      const key = getLocalDateKey(d);
+    const day=d.getDay();
+    const key=getLocalDateKey(d);
 
+    // Martes/Jueves entrenamiento
+    if(day===2||day===4){
       if(!sessions[key]){
         sessions[key]={
+          type:"training",
           closed:false,
           attendance:{}
+        };
+      }
+    }
+
+    // Sábado partido
+    if(day===6){
+      if(!sessions[key]){
+        sessions[key]={
+          type:"match",
+          closed:false,
+          attendance:{},
+          goals:{}
         };
       }
     }
@@ -118,13 +133,19 @@ function generateYearSessions(cat){
 function openAttendance(date){
 
   const cat = state.user.category;
-  const session = state.data[cat].sessions[date];
-  const players = state.data[cat].players || [];
+  const sessions = state.data[cat].sessions;
 
-  // asegurar estructura
-  if(!session.attendance){
-    session.attendance = {};
+  // crear si no existe
+  if(!sessions[date]){
+    sessions[date] = {
+      type:"training",
+      closed:false,
+      attendance:{}
+    };
   }
+
+  const session = sessions[date];
+  const players = state.data[cat].players || [];
 
   const area = document.getElementById("attendance-area");
 
@@ -132,23 +153,20 @@ function openAttendance(date){
     <h3>${formatDate(date)}</h3>
 
     ${players.map(p=>`
-      <label>
+      <label style="display:block;margin:6px 0;">
         <input type="checkbox"
           data-id="${p.id}"
           ${session.attendance[p.id]?"checked":""}>
-        ${p.name}
+        ${p.number ? p.number+" - " : ""}${p.name}
       </label>
     `).join("")}
 
-    <button id="confirm-att">
-      Confirmar asistencia
-    </button>
+    <button id="confirm-att">Confirmar asistencia</button>
   `;
 
- 
-  document.getElementById("confirm-att").addEventListener("click", ()=>{
-    saveAttendanceDate(date);
-  });
+  document
+    .getElementById("confirm-att")
+    .addEventListener("click",()=>saveAttendanceDate(date));
 }
 
 function saveAttendanceDate(date){
@@ -156,7 +174,8 @@ function saveAttendanceDate(date){
   const cat = state.user.category;
   const session = state.data[cat].sessions[date];
 
-  document.querySelectorAll("#attendance-area input")
+  document
+    .querySelectorAll("#attendance-area input")
     .forEach(cb=>{
       session.attendance[cb.dataset.id] = cb.checked;
     });
@@ -164,43 +183,27 @@ function saveAttendanceDate(date){
   session.closed = true;
 
   saveData();
-  showToast("Asistencia guardada");
+  showToast("Asistencia guardada ✅");
 
+  document.getElementById("attendance-area").innerHTML="";
   renderScreen("lista");
 }
 
-function ensureDataStructure() {
-  ["2018", "2019", "2020"].forEach(cat => {
+function ensureDataStructure(){
 
-    if (!state.data[cat]) {
-      state.data[cat] = {};
-    }
+  ["2018","2019","2020"].forEach(cat=>{
 
-    if (!state.data[cat].players) {
-      state.data[cat].players = [];
-    }
-
-    if (!state.data[cat].agenda) {
-      state.data[cat].agenda = {};
-    }
-
-    if (!state.data[cat].stats) {
-      state.data[cat].stats = {};
-    }
-
-    if (!state.data[cat].attendance) {
-      state.data[cat].attendance = {};
-    }
-
-   
-    if (!state.data[cat].sessions) {
-      state.data[cat].sessions = {};
-    }
+    if(!state.data[cat]) state.data[cat]={};
+    if(!state.data[cat].players) state.data[cat].players=[];
+    if(!state.data[cat].agenda) state.data[cat].agenda={};
+    if(!state.data[cat].stats) state.data[cat].stats={};
+    if(!state.data[cat].attendance) state.data[cat].attendance={};
+    if(!state.data[cat].sessions) state.data[cat].sessions={};
 
   });
 
-  if (!state.data.shared) {
-    state.data.shared = { matches: [] };
+  if(!state.data.shared){
+    state.data.shared={matches:[]};
   }
 }
 
@@ -481,69 +484,60 @@ function renderCalendar(container, year, month){
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
-  const startWeekDay = firstDay.getDay(); // 0=Domingo
+  const startWeekDay = firstDay.getDay();
   const totalDays = lastDay.getDate();
 
-  // Grid calendario
   const grid = document.createElement("div");
   grid.className = "cal-grid";
 
-  // Espacios vacíos antes del día 1
-  for(let i=0; i<startWeekDay; i++){
-    const empty = document.createElement("div");
-    empty.className = "cal-cell empty";
+  // Espacios vacíos
+  for(let i=0;i<startWeekDay;i++){
+    const empty=document.createElement("div");
+    empty.className="cal-cell empty";
     grid.appendChild(empty);
   }
 
-  // Días del mes
+  const cat = state.user.category;
+
   for(let day=1; day<=totalDays; day++){
 
-    const dateObj = new Date(year, month, day);
+    const dateObj = new Date(year,month,day);
     const dayOfWeek = dateObj.getDay();
+    const dateKey = getLocalDateKey(dateObj);
 
-    const cell = document.createElement("div");
-    let className = "cal-cell";
+    const cell=document.createElement("div");
+    let className="cal-cell";
 
-    // 👉 Detectar tipos de día
-    const isTuesday = dayOfWeek === 2;
-    const isThursday = dayOfWeek === 4;
-    const isSaturday = dayOfWeek === 6;
+    const isTuesday = dayOfWeek===2;
+    const isThursday = dayOfWeek===4;
+    const isSaturday = dayOfWeek===6;
 
-    // Entrenamientos
-    if(isTuesday || isThursday){
-      className += " training";
-    }
-
-    // Partidos sábado
-    if(isSaturday){
-      className += " match";
-    }
+    // 👉 Tipos de día
+    if(isTuesday||isThursday) className+=" training";
+    if(isSaturday) className+=" match";
 
     // Hoy
     if(
-      day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
+      day===today.getDate() &&
+      month===today.getMonth() &&
+      year===today.getFullYear()
     ){
-      className += " today";
+      className+=" today";
     }
 
-    cell.className = className;
+    // Cerrado
+    const session = state.data[cat].sessions?.[dateKey];
+    if(session?.closed){
+      className+=" closed";
+    }
 
-    // Texto del día
-    cell.innerHTML = `<div class="day-number">${day}</div>`;
+    cell.className=className;
+    cell.innerHTML=`<div class="day-number">${day}</div>`;
 
-    // Click abrir sesión
-    if(isTuesday || isThursday || isSaturday){
-      cell.onclick = () => {
-
-        const dateKey = getLocalDateKey(dateObj);
-
-        openSession(dateKey, {
-          type: isSaturday ? "match" : "training",
-          date: dateObj
-        });
-
+    // 👉 Click abrir asistencia
+    if(isTuesday||isThursday||isSaturday){
+      cell.onclick=()=>{
+        openAttendance(dateKey);
       };
     }
 
