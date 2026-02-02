@@ -475,24 +475,38 @@ function renderLista(container,data){
   generateYearSessions(cat);
 
   const sessions = state.data[cat].sessions;
-  const players = data.players || [];
 
-  const dates = Object.keys(sessions)
-  .sort((a,b)=> new Date(b) - new Date(a)); // más reciente arriba
+  const dates = Object.keys(sessions).sort();
+
+  
+  const grouped = {};
+
+  dates.forEach(date=>{
+    const d = new Date(date+"T00:00:00");
+    const month = d.toLocaleString("es-AR",{month:"long", year:"numeric"});
+
+    if(!grouped[month]) grouped[month]=[];
+    grouped[month].push(date);
+  });
 
   container.innerHTML = `
     <h2>Tomar asistencia</h2>
 
-    <div class="session-list">
-      ${dates.map(date=>{
-  const s = sessions[date];
-  return `
-    <button class="session-btn" data-date="${date}">
-      ${formatDate(date)} ${s.closed?"✅":""}
-    </button>
-  `;
-}).join("")}
-    </div>
+    ${
+      Object.keys(grouped).map(month=>`
+        <h3>${month}</h3>
+
+        ${grouped[month].map(date=>{
+          const s = sessions[date];
+
+          return `
+            <button class="session-btn" data-date="${date}">
+              ${formatDate(date)} ${s.closed?"✅":""}
+            </button>
+          `;
+        }).join("")}
+      `).join("")
+    }
 
     <div id="attendance-area"></div>
   `;
