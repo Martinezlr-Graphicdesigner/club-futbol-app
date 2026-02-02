@@ -81,6 +81,73 @@ function saveData() {
   saveDataFirebase(state.data);
 }
 
+function generateYearSessions(cat){
+  const sessions = state.data[cat].sessions;
+  const year = new Date().getFullYear();
+
+  let d = new Date(year,0,1);
+
+  while(d.getFullYear() === year){
+    const day = d.getDay(); // 2=martes,4=jueves
+
+    if(day === 2 || day === 4){
+      const key = d.toISOString().split("T")[0];
+
+      if(!sessions[key]){
+        sessions[key]={
+          closed:false,
+          attendance:{}
+        };
+      }
+    }
+
+    d.setDate(d.getDate()+1);
+  }
+
+  saveData();
+}
+
+function openAttendance(date){
+  const cat = state.user.category;
+  const session = state.data[cat].sessions[date];
+  const players = state.data[cat].players;
+
+  const area = document.getElementById("attendance-area");
+
+  area.innerHTML = `
+    <h3>${date}</h3>
+
+    ${players.map(p=>`
+      <label>
+        <input type="checkbox"
+          data-id="${p.id}"
+          ${session.attendance[p.id]?"checked":""}>
+        ${p.name}
+      </label>
+    `).join("")}
+
+    <button onclick="saveAttendanceDate('${date}')">
+      Confirmar asistencia
+    </button>
+  `;
+}
+
+function saveAttendanceDate(date){
+  const cat = state.user.category;
+  const session = state.data[cat].sessions[date];
+
+  document.querySelectorAll("#attendance-area input")
+    .forEach(cb=>{
+      session.attendance[cb.dataset.id]=cb.checked;
+    });
+
+  session.closed=true;
+
+  saveData();
+  showToast("Asistencia guardada");
+  renderScreen("lista");
+}
+
 function ensureDataStructure() {
   ["2018", "2019", "2020"].forEach(cat => {
     if (!state.data[cat]) {
@@ -106,6 +173,10 @@ function ensureDataStructure() {
 
   if (!state.data.shared) {
     state.data.shared = { matches: [] };
+  }
+
+  if (!state.data[cat].sessions) {
+  state.data[cat].sessions = {};
   }
 }
 
@@ -363,80 +434,38 @@ function lockWeek(w) {
 /**************************************************
  * LISTA / PLANTEL / STATS (BÁSICO)
  **************************************************/
-function renderLista(container, data) {
-  const today = new Date().toISOString().split("T")[0];
+function renderLista(container,data){
 
-  if (!data.attendanceByDate) {
-    data.attendanceByDate = {};
-  }
+  const cat = state.user.category;
 
-  if (!data.attendanceByDate[today]) {
-    data.attendanceByDate[today] = {
-      players: {},
-      closed: false
-    };
-  }
+  generateYearSessions(cat);
 
-  const record = data.attendanceByDate[today];
+  const sessions = state.data[cat].sessions;
   const players = data.players || [];
-  const isAdmin = state.user.role === "admin";
+
+  const dates = Object.keys(sessions).sort().reverse();
 
   container.innerHTML = `
-    <h2>Asistencia – ${today}</h2>
+    <h2>Tomar asistencia</h2>
 
-    ${
-      record.closed && !isAdmin
-        ? "<p>✅ Esta fecha ya fue cerrada</p>"
-        : `
-      <div class="attendance-list">
-        ${players.map(p => `
-          <label class="attendance-item">
-            <input type="checkbox"
-              data-id="${p.id}"
-              ${record.players[p.id] ? "checked" : ""}
-              ${record.closed ? "disabled" : ""}>
-            <span>${p.name}</span>
-          </label>
-        `).join("")}
-      </div>
+    <div class="session-list">
+      ${dates.map(date=>{
+        const s = sessions[date];
+        return `
+          <button class="session-btn" data-date="${date}">
+            ${date} ${s.closed?"✅":""}
+          </button>
+        `;
+      }).join("")}
+    </div>
 
-      ${
-        !record.closed
-          ? `<button id="save-attendance" class="btn-primary">
-               Confirmar asistencia
-             </button>`
-          : ""
-      }
-    `
-    }
-
-    ${
-      record.closed && isAdmin
-        ? `<button id="reopen-date" class="btn-secondary">
-             Reabrir fecha
-           </button>`
-        : ""
-    }
+    <div id="attendance-area"></div>
   `;
 
-  
-  document.getElementById("save-attendance")?.addEventListener("click", () => {
-    document.querySelectorAll(".attendance-item input").forEach(cb => {
-      record.players[cb.dataset.id] = cb.checked;
+  container.querySelectorAll(".session-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      openAttendance(btn.dataset.date);
     });
-
-    record.closed = true;
-
-    saveData();
-    showToast("Asistencia confirmada");
-    renderScreen("lista");
-  });
-
-  
-  document.getElementById("reopen-date")?.addEventListener("click", () => {
-    record.closed = false;
-    saveData();
-    renderScreen("lista");
   });
 }
 
