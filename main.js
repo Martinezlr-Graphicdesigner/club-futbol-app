@@ -537,7 +537,7 @@ function renderCalendar(container, year, month){
     if(isTuesday || isThursday || isSaturday){
       cell.onclick = () => {
 
-        const dateKey = `${year}-${month+1}-${day}`;
+        const dateKey = getLocalDateKey(dateObj);
 
         openSession(dateKey, {
           type: isSaturday ? "match" : "training",
@@ -560,9 +560,50 @@ function renderLista(container,data){
 
   generateYearSessions(cat);
 
-  const sessions = state.data[cat].sessions;
+  const today = new Date();
 
-  renderCalendar(container,sessions);
+  // Header con mes y año
+  container.innerHTML = `
+    <div class="cal-header">
+      <button id="prev-month">◀</button>
+      <h3 id="cal-title"></h3>
+      <button id="next-month">▶</button>
+    </div>
+
+    <div id="calendar"></div>
+    <div id="attendance-area"></div>
+  `;
+
+  let currentYear = today.getFullYear();
+  let currentMonth = today.getMonth();
+
+  const calendarDiv = document.getElementById("calendar");
+  const title = document.getElementById("cal-title");
+
+  function draw(){
+    title.textContent = getMonthLabel(currentYear,currentMonth);
+    renderCalendar(calendarDiv,currentYear,currentMonth);
+  }
+
+  draw();
+
+  document.getElementById("prev-month").onclick = ()=>{
+    currentMonth--;
+    if(currentMonth<0){
+      currentMonth=11;
+      currentYear--;
+    }
+    draw();
+  };
+
+  document.getElementById("next-month").onclick = ()=>{
+    currentMonth++;
+    if(currentMonth>11){
+      currentMonth=0;
+      currentYear++;
+    }
+    draw();
+  };
 }
 
 /**************************************************
