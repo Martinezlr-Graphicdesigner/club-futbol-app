@@ -1087,3 +1087,21 @@ button {
   align-items:center;
   margin-bottom:10px;
 }
+
+.cal-cell.match{
+  background:#ff6b6b;
+  color:white;
+  font-weight:bold;
+}
+
+/* Entrenamientos (martes/jueves) */
+.cal-cell.training{
+  background:#4dabf7;
+  color:white;
+  cursor:pointer;
+}
+
+/* Hoy */
+.cal-cell.today{
+  border:2px solid #000;
+}

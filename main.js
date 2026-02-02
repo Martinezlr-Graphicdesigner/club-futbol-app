@@ -473,94 +473,84 @@ function getMonthLabel(year,month){
     .toLocaleString("es-AR",{month:"long",year:"numeric"});
 }
 
-function renderCalendar(container,sessions){
+function renderCalendar(container, year, month){
+
+  container.innerHTML = "";
 
   const today = new Date();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
 
-  let year = state.calYear || today.getFullYear();
-  let month = state.calMonth ?? today.getMonth();
-
-  state.calYear = year;
-  state.calMonth = month;
-
-  const firstDay = new Date(year,month,1);
-  const lastDay = new Date(year,month+1,0);
-
-  const startWeekDay = (firstDay.getDay()+6)%7; // lunes=0
+  const startWeekDay = firstDay.getDay(); // 0=Domingo
   const totalDays = lastDay.getDate();
 
-  let cells="";
+  // Grid calendario
+  const grid = document.createElement("div");
+  grid.className = "cal-grid";
 
-  // espacios vacíos inicio
-  for(let i=0;i<startWeekDay;i++){
-    cells+=`<div class="cal-cell empty"></div>`;
+  // Espacios vacíos antes del día 1
+  for(let i=0; i<startWeekDay; i++){
+    const empty = document.createElement("div");
+    empty.className = "cal-cell empty";
+    grid.appendChild(empty);
   }
 
-  // días del mes
-  for(let d=1; d<=totalDays; d++){
+  // Días del mes
+  for(let day=1; day<=totalDays; day++){
 
-    const dateObj = new Date(year,month,d);
-    const key = dateObj.toISOString().split("T")[0];
+    const dateObj = new Date(year, month, day);
+    const dayOfWeek = dateObj.getDay();
 
-    const session = sessions[key];
+    const cell = document.createElement("div");
+    let className = "cal-cell";
 
-    let cls="cal-cell";
-    let content=d;
+    // 👉 Detectar tipos de día
+    const isTuesday = dayOfWeek === 2;
+    const isThursday = dayOfWeek === 4;
+    const isSaturday = dayOfWeek === 6;
 
-    if(session){
-      cls+=" session";
-      if(session.closed) cls+=" closed";
+    // Entrenamientos
+    if(isTuesday || isThursday){
+      className += " training";
     }
 
-    cells+=`
-      <div class="${cls}" data-date="${key}">
-        ${content}
-      </div>
-    `;
+    // Partidos sábado
+    if(isSaturday){
+      className += " match";
+    }
+
+    // Hoy
+    if(
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    ){
+      className += " today";
+    }
+
+    cell.className = className;
+
+    // Texto del día
+    cell.innerHTML = `<div class="day-number">${day}</div>`;
+
+    // Click abrir sesión
+    if(isTuesday || isThursday || isSaturday){
+      cell.onclick = () => {
+
+        const dateKey = `${year}-${month+1}-${day}`;
+
+        openSession(dateKey, {
+          type: isSaturday ? "match" : "training",
+          date: dateObj
+        });
+
+      };
+    }
+
+    grid.appendChild(cell);
   }
 
-  container.innerHTML=`
-    <h2>Tomar asistencia</h2>
-
-    <div class="cal-header">
-      <button id="prev-month">◀</button>
-      <strong>${getMonthLabel(year,month)}</strong>
-      <button id="next-month">▶</button>
-    </div>
-
-    <div class="cal-grid">
-      <div>Lun</div><div>Mar</div><div>Mié</div>
-      <div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
-      ${cells}
-    </div>
-
-    <div id="attendance-area"></div>
-  `;
-
-  // navegación mes
-  document.getElementById("prev-month").onclick=()=>{
-    month--;
-    if(month<0){month=11;year--;}
-    state.calMonth=month;
-    state.calYear=year;
-    renderScreen("lista");
-  };
-
-  document.getElementById("next-month").onclick=()=>{
-    month++;
-    if(month>11){month=0;year++;}
-    state.calMonth=month;
-    state.calYear=year;
-    renderScreen("lista");
-  };
-
-  // click en día
-  container.querySelectorAll(".cal-cell.session")
-    .forEach(cell=>{
-      cell.onclick=()=>{
-        openAttendance(cell.dataset.date);
-      };
-    });
+  container.appendChild(grid);
 }
 
 
