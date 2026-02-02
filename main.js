@@ -378,60 +378,79 @@ function lockWeek(w) {
  **************************************************/
 function renderLista(container, data) {
   const today = new Date().toISOString().split("T")[0];
-  const isAdmin = state.user.role === "admin";
 
-  if (!data.attendance) data.attendance = {};
+  if (!data.attendanceByDate) {
+    data.attendanceByDate = {};
+  }
 
-  if (!data.attendance[today]) {
-    data.attendance[today] = {
-      locked: false,
-      players: {}
+  if (!data.attendanceByDate[today]) {
+    data.attendanceByDate[today] = {
+      players: {},
+      closed: false
     };
   }
 
-  const dayData = data.attendance[today];
+  const record = data.attendanceByDate[today];
   const players = data.players || [];
-  const isLocked = dayData.locked && !isAdmin;
+  const isAdmin = state.user.role === "admin";
 
   container.innerHTML = `
     <h2>Asistencia – ${today}</h2>
 
-    <div class="attendance-list">
-      ${players.length === 0
-        ? "<p>No hay jugadores cargados.</p>"
-        : players.map(p => `
+    ${
+      record.closed && !isAdmin
+        ? "<p>✅ Esta fecha ya fue cerrada</p>"
+        : `
+      <div class="attendance-list">
+        ${players.map(p => `
           <label class="attendance-item">
             <input type="checkbox"
               data-id="${p.id}"
-              ${dayData.players[p.id] ? "checked" : ""}
-              ${isLocked ? "disabled" : ""}>
+              ${record.players[p.id] ? "checked" : ""}
+              ${record.closed ? "disabled" : ""}>
             <span>${p.name}</span>
           </label>
-        `).join("")
-      }
-    </div>
+        `).join("")}
+      </div>
 
-    ${!dayData.locked || isAdmin ? `
-      <button id="save-attendance" class="btn-primary">
-        Confirmar asistencia
-      </button>
-    ` : `
-      <p class="muted">Asistencia cerrada</p>
-    `}
+      ${
+        !record.closed
+          ? `<button id="save-attendance" class="btn-primary">
+               Confirmar asistencia
+             </button>`
+          : ""
+      }
+    `
+    }
+
+    ${
+      record.closed && isAdmin
+        ? `<button id="reopen-date" class="btn-secondary">
+             Reabrir fecha
+           </button>`
+        : ""
+    }
   `;
 
-  if (!isLocked) {
-    document.getElementById("save-attendance")?.addEventListener("click", () => {
-      document.querySelectorAll(".attendance-item input").forEach(cb => {
-        dayData.players[cb.dataset.id] = cb.checked;
-      });
-
-      dayData.locked = true;
-      saveData();
-      showToast("Asistencia confirmada");
-      renderScreen("lista");
+  
+  document.getElementById("save-attendance")?.addEventListener("click", () => {
+    document.querySelectorAll(".attendance-item input").forEach(cb => {
+      record.players[cb.dataset.id] = cb.checked;
     });
-  }
+
+    record.closed = true;
+
+    saveData();
+    showToast("Asistencia confirmada");
+    renderScreen("lista");
+  });
+
+  
+  document.getElementById("reopen-date")?.addEventListener("click", () => {
+    record.closed = false;
+    saveData();
+    renderScreen("lista");
+  });
 }
 
 /**************************************************
