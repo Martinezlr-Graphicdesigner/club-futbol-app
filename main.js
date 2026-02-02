@@ -468,6 +468,102 @@ function formatDate(dateStr){
   return `${day}/${month}/${year}`;
 }
 
+function getMonthLabel(year,month){
+  return new Date(year,month)
+    .toLocaleString("es-AR",{month:"long",year:"numeric"});
+}
+
+function renderCalendar(container,sessions){
+
+  const today = new Date();
+
+  let year = state.calYear || today.getFullYear();
+  let month = state.calMonth ?? today.getMonth();
+
+  state.calYear = year;
+  state.calMonth = month;
+
+  const firstDay = new Date(year,month,1);
+  const lastDay = new Date(year,month+1,0);
+
+  const startWeekDay = (firstDay.getDay()+6)%7; // lunes=0
+  const totalDays = lastDay.getDate();
+
+  let cells="";
+
+  // espacios vacíos inicio
+  for(let i=0;i<startWeekDay;i++){
+    cells+=`<div class="cal-cell empty"></div>`;
+  }
+
+  // días del mes
+  for(let d=1; d<=totalDays; d++){
+
+    const dateObj = new Date(year,month,d);
+    const key = dateObj.toISOString().split("T")[0];
+
+    const session = sessions[key];
+
+    let cls="cal-cell";
+    let content=d;
+
+    if(session){
+      cls+=" session";
+      if(session.closed) cls+=" closed";
+    }
+
+    cells+=`
+      <div class="${cls}" data-date="${key}">
+        ${content}
+      </div>
+    `;
+  }
+
+  container.innerHTML=`
+    <h2>Tomar asistencia</h2>
+
+    <div class="cal-header">
+      <button id="prev-month">◀</button>
+      <strong>${getMonthLabel(year,month)}</strong>
+      <button id="next-month">▶</button>
+    </div>
+
+    <div class="cal-grid">
+      <div>Lun</div><div>Mar</div><div>Mié</div>
+      <div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+      ${cells}
+    </div>
+
+    <div id="attendance-area"></div>
+  `;
+
+  // navegación mes
+  document.getElementById("prev-month").onclick=()=>{
+    month--;
+    if(month<0){month=11;year--;}
+    state.calMonth=month;
+    state.calYear=year;
+    renderScreen("lista");
+  };
+
+  document.getElementById("next-month").onclick=()=>{
+    month++;
+    if(month>11){month=0;year++;}
+    state.calMonth=month;
+    state.calYear=year;
+    renderScreen("lista");
+  };
+
+  // click en día
+  container.querySelectorAll(".cal-cell.session")
+    .forEach(cell=>{
+      cell.onclick=()=>{
+        openAttendance(cell.dataset.date);
+      };
+    });
+}
+
+
 function renderLista(container,data){
 
   const cat = state.user.category;
@@ -476,72 +572,7 @@ function renderLista(container,data){
 
   const sessions = state.data[cat].sessions;
 
-  const dates = Object.keys(sessions).sort();
-
-  // Agrupar por mes
-  const grouped = {};
-
-  dates.forEach(date=>{
-    const d = new Date(date+"T00:00:00");
-    const monthKey = d.getFullYear()+"-"+(d.getMonth()+1);
-
-    const monthLabel = d.toLocaleString("es-AR",{month:"long", year:"numeric"});
-
-    if(!grouped[monthKey]){
-      grouped[monthKey]={
-        label:monthLabel,
-        dates:[]
-      };
-    }
-
-    grouped[monthKey].dates.push(date);
-  });
-
-  const monthKeys = Object.keys(grouped);
-
-  // Mes seleccionado (por defecto el primero)
-  const selectedMonth = state.selectedMonth || monthKeys[0];
-  state.selectedMonth = selectedMonth;
-
-  container.innerHTML = `
-    <h2>Tomar asistencia</h2>
-
-    <select id="month-select">
-      ${monthKeys.map(k=>`
-        <option value="${k}" ${k===selectedMonth?"selected":""}>
-          ${grouped[k].label}
-        </option>
-      `).join("")}
-    </select>
-
-    <div class="session-list">
-      ${grouped[selectedMonth].dates.map(date=>{
-        const s = sessions[date];
-
-        return `
-          <button class="session-btn" data-date="${date}">
-            ${formatDate(date)} ${s.closed?"✅":""}
-          </button>
-        `;
-      }).join("")}
-    </div>
-
-    <div id="attendance-area"></div>
-  `;
-
-  // Cambio de mes
-  document.getElementById("month-select")
-    .addEventListener("change",e=>{
-      state.selectedMonth = e.target.value;
-      renderScreen("lista");
-    });
-
-  // Click en fecha
-  container.querySelectorAll(".session-btn").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      openAttendance(btn.dataset.date);
-    });
-  });
+  renderCalendar(container,sessions);
 }
 
 /**************************************************

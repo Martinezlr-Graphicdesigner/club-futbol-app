@@ -1054,3 +1054,36 @@ button {
     border-color: var(--primary);
     background: radial-gradient(var(--primary) 40%, white 40%);
 }
+
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  text-align:center;
+}
+
+.cal-cell{
+  padding:10px;
+  border-radius:8px;
+  background:#eee;
+}
+
+.cal-cell.session{
+  background:#ffd966;
+  cursor:pointer;
+}
+
+.cal-cell.closed{
+  background:#7bd389;
+}
+
+.cal-cell.empty{
+  background:transparent;
+}
+
+.cal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
