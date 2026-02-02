@@ -278,57 +278,42 @@ function openWeekDetail(w) {
   const week = state.data[state.user.category].agenda[w];
   const isAdmin = state.user.role === "admin";
 
-  if (week.locked && !isAdmin) {
-    alert("Esta semana está cerrada");
-    return;
-  }
-
-  if (!week.attendance) {
-    week.attendance = { tuesday: {}, thursday: {} };
-  }
-
-  const players = state.data[state.user.category].players || [];
-
   document.getElementById("modal-container").innerHTML = `
     <div class="modal-overlay">
       <div class="detail-modal">
         <h2>Semana ${w}</h2>
 
-        ${isAdmin ? `
-          <input id="edit-title" value="${week.title}">
-          <input id="edit-dates" value="${week.dates}">
-        ` : `
-          <p><strong>${week.title}</strong></p>
-          <small>${week.dates}</small>
-        `}
+        ${
+          isAdmin
+          ? `
+            <input id="edit-title" value="${week.title || ""}">
+            <input id="edit-dates" value="${week.dates || ""}">
+          `
+          : `
+            <p><strong>${week.title || ""}</strong></p>
+            <small>${week.dates || ""}</small>
+          `
+        }
 
         <h3>Martes</h3>
-        ${players.map(p => `
-          <label>
-            <input type="checkbox"
-              data-day="tuesday"
-              data-id="${p.id}"
-              ${week.attendance.tuesday[p.id] ? "checked" : ""}>
-            ${p.name}
-          </label>
-        `).join("")}
+        ${
+          isAdmin
+          ? `<textarea id="edit-tue">${week.tue || ""}</textarea>`
+          : `<p>${week.tue || "—"}</p>`
+        }
 
         <h3>Jueves</h3>
-        ${players.map(p => `
-          <label>
-            <input type="checkbox"
-              data-day="thursday"
-              data-id="${p.id}"
-              ${week.attendance.thursday[p.id] ? "checked" : ""}>
-            ${p.name}
-          </label>
-        `).join("")}
+        ${
+          isAdmin
+          ? `<textarea id="edit-thu">${week.thu || ""}</textarea>`
+          : `<p>${week.thu || "—"}</p>`
+        }
 
-        <button onclick="saveAttendance(${w})">Guardar asistencia</button>
-
-        ${isAdmin ? `
-          <button onclick="lockWeek(${w})">Bloquear semana</button>
-        ` : ""}
+        ${
+          isAdmin
+          ? `<button onclick="saveWeek(${w})">Guardar</button>`
+          : ""
+        }
 
         <button onclick="closeWeek()">Cerrar</button>
       </div>
@@ -342,10 +327,12 @@ function closeWeek() {
 
 function saveWeek(w) {
   const week = state.data[state.user.category].agenda[w];
+
   week.title = document.getElementById("edit-title").value;
   week.dates = document.getElementById("edit-dates").value;
-  week.day1 = document.getElementById("edit-day1").value;
-  week.day2 = document.getElementById("edit-day2").value;
+  week.tue = document.getElementById("edit-tue").value;
+  week.thu = document.getElementById("edit-thu").value;
+
   saveData();
   closeWeek();
   renderScreen("agenda");
