@@ -437,6 +437,16 @@ function lockWeek(w) {
 /**************************************************
  * LISTA / PLANTEL / STATS (BÁSICO)
  **************************************************/
+function formatDate(dateStr){
+  const d = new Date(dateStr);
+
+  const day = String(d.getDate()).padStart(2,"0");
+  const month = String(d.getMonth()+1).padStart(2,"0");
+  const year = String(d.getFullYear()).slice(-2);
+
+  return `${day}/${month}/${year}`;
+}
+
 function renderLista(container,data){
 
   const cat = state.user.category;
@@ -446,20 +456,21 @@ function renderLista(container,data){
   const sessions = state.data[cat].sessions;
   const players = data.players || [];
 
-  const dates = Object.keys(sessions).sort().reverse();
+  const dates = Object.keys(sessions)
+  .sort((a,b)=> new Date(b) - new Date(a)); // más reciente arriba
 
   container.innerHTML = `
     <h2>Tomar asistencia</h2>
 
     <div class="session-list">
       ${dates.map(date=>{
-        const s = sessions[date];
-        return `
-          <button class="session-btn" data-date="${date}">
-            ${date} ${s.closed?"✅":""}
-          </button>
-        `;
-      }).join("")}
+  const s = sessions[date];
+  return `
+    <button class="session-btn" data-date="${date}">
+      ${formatDate(date)} ${s.closed?"✅":""}
+    </button>
+  `;
+}).join("")}
     </div>
 
     <div id="attendance-area"></div>
