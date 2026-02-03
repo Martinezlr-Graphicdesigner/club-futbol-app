@@ -109,7 +109,7 @@ function generateYearSessions(cat){
 
     const day = d.getDay();
 
-    // Martes (2), Jueves (4), Sábado (6)
+    // Martes, Jueves y Sábado
     if(day===2 || day===4 || day===6){
 
       const key = getLocalDateKey(d);
@@ -117,8 +117,14 @@ function generateYearSessions(cat){
       if(!sessions[key]){
         sessions[key]={
           closed:false,
-          attendance:{}
+          attendance:{},
+          note:""
         };
+      } else {
+        // 👇 asegura compatibilidad con sesiones viejas
+        if(sessions[key].note === undefined){
+          sessions[key].note = "";
+        }
       }
     }
 
@@ -159,6 +165,56 @@ function generateYearSessions(cat){
   document.getElementById("confirm-att").onclick=()=>{
     saveAttendanceDate(dateKey);
   };
+}
+
+function openSessionDetail(dateKey){
+
+  const cat = state.user.category;
+  const session = state.data[cat].sessions[dateKey];
+  const isAdmin = state.user.role==="admin";
+
+  const area = document.getElementById("modal-container");
+
+  area.innerHTML = `
+    <div class="modal-overlay">
+      <div class="detail-modal">
+
+        <h3>${formatDate(dateKey)}</h3>
+
+        ${
+          isAdmin
+          ? `
+            <textarea id="session-note"
+              placeholder="Descripción del entrenamiento..."
+              style="width:100%;height:120px;">${session.note || ""}</textarea>
+
+            <button onclick="saveSessionNote('${dateKey}')">
+              Guardar
+            </button>
+          `
+          : `
+            <p>${session.note || "Sin descripción"}</p>
+          `
+        }
+
+        <button onclick="closeTraining()">Cerrar</button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveSessionNote(dateKey){
+
+  const cat = state.user.category;
+  const val = document.getElementById("session-note").value;
+
+  state.data[cat].sessions[dateKey].note = val;
+
+  saveData();
+  closeTraining();
+
+  showToast("Descripción guardada");
 }
 
 function saveAttendanceDate(dateKey){
@@ -545,7 +601,7 @@ function renderAgenda(container, data){
       if(!label) return;
 
       html += `
-        <div class="annual-card" onclick="openAttendance('${dateKey}')">
+        <div class="annual-card" onclick="openSessionDetail('${dateKey}')">
           <strong>${label}</strong>
           <div>${formatDate(dateKey)}</div>
         </div>
