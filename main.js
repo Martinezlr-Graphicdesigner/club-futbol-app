@@ -440,6 +440,11 @@ function formatDate(dateKey){
   return `${d}/${m}/${y.slice(2)}`;
 }
 
+function formatDateFull(dateKey){
+  const [y,m,d] = dateKey.split("-");
+  return `${d}-${m}-${y}`;
+}
+
 function getMonthLabel(year,month){
   return new Date(year,month)
     .toLocaleString("es-AR",{month:"long",year:"numeric"});
@@ -578,95 +583,42 @@ function renderAgenda(container,data){
   const cat = state.user.category;
   const sessions = state.data[cat].sessions || {};
 
-  // 👉 ordenar fechas
   const todayKey = getLocalDateKey(new Date());
 
+  // ordenar fechas futuras
   const orderedKeys = Object.keys(sessions)
     .sort()
     .filter(k => k >= todayKey);
 
-  let html = `
-    <h1>Agenda anual</h1>
+  let html = `<h2>Agenda anual</h2>`;
+  html += `<div class="agenda-grid">`;
 
-    <select id="month-filter">
-      <option value="all">Todo el año</option>
-      <option value="0">Enero</option>
-      <option value="1">Febrero</option>
-      <option value="2">Marzo</option>
-      <option value="3">Abril</option>
-      <option value="4">Mayo</option>
-      <option value="5">Junio</option>
-      <option value="6">Julio</option>
-      <option value="7">Agosto</option>
-      <option value="8">Septiembre</option>
-      <option value="9">Octubre</option>
-      <option value="10">Noviembre</option>
-      <option value="11">Diciembre</option>
-    </select>
-
-    <div class="annual-grid">
-  `;
-
-  // 👉 generar tarjetas
-  orderedKeys.forEach(dateKey=>{
+  orderedKeys.forEach(dateKey => {
 
     const s = sessions[dateKey];
+    const dateObj = new Date(dateKey);
+    const day = dateObj.getDay();
 
-    const d = new Date(dateKey);
-    const day = d.getDay();
+    // detectar tipo
+    const isMatch = day === 6; // sábado
+    const label = isMatch ? "Partido" : "Entrenamiento";
 
-    let label =
-      day===2 ? "Entrenamiento (Mar)" :
-      day===4 ? "Entrenamiento (Jue)" :
-      "Partido (Sáb)";
-
-    html+=`
-      <div class="annual-card"
+    html += `
+      <div class="agenda-card"
            onclick="openSessionDetail('${dateKey}')">
 
         <strong>${label}</strong>
-        <div>${dateKey}</div>
+        <div>${formatDateFull(dateKey)}</div>
 
-        ${
-          s.note && s.note.trim()!==""
-          ? `<span class="note-dot">🟢 Con planificación</span>`
-          : `<span class="note-dot-empty">⚪ Sin planificación</span>`
-        }
+        ${s.closed ? "<small>✔ Cerrado</small>" : ""}
 
       </div>
     `;
   });
 
-  html += `
-    </div>
-    <div id="modal-container"></div>
-  `;
+  html += `</div><div id="modal-container"></div>`;
 
   container.innerHTML = html;
-
-  // 👉 FILTRO POR MES
-  document.getElementById("month-filter")
-    .addEventListener("change", e=>{
-
-      const m = e.target.value;
-
-      document.querySelectorAll(".annual-card")
-        .forEach(card=>{
-
-          if(m==="all"){
-            card.style.display="block";
-            return;
-          }
-
-          const date = new Date(
-            card.querySelector("div").textContent
-          );
-
-          card.style.display =
-            date.getMonth()==m ? "block":"none";
-        });
-    });
-
 }
 
 /**************************************************
