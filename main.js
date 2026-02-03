@@ -326,35 +326,6 @@ function renderHome(container, data) {
   `;
 }
 
-function openTrainingDetail(w,day){
-
-  const week = state.data[state.user.category].agenda[w];
-  const isAdmin = state.user.role==="admin";
-
-  const text = day==="tue" ? week.tue : week.thu;
-
-  document.getElementById("modal-container").innerHTML=`
-    <div class="modal-overlay">
-      <div class="detail-modal">
-
-        <h3>${day==="tue"?"Martes":"Jueves"}</h3>
-        <p><strong>${week.title}</strong></p>
-
-        ${
-          isAdmin
-          ? `<textarea id="edit-text">${text||""}</textarea>
-             <button onclick="saveTrainingText(${w},'${day}')">
-               Guardar
-             </button>`
-          : `<p>${text||"Sin descripción"}</p>`
-        }
-
-        <button onclick="closeTraining()">Cerrar</button>
-
-      </div>
-    </div>
-  `;
-}
 
 function openTrainingDetail(w,day){
 
@@ -544,6 +515,49 @@ function renderLista(container,data){
     }
     draw();
   };
+}
+
+function renderAgenda(container, data){
+
+  const cat = state.user.category;
+
+  generateYearSessions(cat);
+
+  const sessions = state.data[cat].sessions || {};
+
+  let html = `
+    <h1>Agenda anual</h1>
+    <div class="annual-grid">
+  `;
+
+  Object.keys(sessions)
+    .sort()
+    .forEach(dateKey=>{
+
+      const d = new Date(dateKey+"T00:00:00");
+      const day = d.getDay();
+
+      let label = "";
+      if(day===2) label="Entrenamiento";
+      if(day===4) label="Entrenamiento";
+      if(day===6) label="Partido";
+
+      if(!label) return;
+
+      html += `
+        <div class="annual-card" onclick="openAttendance('${dateKey}')">
+          <strong>${label}</strong>
+          <div>${formatDate(dateKey)}</div>
+        </div>
+      `;
+    });
+
+  html += `
+    </div>
+    <div id="modal-container"></div>
+  `;
+
+  container.innerHTML = html;
 }
 
 /**************************************************
