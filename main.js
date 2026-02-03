@@ -94,6 +94,12 @@ function getLocalDateKey(date){
 
 function generateYearSessions(cat){
 
+  if(!state.data[cat]) return;
+
+  if(!state.data[cat].sessions){
+    state.data[cat].sessions = {};
+  }
+
   const sessions = state.data[cat].sessions;
   const year = new Date().getFullYear();
 
@@ -103,7 +109,9 @@ function generateYearSessions(cat){
 
     const day = d.getDay();
 
-    if(day === 2 || day === 4 || day === 6){
+    // Martes (2), Jueves (4), Sábado (6)
+    if(day===2 || day===4 || day===6){
+
       const key = getLocalDateKey(d);
 
       if(!sessions[key]){
@@ -1177,43 +1185,38 @@ function renderLista(container,data){
 function renderAgenda(container, data){
 
   const cat = state.user.category;
+
   generateYearSessions(cat);
 
   const sessions = state.data[cat].sessions || {};
 
-  let cards = "";
+  let html = "<h1>Agenda anual</h1>";
+  html += "<div class='annual-grid'>";
 
-  Object.keys(sessions)
-    .sort()
-    .forEach(dateKey => {
+  Object.keys(sessions).forEach(dateKey=>{
 
-      const session = sessions[dateKey];
-      const d = new Date(dateKey);
-      const day = d.getDay();
+    const s = sessions[dateKey];
 
-      // Solo martes y jueves
-      if(day !== 2 && day !== 4) return;
+    const d = new Date(dateKey);
+    const day = d.getDay();
 
-      const dayName = day === 2 ? "Martes" : "Jueves";
+    let label = "";
 
-      cards += `
-        <div class="annual-card" onclick="openAttendance('${dateKey}')">
-          <strong>${dayName}</strong>
-          <div>${formatDate(dateKey)}</div>
-          <small>${session.closed ? "✔ Cerrado" : "Abierto"}</small>
-        </div>
-      `;
-    });
+    if(day===2) label="Entrenamiento";
+    if(day===4) label="Entrenamiento";
+    if(day===6) label="Partido";
 
-  container.innerHTML = `
-    <h1>Agenda anual</h1>
+    html+=`
+      <div class="annual-card" onclick="openAttendance('${dateKey}')">
+        <strong>${label}</strong>
+        <div>${dateKey}</div>
+      </div>
+    `;
+  });
 
-    <div class="annual-grid">
-      ${cards}
-    </div>
+  html+="</div>";
 
-    <div id="attendance-area"></div>
-  `;
+  container.innerHTML = html;
 }
 
 /**************************************************
