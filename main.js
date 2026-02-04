@@ -76,7 +76,15 @@ function renderMainLayout() {
  * DATA
  **************************************************/
 function loadData() {
-  state.data = {};
+
+  const local = localStorage.getItem("wilcoop_data");
+
+  if(local){
+    state.data = JSON.parse(local);
+  } else {
+    state.data = {};
+  }
+
   ensureDataStructure();
   ensureAgendaTemplate();
   renderMainLayout();
@@ -258,8 +266,6 @@ function ensureDataStructure(){
 
   if(!state.data.shared.matches){
     state.data.shared.matches = {};
-
-}
 
 }
 
@@ -514,8 +520,9 @@ function renderCalendar(container, year, month){
 
     // 👉 PARTIDOS SABADO (ROJO)
     if(isSaturday){
-      className+=" match";
-    }
+  className += " match";
+  cell.onclick = () => openMatchDetail(dateKey);
+}
 
     // Hoy
     if(
