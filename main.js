@@ -515,9 +515,9 @@ function renderCalendar(container, year, month){
     cell.innerHTML=`<div class="day-number">${day}</div>`;
 
     // Click asistencia
-    if(isTuesday||isThursday){
-      cell.onclick=()=> openAttendance(dateKey);
-    }
+    if(isTuesday||isThursday||isSaturday){
+  cell.onclick=()=> openAttendance(dateKey);
+}
 
     grid.appendChild(cell);
   }
@@ -528,14 +528,52 @@ function renderCalendar(container, year, month){
 
 function renderLista(container,data){
 
+  const tab = state.listaTab || "toma";
+
+  container.innerHTML=`
+    <h1>Lista</h1>
+
+    <div class="subnav">
+      <button id="tab-toma" class="${tab==="toma"?"active":""}">
+        Tomar lista
+      </button>
+
+      <button id="tab-stats" class="${tab==="stats"?"active":""}">
+        Estadísticas
+      </button>
+    </div>
+
+    <div id="lista-content"></div>
+  `;
+
+  document.getElementById("tab-toma").onclick=()=>{
+    state.listaTab="toma";
+    renderScreen("lista");
+  };
+
+  document.getElementById("tab-stats").onclick=()=>{
+    state.listaTab="stats";
+    renderScreen("lista");
+  };
+
+  const content=document.getElementById("lista-content");
+
+  if(tab==="toma"){
+    renderListaToma(content,data);
+  }else{
+    renderListaStats(content,data);
+  }
+}
+
+function renderListaToma(container,data){
+
   const cat = state.user.category;
 
   generateYearSessions(cat);
 
-  const today = new Date();
+  const today=new Date();
 
-  // Header con mes y año
-  container.innerHTML = `
+  container.innerHTML=`
     <div class="cal-header">
       <button id="prev-month">◀</button>
       <h3 id="cal-title"></h3>
@@ -546,36 +584,71 @@ function renderLista(container,data){
     <div id="attendance-area"></div>
   `;
 
-  let currentYear = today.getFullYear();
-  let currentMonth = today.getMonth();
+  let currentYear=today.getFullYear();
+  let currentMonth=today.getMonth();
 
-  const calendarDiv = document.getElementById("calendar");
-  const title = document.getElementById("cal-title");
+  const calendarDiv=document.getElementById("calendar");
+  const title=document.getElementById("cal-title");
 
   function draw(){
-    title.textContent = getMonthLabel(currentYear,currentMonth);
+    title.textContent=getMonthLabel(currentYear,currentMonth);
     renderCalendar(calendarDiv,currentYear,currentMonth);
   }
 
   draw();
 
-  document.getElementById("prev-month").onclick = ()=>{
+  document.getElementById("prev-month").onclick=()=>{
     currentMonth--;
-    if(currentMonth<0){
-      currentMonth=11;
-      currentYear--;
-    }
+    if(currentMonth<0){currentMonth=11;currentYear--;}
     draw();
   };
 
-  document.getElementById("next-month").onclick = ()=>{
+  document.getElementById("next-month").onclick=()=>{
     currentMonth++;
-    if(currentMonth>11){
-      currentMonth=0;
-      currentYear++;
-    }
+    if(currentMonth>11){currentMonth=0;currentYear++;}
     draw();
   };
+}
+
+function renderListaStats(container,data){
+
+  const cat=state.user.category;
+  const players=data.players||[];
+  const sessions=data.sessions||{};
+
+  let html="<h3>Estadísticas</h3>";
+
+  players.forEach(p=>{
+
+    let present=0;
+    let absent=0;
+
+    Object.values(sessions).forEach(s=>{
+      if(!s.attendance) return;
+
+      if(s.attendance[p.id]===true) present++;
+      if(s.attendance[p.id]===false) absent++;
+    });
+
+    const total=present+absent;
+    const percPres=total?Math.round((present/total)*100):0;
+    const percAbs=total?Math.round((absent/total)*100):0;
+
+    html+=`
+      <div class="player-card">
+        <strong>${p.name}</strong>
+
+        <div>Presentes: ${present}</div>
+        <div>Ausentes: ${absent}</div>
+        <div>Total: ${total}</div>
+
+        <div>% Presencia: ${percPres}%</div>
+        <div>% Ausencia: ${percAbs}%</div>
+      </div>
+    `;
+  });
+
+  container.innerHTML=html;
 }
 
 function renderAgenda(container,data){
