@@ -39,6 +39,11 @@ function checkSession() {
   } else {
     showLogin();
   }
+
+ function showToast(msg){
+   console.log("TOAST:", msg);
+  }
+
 }
 
 /**************************************************
@@ -320,7 +325,7 @@ function renderScreen(screen) {
       renderPlantel(container, data);
       break;
     case "stats":
-      renderStats(container, data);
+      renderListaStats(container, data);
       break;
   }
 }
@@ -1069,7 +1074,16 @@ function saveDataFirebase(data) {
 }
 
 function loadDataFirebase(cb) {
-  database.ref("clubData").once("value").then(snap => cb(snap.val()));
+
+  if(typeof database === "undefined"){
+    console.warn("Firebase no disponible, usando localStorage");
+    cb(JSON.parse(localStorage.getItem("wilcoop_data")) || {});
+    return;
+  }
+
+  database.ref("clubData")
+    .once("value")
+    .then(snap => cb(snap.val()));
 }
 
 /**************************************************
