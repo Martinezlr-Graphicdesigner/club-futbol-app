@@ -251,6 +251,10 @@ function ensureDataStructure(){
   if(!state.data.shared){
     state.data.shared={matches:[]};
   }
+
+  if(!state.data.shared.matches){
+    state.data.shared.matches = {};
+
 }
 
 /**************************************************
@@ -325,7 +329,15 @@ function renderHome(container, data) {
   const isAdmin = state.user.role === "admin";
 
   // Próximo partido (si existe)
-  const nextMatch = (data.matches || [])[0];
+  const todayKey=getLocalDateKey(new Date());
+
+const nextMatchKey = Object.keys(state.data.shared.matches)
+  .sort()
+  .find(k=>k>=todayKey);
+
+const nextMatch = nextMatchKey
+  ? state.data.shared.matches[nextMatchKey]
+  : null;
 
   container.innerHTML = `
     <section class="section">
@@ -360,9 +372,11 @@ function renderHome(container, data) {
         <h3>Próximo partido</h3>
 
         ${nextMatch ? `
-          <p><strong>Fecha:</strong> ${nextMatch.date}</p>
-          <p><strong>Rival:</strong> ${nextMatch.rival}</p>
-          <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
+  <p><strong>Fecha:</strong> ${formatDateFull(nextMatchKey)}</p>
+  <p><strong>Rival:</strong> ${nextMatch.rival}</p>
+  <p><strong>Condición:</strong> ${nextMatch.home?"Local":"Visitante"}</p>
+  <p><strong>Lugar:</strong> ${nextMatch.location}</p>
+` : "<p>No hay partidos cargados</p>"}
 
           ${isAdmin ? `
             <button class="btn-outline" onclick="navigateTo('partidos')">
@@ -515,12 +529,15 @@ function renderCalendar(container, year, month){
     cell.innerHTML=`<div class="day-number">${day}</div>`;
 
     // Click asistencia
-    if(isTuesday||isThursday||isSaturday){
-  cell.onclick=()=> openAttendance(dateKey);
-}
+    if(isSaturday){
+    cell.onclick=()=> openMatchDetail(dateKey);
+   }
+    else if(isTuesday||isThursday){
+    cell.onclick=()=> openAttendance(dateKey);
+   }
 
     grid.appendChild(cell);
-  }
+   }
 
   container.appendChild(grid);
 }
@@ -545,6 +562,15 @@ function renderLista(container,data){
 
     <div id="lista-content"></div>
   `;
+      <button id="tab-matches"
+       class="${tab==="matches"?"active":""}">
+        Partidos
+      </button>
+
+  document.getElementById("tab-matches").onclick=()=>{
+  state.listaTab="matches";
+  renderScreen("lista");
+ };
 
   document.getElementById("tab-toma").onclick=()=>{
     state.listaTab="toma";
@@ -559,10 +585,13 @@ function renderLista(container,data){
   const content=document.getElementById("lista-content");
 
   if(tab==="toma"){
-    renderListaToma(content,data);
-  }else{
-    renderListaStats(content,data);
-  }
+  renderListaToma(content,data);
+}
+else if(tab==="stats"){
+  renderListaStats(content,data);
+}
+else{
+  renderListaMatches(content);
 }
 
 function renderListaToma(container,data){
@@ -608,6 +637,36 @@ function renderListaToma(container,data){
     if(currentMonth>11){currentMonth=0;currentYear++;}
     draw();
   };
+}
+
+function renderListaMatches(container){
+
+  const matches=state.data.shared.matches||{};
+
+  let html="<h3>Resultados</h3>";
+
+  Object.keys(matches).sort().forEach(k=>{
+
+    const m=matches[k];
+
+    html+=`
+      <div class="player-card">
+        <strong>${formatDateFull(k)}</strong>
+        <div>${m.rival||""}</div>
+
+        <input placeholder="Resultado (x-x)"
+          value="${m.result||""}"
+          onchange="saveResult('${k}',this.value)">
+      </div>
+    `;
+  });
+
+  container.innerHTML=html;
+}
+
+function saveResult(key,val){
+  state.data.shared.matches[key].result=val;
+  saveData();
 }
 
 function renderListaStats(container,data){
@@ -772,6 +831,132 @@ function renderAgenda(container,data){
     state.agendaMonth=parseInt(e.target.value);
     renderScreen("agenda");
   };
+}
+
+function openMatchDetail(dateKey){
+
+  const isAdmin = state.user.role==="admin";
+  const match = state.data.shared.matches[dateKey] || {};
+
+  const area=document.getElementById("modal-container");
+
+  area.innerHTML=`
+    <div class="modal-overlay">
+      <div class="detail-modal">
+
+        <h3>Partido ${formatDateFull(dateKey)}</h3>
+
+        ${
+          isAdmin ? `
+            <input id="m-rival" placeholder="Rival"
+              value="${match.rival||""}">
+
+            <input id="m-location" placeholder="Dirección"
+              value="${match.location||""}">
+
+            <select id="m-home">
+              <option value="true" ${match.home?"selected":""}>Local</option>
+              <option value="false" ${match.home===false?"selected":""}>Visitante</option>
+            </select>
+
+            <button onclick="saveMatch('${dateKey}')">
+              Guardar partido
+            </button>
+          `
+          :
+          `
+            <p><strong>${match.rival||"Sin rival"}</strong></p>
+            <p>${match.home?"Local":"Visitante"}</p>
+            <p>${match.location||""}</p>
+          `
+        }
+
+        <button onclick="openMatchAttendance('${dateKey}')">
+          Tomar lista
+        </button>
+
+        <button onclick="closeTraining()">Cerrar</button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveMatch(dateKey){
+
+  state.data.shared.matches[dateKey]={
+    rival:document.getElementById("m-rival").value,
+    location:document.getElementById("m-location").value,
+    home:document.getElementById("m-home").value==="true",
+    result:"",
+    attendance:{}
+  };
+
+  saveData();
+  closeTraining();
+  showToast("Partido guardado");
+}
+
+function openMatchAttendance(dateKey){
+
+  const cat=state.user.category;
+  const players=state.data[cat].players||[];
+
+  const match=state.data.shared.matches[dateKey];
+
+  if(!match.attendance){
+    match.attendance={};
+  }
+
+  const area=document.getElementById("attendance-area");
+
+  area.innerHTML=`
+    <h3>Asistencia partido</h3>
+
+    ${players.map(p=>`
+      <label>
+        <input type="checkbox"
+          data-id="${p.id}"
+          ${match.attendance[p.id]?"checked":""}>
+        ${p.name}
+      </label>
+    `).join("")}
+
+    <button onclick="saveMatchAttendance('${dateKey}')">
+      Confirmar
+    </button>
+  `;
+}
+
+function openMatchAttendance(dateKey){
+
+  const cat=state.user.category;
+  const players=state.data[cat].players||[];
+
+  const match=state.data.shared.matches[dateKey];
+
+  if(!match.attendance){
+    match.attendance={};
+  }
+
+  const area=document.getElementById("attendance-area");
+
+  area.innerHTML=`
+    <h3>Asistencia partido</h3>
+
+    ${players.map(p=>`
+      <label>
+        <input type="checkbox"
+          data-id="${p.id}"
+          ${match.attendance[p.id]?"checked":""}>
+        ${p.name}
+      </label>
+    `).join("")}
+
+    <button onclick="saveMatchAttendance('${dateKey}')">
+      Confirmar
+    </button>
+  `;
 }
 
 /**************************************************
