@@ -261,11 +261,12 @@ function ensureDataStructure(){
   });
 
   if(!state.data.shared){
-    state.data.shared={matches:{}};
+    state.data.shared = { matches:{} };
   }
 
   if(!state.data.shared.matches){
     state.data.shared.matches = {};
+  }
 
 }
 
