@@ -123,35 +123,36 @@ function generateYearSessions(cat){
   const sessions = state.data[cat].sessions;
   const year = new Date().getFullYear();
 
+  let changed = false;
   let d = new Date(year,0,1);
 
   while(d.getFullYear() === year){
 
     const day = d.getDay();
 
-    // Martes, Jueves y Sábado
     if(day===2 || day===4 || day===6){
 
       const key = getLocalDateKey(d);
 
       if(!sessions[key]){
-        sessions[key]={
+        sessions[key] = {
           closed:false,
           attendance:{},
           note:""
         };
-      } else {
-        // 👇 asegura compatibilidad con sesiones viejas
-        if(sessions[key].note === undefined){
-          sessions[key].note = "";
-        }
+        changed = true;
+      } else if(sessions[key].note === undefined){
+        sessions[key].note = "";
+        changed = true;
       }
     }
 
     d.setDate(d.getDate()+1);
   }
 
-  saveData();
+  if(changed){
+    saveData();
+  }
 }
 
 
@@ -1089,4 +1090,10 @@ function loadDataFirebase(cb) {
 /**************************************************
  * START
  **************************************************/
+
+window.addEventListener("beforeunload", () => {
+  saveData();
+});
+
+
 init();
