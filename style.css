@@ -572,6 +572,11 @@ button {
     transform: scale(0.96);
 }
 
+.annual-card.closed{
+  background:#7bd389;
+  color:white;
+}
+
 .week-tag {
     font-size: 0.75rem;
     font-weight: 800;
