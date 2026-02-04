@@ -584,7 +584,6 @@ function renderAgenda(container,data){
   generateYearSessions(cat);
 
   const sessions = state.data[cat].sessions || {};
-
   const todayKey = getLocalDateKey(new Date());
 
   const orderedKeys = Object.keys(sessions).sort();
@@ -593,12 +592,14 @@ function renderAgenda(container,data){
 
   orderedKeys.forEach(dateKey => {
 
-    const s = sessions[dateKey];
-    const dateObj = new Date(dateKey);
+    // ✅ FIX DE FECHA
+    const [y,m,d] = dateKey.split("-");
+    const dateObj = new Date(y, m-1, d);
+
     const day = dateObj.getDay();
 
     const isTraining = day===2 || day===4;
-    if(!isTraining) return; // solo entrenamientos
+    if(!isTraining) return;
 
     const isToday = dateKey === todayKey;
     const isPast = dateKey < todayKey;
@@ -626,11 +627,9 @@ function renderAgenda(container,data){
 
   container.innerHTML = `
     <h1>Agenda</h1>
-
     <div class="annual-grid">
       ${cards}
     </div>
-
     <div id="modal-container"></div>
   `;
 }
