@@ -380,27 +380,24 @@ const nextMatch = nextMatchKey
         ${nextMatch ? `
   <p><strong>Fecha:</strong> ${formatDateFull(nextMatchKey)}</p>
   <p><strong>Rival:</strong> ${nextMatch.rival}</p>
-  <p><strong>Condición:</strong> ${nextMatch.home?"Local":"Visitante"}</p>
+  <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
   <p><strong>Lugar:</strong> ${nextMatch.location}</p>
-` : "<p>No hay partidos cargados</p>"}
 
-          ${isAdmin ? `
-            <button class="btn-outline" onclick="navigateTo('partidos')">
-              Cargar resultado
-            </button>
-          ` : ""}
-        ` : `
-          <p>No hay partidos cargados</p>
-          ${isAdmin ? `
-            <button class="btn-outline" onclick="navigateTo('partidos')">
-              Cargar partido
-            </button>
-          ` : ""}
-        `}
-      </div>
-    </section>
-  `;
-}
+  ${isAdmin ? `
+    <button class="btn-outline" onclick="navigateTo('partidos')">
+      Cargar resultado
+    </button>
+  ` : ""}
+
+` : `
+  <p>No hay partidos cargados</p>
+
+  ${isAdmin ? `
+    <button class="btn-outline" onclick="navigateTo('partidos')">
+      Cargar partido
+    </button>
+  ` : ""}
+`}
 
 
 function openTrainingDetail(w,day){
