@@ -372,43 +372,26 @@ function renderHome(container, data) {
         <button class="btn-primary" onclick="navigateTo('plantel')">
           👥 Plantel
         </button>
-
-        ${isAdmin ? `
-          <button class="btn-primary" onclick="navigateTo('lista')">
-            ⚽ Partidos
-          </button>
-        ` : ""}
       </div>
 
       <div class="card">
         <h3>Próximo partido</h3>
 
-        ${nextMatch ? `
-          <p><strong>Fecha:</strong> ${formatDateFull(nextMatchKey)}</p>
-          <p><strong>Rival:</strong> ${nextMatch.rival}</p>
-          <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
-          <p><strong>Lugar:</strong> ${nextMatch.location}</p>
+        ${
+          nextMatch
+            ? `
+              <p><strong>Fecha:</strong> ${formatDateFull(nextMatchKey)}</p>
+              <p><strong>Rival:</strong> ${nextMatch.rival}</p>
+              <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
+              <p><strong>Lugar:</strong> ${nextMatch.location}</p>
+            `
+            : `<p>No hay partidos cargados</p>`
+        }
 
-          ${isAdmin ? `
-            <button class="btn-outline" onclick="navigateTo('lista')">
-              Cargar resultado
-            </button>
-          ` : ""}
-
-        ` : `
-          <p>No hay partidos cargados</p>
-
-          ${isAdmin ? `
-            <button class="btn-outline" onclick="navigateTo('lista')">
-              Cargar partido
-            </button>
-          ` : ""}
-        `}
       </div>
     </section>
   `;
 }
-
 
 function openTrainingDetail(w,day){
 
