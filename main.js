@@ -332,18 +332,18 @@ function renderScreen(screen) {
  * SCREENS
  **************************************************/
 function renderHome(container, data) {
+
   const isAdmin = state.user.role === "admin";
 
-  // Próximo partido (si existe)
-  const todayKey=getLocalDateKey(new Date());
+  const todayKey = getLocalDateKey(new Date());
 
-const nextMatchKey = Object.keys(state.data.shared.matches)
-  .sort()
-  .find(k=>k>=todayKey);
+  const nextMatchKey = Object.keys(state.data.shared.matches)
+    .sort()
+    .find(k => k >= todayKey);
 
-const nextMatch = nextMatchKey
-  ? state.data.shared.matches[nextMatchKey]
-  : null;
+  const nextMatch = nextMatchKey
+    ? state.data.shared.matches[nextMatchKey]
+    : null;
 
   container.innerHTML = `
     <section class="section">
@@ -378,26 +378,30 @@ const nextMatch = nextMatchKey
         <h3>Próximo partido</h3>
 
         ${nextMatch ? `
-  <p><strong>Fecha:</strong> ${formatDateFull(nextMatchKey)}</p>
-  <p><strong>Rival:</strong> ${nextMatch.rival}</p>
-  <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
-  <p><strong>Lugar:</strong> ${nextMatch.location}</p>
+          <p><strong>Fecha:</strong> ${formatDateFull(nextMatchKey)}</p>
+          <p><strong>Rival:</strong> ${nextMatch.rival}</p>
+          <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
+          <p><strong>Lugar:</strong> ${nextMatch.location}</p>
 
-  ${isAdmin ? `
-    <button class="btn-outline" onclick="navigateTo('partidos')">
-      Cargar resultado
-    </button>
-  ` : ""}
+          ${isAdmin ? `
+            <button class="btn-outline" onclick="navigateTo('lista')">
+              Cargar resultado
+            </button>
+          ` : ""}
 
-` : `
-  <p>No hay partidos cargados</p>
+        ` : `
+          <p>No hay partidos cargados</p>
 
-  ${isAdmin ? `
-    <button class="btn-outline" onclick="navigateTo('partidos')">
-      Cargar partido
-    </button>
-  ` : ""}
-`}
+          ${isAdmin ? `
+            <button class="btn-outline" onclick="navigateTo('lista')">
+              Cargar partido
+            </button>
+          ` : ""}
+        `}
+      </div>
+    </section>
+  `;
+}
 
 
 function openTrainingDetail(w,day){
