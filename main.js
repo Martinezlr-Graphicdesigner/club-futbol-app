@@ -437,7 +437,10 @@ function openTrainingDetail(w,day){
   `;
 }
 
-function closeTraining(){
+function closeTraining(e){
+
+  if(e && e.target !== e.currentTarget) return;
+
   document.getElementById("modal-container").innerHTML="";
 }
 
@@ -488,7 +491,7 @@ function renderCalendar(container, year, month){
   const grid = document.createElement("div");
   grid.className = "cal-grid";
 
-  // Espacios vacíos
+  // espacios vacíos inicio
   for(let i=0;i<startWeekDay;i++){
     const empty=document.createElement("div");
     empty.className="cal-cell empty";
@@ -510,56 +513,63 @@ function renderCalendar(container, year, month){
     const isThursday = dayOfWeek===4;
     const isSaturday = dayOfWeek===6;
 
-    // 👉 ENTRENAMIENTOS
-    if(isTuesday||isThursday){
+    // ENTRENAMIENTOS
+    if(isTuesday || isThursday){
       className+=" training";
     }
 
-    // 👉 PARTIDOS SABADO (ROJO)
+    // PARTIDOS
     if(isSaturday){
-  className += " match";
-  cell.onclick=()=>{
-  state.selectedDate = dateKey;
-  openAttendance(dateKey);
-  renderScreen("lista");
-};
-}
+      className+=" match";
+    }
 
-    const selectedKey = state.selectedDate;
+    // HOY
+    if(
+      day===today.getDate() &&
+      month===today.getMonth() &&
+      year===today.getFullYear()
+    ){
+      className+=" today";
+    }
 
-// HOY
-if(
-  day===today.getDate() &&
-  month===today.getMonth() &&
-  year===today.getFullYear()
-){
-  className+=" today";
-}
-
-// SELECCIONADO
-if(dateKey === selectedKey){
-  className+=" selected";
-}
-
-    // Cerrado
+    // SESIÓN CERRADA
     const session = state.data[cat].sessions?.[dateKey];
     if(session?.closed){
       className+=" closed";
     }
 
+    // PARTIDO CERRADO
+    const match = state.data.shared.matches?.[dateKey];
+    if(match?.closed){
+      className+=" closed";
+    }
+
+    // FECHA SELECCIONADA (borde negro)
+    if(state.selectedDate === dateKey){
+      className+=" selected";
+    }
+
     cell.className=className;
     cell.innerHTML=`<div class="day-number">${day}</div>`;
 
-    // Click asistencia
+    // CLICK
     if(isSaturday){
-    cell.onclick=()=> openMatchDetail(dateKey);
-   }
-    else if(isTuesday||isThursday){
-    cell.onclick=()=> openAttendance(dateKey);
-   }
+      cell.onclick=()=>{
+        state.selectedDate=dateKey;
+        openMatchDetail(dateKey);
+        renderScreen("lista");
+      };
+    }
+    else if(isTuesday || isThursday){
+      cell.onclick=()=>{
+        state.selectedDate=dateKey;
+        openAttendance(dateKey);
+        renderScreen("lista");
+      };
+    }
 
     grid.appendChild(cell);
-   }
+  }
 
   container.appendChild(grid);
 }
@@ -936,33 +946,56 @@ function saveMatch(dateKey){
 
 function openMatchAttendance(dateKey){
 
-  const cat=state.user.category;
-  const players=state.data[cat].players||[];
+  const cat = state.user.category;
+  const players = state.data[cat].players || [];
+  const isAdmin = state.user.role === "admin";
 
-  const match=state.data.shared.matches[dateKey];
+  const match = state.data.shared.matches[dateKey];
 
   if(!match.attendance){
-    match.attendance={};
+    match.attendance = {};
   }
 
-  const area=document.getElementById("attendance-area");
+  const locked = match.closed === true;
 
-  area.innerHTML=`
+  const area = document.getElementById("attendance-area");
+
+  area.innerHTML = `
     <h3>Asistencia partido</h3>
 
     ${players.map(p=>`
-      <label>
+      <label style="display:block;margin:6px 0;">
         <input type="checkbox"
           data-id="${p.id}"
-          ${match.attendance[p.id]?"checked":""}>
+          ${match.attendance[p.id]?"checked":""}
+          ${(locked && !isAdmin) ? "disabled":""}>
         ${p.name}
       </label>
     `).join("")}
 
-    <button onclick="saveMatchAttendance('${dateKey}')">
-      Confirmar
-    </button>
+    ${(!locked || isAdmin) ? `
+      <button onclick="saveMatchAttendance('${dateKey}')">
+        Confirmar
+      </button>
+    `:"<p>Partido cerrado</p>"}
   `;
+}
+
+function saveMatchAttendance(dateKey){
+
+  const match = state.data.shared.matches[dateKey];
+
+  document.querySelectorAll("#attendance-area input")
+    .forEach(cb=>{
+      match.attendance[cb.dataset.id] = cb.checked;
+    });
+
+  match.closed = true; // 🔒 bloquea partido
+
+  saveData();
+  showToast("Asistencia guardada");
+
+  renderScreen("lista");
 }
 
 /**************************************************

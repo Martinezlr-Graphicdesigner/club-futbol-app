@@ -1179,3 +1179,20 @@ button {
 .cal-cell.selected{
   border:3px solid black;
 }
+
+.cal-cell.selected{
+  outline:3px solid black;
+}
+
+.cal-cell{
+  cursor:pointer;
+  transition:0.15s;
+}
+
+.cal-cell:hover{
+  transform:scale(1.05);
+}
+
+.cal-cell:active{
+  transform:scale(0.95);
+}
