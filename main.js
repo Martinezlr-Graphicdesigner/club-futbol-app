@@ -711,9 +711,11 @@ function saveResult(key,val){
 
 function renderListaStats(container,data){
 
-  const cat=state.user.category;
-  const players=data.players||[];
-  const sessions=data.sessions||{};
+  const cat = state.user.category;
+
+  const players = data.players || [];
+  const sessions = data.sessions || {};
+  const matches = state.data.shared.matches || {};
 
   let html="<h3>Estadísticas</h3>";
 
@@ -722,6 +724,7 @@ function renderListaStats(container,data){
     let present=0;
     let absent=0;
 
+    // ✅ CONTAR ENTRENAMIENTOS
     Object.values(sessions).forEach(s=>{
       if(!s.attendance) return;
 
@@ -729,7 +732,16 @@ function renderListaStats(container,data){
       if(s.attendance[p.id]===false) absent++;
     });
 
+    // ✅ CONTAR PARTIDOS
+    Object.values(matches).forEach(m=>{
+      if(!m.attendance) return;
+
+      if(m.attendance[p.id]===true) present++;
+      if(m.attendance[p.id]===false) absent++;
+    });
+
     const total=present+absent;
+
     const percPres=total?Math.round((present/total)*100):0;
     const percAbs=total?Math.round((absent/total)*100):0;
 
