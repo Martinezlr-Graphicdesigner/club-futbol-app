@@ -905,11 +905,12 @@ function saveMatch(dateKey){
     rival: document.getElementById("m-rival").value,
     location: document.getElementById("m-location").value,
     home: document.getElementById("m-home").value === "true",
-    result:"",
-    attendance:{}
+    result: "",
+    attendance: {}
   };
 
   saveData();
+
   closeTraining();
   showToast("Partido guardado");
 }
@@ -1077,7 +1078,19 @@ function setupEventListeners() {
  * FIREBASE
  **************************************************/
 function saveDataFirebase(data) {
-  database.ref("clubData").set(data);
+
+  if(typeof database === "undefined"){
+    console.warn("Firebase no listo");
+    return;
+  }
+
+  database.ref("clubData").set(data)
+    .then(()=>{
+      console.log("✅ Guardado en Firebase");
+    })
+    .catch(err=>{
+      console.error("❌ Error Firebase:", err);
+    });
 }
 
 function loadDataFirebase(cb) {
