@@ -587,9 +587,7 @@ function renderAgenda(container,data){
 
   const todayKey = getLocalDateKey(new Date());
 
-  const orderedKeys = Object.keys(sessions)
-    .sort()
-    .filter(k => k >= todayKey);
+  const orderedKeys = Object.keys(sessions).sort();
 
   let cards = "";
 
@@ -599,27 +597,26 @@ function renderAgenda(container,data){
     const dateObj = new Date(dateKey);
     const day = dateObj.getDay();
 
-    const isMatch = day === 6;
     const isTraining = day===2 || day===4;
+    if(!isTraining) return; // solo entrenamientos
 
-    const label = isMatch ? "Partido" : "Entrenamiento";
-
-    // 👉 Sesión activa = hoy + entrenamiento + no cerrada
-    const isActive =
-      dateKey === todayKey &&
-      isTraining &&
-      !s.closed;
+    const isToday = dateKey === todayKey;
+    const isPast = dateKey < todayKey;
 
     cards += `
-      <div class="annual-card"
+      <div class="annual-card 
+           ${isPast ? "past-session" : ""}"
            onclick="openSessionDetail('${dateKey}')">
 
-        <strong>${label}</strong>
+        <strong>Entrenamiento</strong>
         <div>${formatDateFull(dateKey)}</div>
 
         ${
-          isActive
-          ? `<div class="active-badge">Sesión activa</div>`
+          isToday
+          ? `<div class="session-active">
+               <span class="dot"></span>
+               Sesión activa
+             </div>`
           : ""
         }
 

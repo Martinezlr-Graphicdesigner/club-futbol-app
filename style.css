@@ -1136,3 +1136,28 @@ button {
   margin-top:6px;
   display:inline-block;
 }
+
+/* Sesiones pasadas en gris */
+.past-session{
+  background:#e5e5e5;
+  opacity:0.7;
+}
+
+/* Texto sesión activa */
+.session-active{
+  color:#27ae60;
+  font-weight:600;
+  margin-top:6px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* Puntito verde */
+.session-active .dot{
+  width:8px;
+  height:8px;
+  background:#27ae60;
+  border-radius:50%;
+  display:inline-block;
+}
