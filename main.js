@@ -75,24 +75,32 @@ function renderMainLayout() {
 /**************************************************
  * DATA
  **************************************************/
-function loadData() {
+function loadData(){
 
-  const local = localStorage.getItem("wilcoop_data");
+  loadDataFirebase((data)=>{
 
-  if(local){
-    state.data = JSON.parse(local);
-  } else {
-    state.data = {};
-  }
+    if(data){
+      state.data = data;
+      console.log("🔥 Datos cargados desde Firebase");
+    } else {
+      state.data = JSON.parse(localStorage.getItem("wilcoop_data")) || {};
+      console.log("💾 Datos cargados desde localStorage");
+    }
 
-  ensureDataStructure();
-  ensureAgendaTemplate();
-  renderMainLayout();
+    ensureDataStructure();
+    ensureAgendaTemplate();
+    renderMainLayout();
+
+  });
+
 }
 
-function saveData() {
+function saveData(){
   localStorage.setItem("wilcoop_data", JSON.stringify(state.data));
-  saveDataFirebase(state.data);
+
+  if(typeof database !== "undefined"){
+    saveDataFirebase(state.data);
+  }
 }
 
 function getLocalDateKey(date){
