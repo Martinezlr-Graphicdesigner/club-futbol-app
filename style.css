@@ -1126,3 +1126,13 @@ button {
   font-size:12px;
   color:#999;
 }
+
+.active-badge{
+  background:#2ecc71;
+  color:white;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  margin-top:6px;
+  display:inline-block;
+}

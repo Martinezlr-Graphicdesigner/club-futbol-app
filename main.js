@@ -581,7 +581,6 @@ function renderLista(container,data){
 function renderAgenda(container,data){
 
   const cat = state.user.category;
-
   generateYearSessions(cat);
 
   const sessions = state.data[cat].sessions || {};
@@ -601,15 +600,28 @@ function renderAgenda(container,data){
     const day = dateObj.getDay();
 
     const isMatch = day === 6;
+    const isTraining = day===2 || day===4;
 
     const label = isMatch ? "Partido" : "Entrenamiento";
 
+    // 👉 Sesión activa = hoy + entrenamiento + no cerrada
+    const isActive =
+      dateKey === todayKey &&
+      isTraining &&
+      !s.closed;
+
     cards += `
-      <div class="annual-card ${s.closed ? "closed" : ""}"
+      <div class="annual-card"
            onclick="openSessionDetail('${dateKey}')">
 
         <strong>${label}</strong>
         <div>${formatDateFull(dateKey)}</div>
+
+        ${
+          isActive
+          ? `<div class="active-badge">Sesión activa</div>`
+          : ""
+        }
 
       </div>
     `;
