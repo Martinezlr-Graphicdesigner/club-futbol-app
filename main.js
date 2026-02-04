@@ -585,13 +585,11 @@ function renderAgenda(container,data){
 
   const todayKey = getLocalDateKey(new Date());
 
-  // ordenar fechas futuras
   const orderedKeys = Object.keys(sessions)
     .sort()
     .filter(k => k >= todayKey);
 
-  let html = `<h2>Agenda anual</h2>`;
-  html += `<div class="agenda-grid">`;
+  let cards = "";
 
   orderedKeys.forEach(dateKey => {
 
@@ -599,26 +597,30 @@ function renderAgenda(container,data){
     const dateObj = new Date(dateKey);
     const day = dateObj.getDay();
 
-    // detectar tipo
-    const isMatch = day === 6; // sábado
+    const isMatch = day === 6;
+
     const label = isMatch ? "Partido" : "Entrenamiento";
 
-    html += `
-      <div class="agenda-card"
+    cards += `
+      <div class="annual-card ${s.closed ? "closed" : ""}"
            onclick="openSessionDetail('${dateKey}')">
 
         <strong>${label}</strong>
         <div>${formatDateFull(dateKey)}</div>
 
-        ${s.closed ? "<small>✔ Cerrado</small>" : ""}
-
       </div>
     `;
   });
 
-  html += `</div><div id="modal-container"></div>`;
+  container.innerHTML = `
+    <h1>Agenda</h1>
 
-  container.innerHTML = html;
+    <div class="annual-grid">
+      ${cards}
+    </div>
+
+    <div id="modal-container"></div>
+  `;
 }
 
 /**************************************************
