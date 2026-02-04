@@ -134,7 +134,7 @@ function generateYearSessions(cat){
   saveData();
 }
 
-;
+
   function openAttendance(dateKey){
 
   const cat = state.user.category;
@@ -364,7 +364,7 @@ const nextMatch = nextMatchKey
         </button>
 
         ${isAdmin ? `
-          <button class="btn-primary" onclick="navigateTo('partidos')">
+          <button class="btn-primary" onclick="navigateTo('lista')">
             ⚽ Partidos
           </button>
         ` : ""}
@@ -710,6 +710,9 @@ function renderListaStats(container,data){
   });
 
   container.innerHTML=html;
+}
+
+
 }
 
 function renderAgenda(container,data){
