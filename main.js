@@ -75,12 +75,10 @@ function renderMainLayout() {
  * DATA
  **************************************************/
 function loadData() {
-  loadDataFirebase((data) => {
-    state.data = data || {};
-    ensureDataStructure();
-    ensureAgendaTemplate();
-    renderMainLayout();
-  });
+  state.data = {};
+  ensureDataStructure();
+  ensureAgendaTemplate();
+  renderMainLayout();
 }
 
 function saveData() {
