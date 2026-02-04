@@ -158,22 +158,28 @@ function generateYearSessions(cat){
 
   const cat = state.user.category;
   const session = state.data[cat].sessions[dateKey];
-  const players = state.data[cat].players || [];
 
-  if(!session.attendance){
-    session.attendance={};
-  }
+  const players = state.data[cat].players || [];
 
   const area = document.getElementById("attendance-area");
 
-  area.innerHTML=`
+  if(players.length === 0){
+    area.innerHTML = "<p>No hay jugadores cargados en el plantel</p>";
+    return;
+  }
+
+  if(!session.attendance){
+    session.attendance = {};
+  }
+
+  area.innerHTML = `
     <h3>${formatDate(dateKey)}</h3>
 
-    ${players.map(p=>`
+    ${players.map(p => `
       <label style="display:block;margin:6px 0;">
         <input type="checkbox"
           data-id="${p.id}"
-          ${session.attendance[p.id]?"checked":""}>
+          ${session.attendance[p.id] ? "checked" : ""}>
         ${p.name}
       </label>
     `).join("")}
@@ -181,7 +187,7 @@ function generateYearSessions(cat){
     <button id="confirm-att">Confirmar asistencia</button>
   `;
 
-  document.getElementById("confirm-att").onclick=()=>{
+  document.getElementById("confirm-att").onclick = () => {
     saveAttendanceDate(dateKey);
   };
 }
@@ -512,17 +518,28 @@ function renderCalendar(container, year, month){
     // 👉 PARTIDOS SABADO (ROJO)
     if(isSaturday){
   className += " match";
-  cell.onclick = () => openMatchDetail(dateKey);
+  cell.onclick=()=>{
+  state.selectedDate = dateKey;
+  openAttendance(dateKey);
+  renderScreen("lista");
+};
 }
 
-    // Hoy
-    if(
-      day===today.getDate() &&
-      month===today.getMonth() &&
-      year===today.getFullYear()
-    ){
-      className+=" today";
-    }
+    const selectedKey = state.selectedDate;
+
+// HOY
+if(
+  day===today.getDate() &&
+  month===today.getMonth() &&
+  year===today.getFullYear()
+){
+  className+=" today";
+}
+
+// SELECCIONADO
+if(dateKey === selectedKey){
+  className+=" selected";
+}
 
     // Cerrado
     const session = state.data[cat].sessions?.[dateKey];
