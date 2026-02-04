@@ -797,67 +797,85 @@ function renderAgenda(container,data){
     const d=new Date(dateKey);
     const m=d.getMonth();
     const y=d.getFullYear();
-
     const label=`${y}-${m}`;
 
     if(!months[label]) months[label]=[];
     months[label].push(dateKey);
   });
 
-  let html="<h2>Agenda</h2>";
+  // selector de mes
+  let monthOptions="";
+  Object.keys(months).sort().forEach(label=>{
+    const [y,m]=label.split("-");
+    const name=new Date(y,m)
+      .toLocaleString("es",{month:"long",year:"numeric"});
+    monthOptions+=`<option value="${label}">${name}</option>`;
+  });
 
-  Object.keys(months)
-    .sort()
-    .forEach(label=>{
+  let html=`
+    <h2>Agenda</h2>
 
-      const [year,month]=label.split("-");
-      const monthName=new Date(year,month)
-        .toLocaleString("es",{month:"long"});
+    <select id="monthFilter">
+      ${monthOptions}
+    </select>
 
-      html+=`<h3 style="margin-top:25px;text-transform:capitalize;">
-        ${monthName} ${year}
-      </h3>`;
-
-      html+=`<div class="annual-grid">`;
-
-      months[label]
-        .sort()
-        .forEach(dateKey=>{
-
-          const s=sessions[dateKey];
-          const date=formatDate(dateKey);
-
-          let status="";
-          let bg="white";
-
-          if(dateKey===todayKey){
-            status=`🟢 Sesión activa`;
-            bg="#E8F5E9";
-          }
-          else if(dateKey<todayKey){
-            status=`Sesión pasada`;
-            bg="#f2f2f2";
-          }
-
-          html+=`
-            <div class="annual-card"
-              onclick="openSessionDetail('${dateKey}')"
-              style="background:${bg};">
-
-              <strong>${date}</strong>
-              <div>Entrenamiento</div>
-              <small>${status}</small>
-
-            </div>
-          `;
-        });
-
-      html+=`</div>`;
-    });
-
-  html+=`<div id="modal-container"></div>`;
+    <div id="agendaList"></div>
+    <div id="modal-container"></div>
+  `;
 
   container.innerHTML=html;
+
+  const select=document.getElementById("monthFilter");
+  const list=document.getElementById("agendaList");
+
+  function drawMonth(label){
+
+    if(!months[label]) return;
+
+    let grid=`<div class="annual-grid">`;
+
+    months[label]
+      .sort()
+      .forEach(dateKey=>{
+
+        const date=formatDate(dateKey);
+
+        let status="";
+        let bg="white";
+
+        if(dateKey===todayKey){
+          status="🟢 Sesión activa";
+          bg="#E8F5E9";
+        }
+        else if(dateKey<todayKey){
+          status="Sesión pasada";
+          bg="#f2f2f2";
+        }
+
+        grid+=`
+          <div class="annual-card"
+            onclick="openSessionDetail('${dateKey}')"
+            style="background:${bg};">
+
+            <strong>${date}</strong>
+            <div>Entrenamiento</div>
+            <small>${status}</small>
+
+          </div>
+        `;
+      });
+
+    grid+="</div>";
+    list.innerHTML=grid;
+  }
+
+  select.onchange=()=>drawMonth(select.value);
+
+  // mes actual por defecto
+  const now=new Date();
+  const current=`${now.getFullYear()}-${now.getMonth()}`;
+  select.value=current;
+  drawMonth(current);
 }
 
 function openMatchDetail(dateKey){
