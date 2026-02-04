@@ -491,14 +491,14 @@ function renderCalendar(container, year, month){
   const grid = document.createElement("div");
   grid.className = "cal-grid";
 
-  // espacios vacíos inicio
+  const cat = state.user.category;
+
+  // espacios vacíos
   for(let i=0;i<startWeekDay;i++){
     const empty=document.createElement("div");
     empty.className="cal-cell empty";
     grid.appendChild(empty);
   }
-
-  const cat = state.user.category;
 
   for(let day=1; day<=totalDays; day++){
 
@@ -513,60 +513,48 @@ function renderCalendar(container, year, month){
     const isThursday = dayOfWeek===4;
     const isSaturday = dayOfWeek===6;
 
-    // ENTRENAMIENTOS
-    if(isTuesday || isThursday){
+    // ENTRENAMIENTO
+    if(isTuesday||isThursday){
       className+=" training";
+      cell.onclick=()=> openAttendance(dateKey);
     }
 
-    // PARTIDOS
+    // PARTIDO
     if(isSaturday){
       className+=" match";
+      cell.onclick=()=> openMatchDetail(dateKey);
     }
 
-    // HOY
+    // hoy o seleccionado
     if(
-      day===today.getDate() &&
-      month===today.getMonth() &&
-      year===today.getFullYear()
+      state.selectedDate===dateKey ||
+      (day===today.getDate() &&
+       month===today.getMonth() &&
+       year===today.getFullYear())
     ){
       className+=" today";
     }
 
-    // SESIÓN CERRADA
+    // cerrado
     const session = state.data[cat].sessions?.[dateKey];
     if(session?.closed){
       className+=" closed";
     }
 
-    // PARTIDO CERRADO
+    // partido guardado
     const match = state.data.shared.matches?.[dateKey];
-    if(match?.closed){
-      className+=" closed";
-    }
-
-    // FECHA SELECCIONADA (borde negro)
-    if(state.selectedDate === dateKey){
-      className+=" selected";
+    if(match){
+      className+=" has-match";
     }
 
     cell.className=className;
     cell.innerHTML=`<div class="day-number">${day}</div>`;
 
-    // CLICK
-    if(isSaturday){
-      cell.onclick=()=>{
-        state.selectedDate=dateKey;
-        openMatchDetail(dateKey);
-        renderScreen("lista");
-      };
-    }
-    else if(isTuesday || isThursday){
-      cell.onclick=()=>{
-        state.selectedDate=dateKey;
-        openAttendance(dateKey);
-        renderScreen("lista");
-      };
-    }
+    // seleccionar fecha
+    cell.addEventListener("click",()=>{
+      state.selectedDate=dateKey;
+      renderScreen("lista");
+    });
 
     grid.appendChild(cell);
   }
@@ -650,30 +638,20 @@ function renderListaToma(container,data){
     <div id="modal-container"></div>
   `;
 
-  let currentYear=today.getFullYear();
-  let currentMonth=today.getMonth();
+  let currentYear = state.calYear || today.getFullYear();
+  let currentMonth = state.calMonth ?? today.getMonth();
 
   const calendarDiv=document.getElementById("calendar");
   const title=document.getElementById("cal-title");
 
   function draw(){
-    title.textContent=getMonthLabel(currentYear,currentMonth);
-    renderCalendar(calendarDiv,currentYear,currentMonth);
-  }
+  title.textContent = getMonthLabel(currentYear,currentMonth);
 
-  draw();
+  // 👉 guardamos mes/año actuales
+  state.calYear = currentYear;
+  state.calMonth = currentMonth;
 
-  document.getElementById("prev-month").onclick=()=>{
-    currentMonth--;
-    if(currentMonth<0){currentMonth=11;currentYear--;}
-    draw();
-  };
-
-  document.getElementById("next-month").onclick=()=>{
-    currentMonth++;
-    if(currentMonth>11){currentMonth=0;currentYear++;}
-    draw();
-  };
+  renderCalendar(calendarDiv,currentYear,currentMonth);
 }
 
 
@@ -1145,19 +1123,7 @@ function setupEventListeners() {
  * FIREBASE
  **************************************************/
 function saveDataFirebase(data) {
-
-  if(typeof database === "undefined"){
-    console.warn("Firebase no listo");
-    return;
-  }
-
-  database.ref("clubData").set(data)
-    .then(()=>{
-      console.log("✅ Guardado en Firebase");
-    })
-    .catch(err=>{
-      console.error("❌ Error Firebase:", err);
-    });
+  database.ref("clubData").update(data);
 }
 
 function loadDataFirebase(cb) {

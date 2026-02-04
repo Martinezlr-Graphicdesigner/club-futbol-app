@@ -1162,6 +1162,7 @@ button {
   display:inline-block;
 }
 
+/* efecto click */
 .cal-cell{
   cursor:pointer;
   transition:0.15s;
@@ -1169,30 +1170,30 @@ button {
 
 .cal-cell:hover{
   transform:scale(1.08);
-  opacity:0.85;
 }
 
-.cal-cell:active{
-  transform:scale(0.95);
+/* fecha seleccionada */
+.cal-cell.today{
+  border:2px solid black;
 }
 
-.cal-cell.selected{
-  border:3px solid black;
+/* partidos */
+.cal-cell.match{
+  background:#ffd6d6;
 }
 
-.cal-cell.selected{
-  outline:3px solid black;
+/* entrenamiento */
+.cal-cell.training{
+  background:#e3f2fd;
 }
 
-.cal-cell{
-  cursor:pointer;
-  transition:0.15s;
+/* cerrado */
+.cal-cell.closed{
+  background:#ddd !important;
+  opacity:0.7;
 }
 
-.cal-cell:hover{
-  transform:scale(1.05);
-}
-
-.cal-cell:active{
-  transform:scale(0.95);
+/* partido cargado */
+.cal-cell.has-match{
+  border:2px solid red;
 }
