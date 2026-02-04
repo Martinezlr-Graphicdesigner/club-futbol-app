@@ -81,14 +81,12 @@ function loadData(){
 
     if(data){
       state.data = data;
-      console.log("🔥 Datos cargados desde Firebase");
+      console.log("🔥 Firebase OK");
     } else {
-      state.data = JSON.parse(localStorage.getItem("wilcoop_data")) || {};
-      console.log("💾 Datos cargados desde localStorage");
+      state.data = {};
     }
 
     ensureDataStructure();
-    ensureAgendaTemplate();
     renderMainLayout();
 
   });
@@ -895,10 +893,18 @@ function openMatchDetail(dateKey){
 
 function saveMatch(dateKey){
 
-  state.data.shared.matches[dateKey]={
-    rival:document.getElementById("m-rival").value,
-    location:document.getElementById("m-location").value,
-    home:document.getElementById("m-home").value==="true",
+  if(!state.data.shared){
+    state.data.shared = { matches:{} };
+  }
+
+  if(!state.data.shared.matches){
+    state.data.shared.matches = {};
+  }
+
+  state.data.shared.matches[dateKey] = {
+    rival: document.getElementById("m-rival").value,
+    location: document.getElementById("m-location").value,
+    home: document.getElementById("m-home").value === "true",
     result:"",
     attendance:{}
   };
