@@ -1161,3 +1161,21 @@ button {
   border-radius:50%;
   display:inline-block;
 }
+
+.cal-cell{
+  cursor:pointer;
+  transition:0.15s;
+}
+
+.cal-cell:hover{
+  transform:scale(1.08);
+  opacity:0.85;
+}
+
+.cal-cell:active{
+  transform:scale(0.95);
+}
+
+.cal-cell.selected{
+  border:3px solid black;
+}
