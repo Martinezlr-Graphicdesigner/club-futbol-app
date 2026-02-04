@@ -790,43 +790,74 @@ function renderAgenda(container,data){
   const sessions=data.sessions||{};
   const todayKey=getLocalDateKey(new Date());
 
-  let cards="";
+  // agrupar por mes
+  const months={};
 
-  Object.keys(sessions)
+  Object.keys(sessions).forEach(dateKey=>{
+    const d=new Date(dateKey);
+    const m=d.getMonth();
+    const y=d.getFullYear();
+
+    const label=`${y}-${m}`;
+
+    if(!months[label]) months[label]=[];
+    months[label].push(dateKey);
+  });
+
+  let html="<h2>Agenda</h2>";
+
+  Object.keys(months)
     .sort()
-    .forEach(dateKey=>{
+    .forEach(label=>{
 
-      const s=sessions[dateKey];
-      const date=formatDate(dateKey);
+      const [year,month]=label.split("-");
+      const monthName=new Date(year,month)
+        .toLocaleString("es",{month:"long"});
 
-      let status="";
+      html+=`<h3 style="margin-top:25px;text-transform:capitalize;">
+        ${monthName} ${year}
+      </h3>`;
 
-      if(dateKey===todayKey){
-        status=`<span style="color:green;">🟢 Sesión activa</span>`;
-      }
-      else if(dateKey<todayKey){
-        status=`<span style="color:gray;">Sesión pasada</span>`;
-      }
+      html+=`<div class="annual-grid">`;
 
-      cards+=`
-        <div class="annual-card"
-          onclick="openSessionDetail('${dateKey}')">
+      months[label]
+        .sort()
+        .forEach(dateKey=>{
 
-          <strong>${date}</strong>
-          <div>Entrenamiento</div>
-          <small>${status}</small>
+          const s=sessions[dateKey];
+          const date=formatDate(dateKey);
 
-        </div>
-      `;
+          let status="";
+          let bg="white";
+
+          if(dateKey===todayKey){
+            status=`🟢 Sesión activa`;
+            bg="#E8F5E9";
+          }
+          else if(dateKey<todayKey){
+            status=`Sesión pasada`;
+            bg="#f2f2f2";
+          }
+
+          html+=`
+            <div class="annual-card"
+              onclick="openSessionDetail('${dateKey}')"
+              style="background:${bg};">
+
+              <strong>${date}</strong>
+              <div>Entrenamiento</div>
+              <small>${status}</small>
+
+            </div>
+          `;
+        });
+
+      html+=`</div>`;
     });
 
-  container.innerHTML=`
-    <h2>Agenda</h2>
-    <div class="annual-grid">
-      ${cards}
-    </div>
-    <div id="modal-container"></div>
-  `;
+  html+=`<div id="modal-container"></div>`;
+
+  container.innerHTML=html;
 }
 
 function openMatchDetail(dateKey){
