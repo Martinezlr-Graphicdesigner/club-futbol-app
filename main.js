@@ -711,50 +711,70 @@ function saveResult(key,val){
 
 function renderListaStats(container,data){
 
-  const cat = state.user.category;
+  const players=data.players||[];
+  const sessions=data.sessions||{};
+  const matches=state.data.shared.matches||{};
 
-  const players = data.players || [];
-  const sessions = data.sessions || {};
-  const matches = state.data.shared.matches || {};
+  let html=`<h3>Estadísticas</h3>`;
 
-  let html="<h3>Estadísticas</h3>";
+  let ranking=[];
 
   players.forEach(p=>{
 
-    let present=0;
-    let absent=0;
+    let presTrain=0;
+    let absTrain=0;
 
-    // ✅ CONTAR ENTRENAMIENTOS
+    let presMatch=0;
+    let absMatch=0;
+
+    // entrenamientos
     Object.values(sessions).forEach(s=>{
-      if(!s.attendance) return;
-
-      if(s.attendance[p.id]===true) present++;
-      if(s.attendance[p.id]===false) absent++;
+      if(s.attendance?.[p.id]===true) presTrain++;
+      if(s.attendance?.[p.id]===false) absTrain++;
     });
 
-    // ✅ CONTAR PARTIDOS
+    // partidos
     Object.values(matches).forEach(m=>{
-      if(!m.attendance) return;
-
-      if(m.attendance[p.id]===true) present++;
-      if(m.attendance[p.id]===false) absent++;
+      if(m.attendance?.[p.id]===true) presMatch++;
+      if(m.attendance?.[p.id]===false) absMatch++;
     });
 
-    const total=present+absent;
+    const totalTrain=presTrain+absTrain;
+    const totalMatch=presMatch+absMatch;
 
-    const percPres=total?Math.round((present/total)*100):0;
-    const percAbs=total?Math.round((absent/total)*100):0;
+    const pctTrain=
+      totalTrain?Math.round((presTrain/totalTrain)*100):0;
+
+    const pctMatch=
+      totalMatch?Math.round((presMatch/totalMatch)*100):0;
 
     html+=`
-      <div class="player-card">
-        <strong>${p.name}</strong>
+      <div class="card">
+        <strong>${p.name}</strong><br>
 
-        <div>Presentes: ${present}</div>
-        <div>Ausentes: ${absent}</div>
-        <div>Total: ${total}</div>
+        Entrenamientos:
+        ${presTrain}/${totalTrain} (${pctTrain}%)<br>
 
-        <div>% Presencia: ${percPres}%</div>
-        <div>% Ausencia: ${percAbs}%</div>
+        Partidos:
+        ${presMatch}/${totalMatch} (${pctMatch}%)
+      </div>
+    `;
+
+    ranking.push({
+      name:p.name,
+      pres:presTrain+presMatch
+    });
+  });
+
+  // 👉 ranking
+  ranking.sort((a,b)=>b.pres-a.pres);
+
+  html+=`<h3>Ranking asistencia</h3>`;
+
+  ranking.forEach((r,i)=>{
+    html+=`
+      <div>
+        ${i+1}° ${r.name} — ${r.pres} presencias
       </div>
     `;
   });
@@ -764,125 +784,23 @@ function renderListaStats(container,data){
 
 function renderAgenda(container,data){
 
-  const cat = state.user.category;
-  generateYearSessions(cat);
+  const sessions=data.sessions||{};
 
-  const sessions = state.data[cat].sessions || {};
-  const today = new Date();
+  const month=new Date().getMonth()+1;
 
-  // estado del mes actual
-  if(!state.agendaMonth){
-    state.agendaMonth = today.getMonth();
-    state.agendaYear = today.getFullYear();
-  }
+  const monthCount=Object.keys(sessions)
+    .filter(d=>Number(d.split("-")[1])===month)
+    .length;
 
-  const month = state.agendaMonth;
-  const year = state.agendaYear;
+  container.innerHTML=`
+    <h3>Agenda</h3>
 
-  const todayKey = getLocalDateKey(today);
-
-  // header navegación
-  container.innerHTML = `
-    <h1>Agenda</h1>
-
-    <div class="cal-header">
-      <button id="prev-agenda-month">◀</button>
-
-      <select id="agenda-month-select"></select>
-
-      <button id="next-agenda-month">▶</button>
+    <div class="card">
+      Entrenamientos este mes: ${monthCount}
     </div>
-
-    <div class="annual-grid" id="agenda-cards"></div>
-
-    <div id="modal-container"></div>
   `;
 
-  const monthSelect = document.getElementById("agenda-month-select");
-
-  // cargar dropdown meses
-  const monthNames = [
-    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-  ];
-
-  monthNames.forEach((name,i)=>{
-    const opt = document.createElement("option");
-    opt.value=i;
-    opt.textContent=`${name} ${year}`;
-    if(i===month) opt.selected=true;
-    monthSelect.appendChild(opt);
-  });
-
-  // filtrar sesiones del mes
-  const orderedKeys = Object.keys(sessions).sort();
-
-  let cards="";
-
-  orderedKeys.forEach(dateKey=>{
-
-    const [y,m,d]=dateKey.split("-");
-    const dateObj=new Date(y,m-1,d);
-
-    if(
-      dateObj.getMonth()!==month ||
-      dateObj.getFullYear()!==year
-    ) return;
-
-    const day=dateObj.getDay();
-
-    const isTraining=day===2||day===4;
-    if(!isTraining) return;
-
-    const isToday=dateKey===todayKey;
-    const isPast=dateKey<todayKey;
-
-    cards+=`
-      <div class="annual-card ${isPast?"past-session":""}"
-           onclick="openSessionDetail('${dateKey}')">
-
-        <strong>Entrenamiento</strong>
-        <div>${formatDateFull(dateKey)}</div>
-
-        ${
-          isToday
-          ? `<div class="session-active">
-               <span class="dot"></span>
-               Sesión activa
-             </div>`
-          : ""
-        }
-
-      </div>
-    `;
-  });
-
-  document.getElementById("agenda-cards").innerHTML=
-    cards || "<p>No hay entrenamientos este mes</p>";
-
-  // navegación
-  document.getElementById("prev-agenda-month").onclick=()=>{
-    state.agendaMonth--;
-    if(state.agendaMonth<0){
-      state.agendaMonth=11;
-      state.agendaYear--;
-    }
-    renderScreen("agenda");
-  };
-
-  document.getElementById("next-agenda-month").onclick=()=>{
-    state.agendaMonth++;
-    if(state.agendaMonth>11){
-      state.agendaMonth=0;
-      state.agendaYear++;
-    }
-    renderScreen("agenda");
-  };
-
-  monthSelect.onchange=(e)=>{
-    state.agendaMonth=parseInt(e.target.value);
-    renderScreen("agenda");
-  };
+  drawCalendar(container,data);
 }
 
 function openMatchDetail(dateKey){
@@ -1012,82 +930,195 @@ function saveMatchAttendance(dateKey){
   renderScreen("lista");
 }
 
+function drawCalendar(container,data){
+
+  const sessions=data.sessions||{};
+  const matches=state.data.shared?.matches||{};
+  const todayKey=getLocalDateKey(new Date());
+
+  const now=new Date();
+  const year=now.getFullYear();
+  const month=now.getMonth();
+
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+
+  let html=`<div class="calendar-grid">`;
+
+  // espacios vacíos inicio
+  for(let i=0;i<firstDay;i++){
+    html+=`<div></div>`;
+  }
+
+  for(let day=1;day<=daysInMonth;day++){
+
+    const date=new Date(year,month,day);
+    const dateKey=getLocalDateKey(date);
+
+    const s=sessions[dateKey];
+    const m=matches[dateKey];
+
+    let className="cal-cell";
+
+    // hoy
+    if(dateKey===todayKey){
+      className+=" today";
+    }
+
+    // entrenamiento
+    if(s){
+      className+=" training";
+    }
+
+    // partido
+    if(m){
+      className+=" match";
+    }
+
+    // 👉 puntitos asistencia
+    let dots="";
+    if(s?.attendance){
+      const vals=Object.values(s.attendance);
+      if(vals.some(v=>v===true)) dots+="🟢";
+      if(vals.some(v=>v===false)) dots+="🔴";
+    }
+
+    html+=`
+      <div class="${className}"
+        onclick="selectCalendarDate('${dateKey}')">
+
+        <div>${day}</div>
+        <small>${dots}</small>
+
+      </div>
+    `;
+  }
+
+  html+=`</div>`;
+
+  container.innerHTML+=html;
+}
+
+function selectCalendarDate(dateKey){
+
+  const match=state.data.shared.matches?.[dateKey];
+  const session=state.data[state.user.category]
+    .sessions?.[dateKey];
+
+  if(match){
+    openMatchDetail(dateKey);
+    return;
+  }
+
+  if(session){
+    openSessionDetail(dateKey);
+  }
+}
+
 /**************************************************
  * PLANTEL
  **************************************************/
-function renderPlantel(container, data) {
+function renderPlantel(container,data){
 
-  if (!data.players) data.players = [];
+  const cat = state.user.category;
+  const isAdmin = state.user.role==="admin";
 
-  const canEdit = state.user.role === "admin";
+  let players=data.players||[];
 
-  container.innerHTML = `
-    <section class="section">
-      <h3>Plantel</h3>
+  let html=`<h3>Plantel</h3>`;
 
-      ${canEdit ? `
-        <button id="add-player-btn" class="btn-primary">
-          ➕ Agregar jugador
-        </button>
-      ` : ""}
-
-      <div class="player-list">
-        ${data.players.length === 0
-          ? "<p>No hay jugadores cargados.</p>"
-          : data.players.map(player => `
-              <div class="player-card">
-                <strong>${player.name}</strong>
-                <div>Nac: ${player.birth || "-"}</div>
-                <div>Camiseta #${player.number || "-"}</div>
-
-                ${canEdit ? `
-                  <button class="btn-text delete-player" data-id="${player.id}">
-                    ❌
-                  </button>
-                ` : ""}
-              </div>
-            `).join("")}
+  // 👉 FORM ALTA JUGADOR
+  if(isAdmin){
+    html+=`
+      <div class="card">
+        <input id="p-name" placeholder="Nombre y Apellido">
+        <input id="p-birth" type="date">
+        <input id="p-number" placeholder="Número camiseta" type="number">
+        <button onclick="addPlayer()">Agregar jugador</button>
       </div>
-    </section>
-  `;
-
-  // 👉 AGREGAR JUGADOR
-  if (canEdit) {
-    document.getElementById("add-player-btn")?.addEventListener("click", () => {
-
-      const name = prompt("Nombre y apellido");
-      if(!name) return;
-
-      const birth = prompt("Fecha nacimiento (YYYY-MM-DD)");
-      if(!birth) return;
-
-      const number = prompt("Número de camiseta");
-      if(!number) return;
-
-      data.players.push({
-        id: Date.now().toString(),
-        name,
-        birth,
-        number
-      });
-
-      saveData();
-      renderScreen("plantel");
-    });
+    `;
   }
 
-  // 👉 BORRAR JUGADOR
-  container.querySelectorAll(".delete-player").forEach(btn => {
-    btn.addEventListener("click", () => {
+  // 👉 LISTA
+  players.forEach(p=>{
 
-      if (!confirm("¿Eliminar jugador?")) return;
+    html+=`
+      <div class="player-card">
 
-      data.players = data.players.filter(p => p.id !== btn.dataset.id);
+        ${
+          isAdmin
+          ? `
+            <input value="${p.name||""}" 
+              onchange="editPlayer('${p.id}','name',this.value)">
 
-      saveData();
-      renderScreen("plantel");
-    });
+            <input type="date" value="${p.birth||""}" 
+              onchange="editPlayer('${p.id}','birth',this.value)">
+
+            <input type="number" value="${p.number||""}" 
+              onchange="editPlayer('${p.id}','number',this.value)">
+
+            <button onclick="deletePlayer('${p.id}')">
+              Eliminar
+            </button>
+          `
+          : `
+            <strong>${p.name}</strong>
+            <div>Nacimiento: ${p.birth||"-"}</div>
+            <div>Camiseta: ${p.number||"-"}</div>
+          `
+        }
+
+      </div>
+    `;
   });
+
+  container.innerHTML=html;
+}
+
+function addPlayer(){
+
+  const cat=state.user.category;
+
+  const name=document.getElementById("p-name").value;
+  const birth=document.getElementById("p-birth").value;
+  const number=document.getElementById("p-number").value;
+
+  if(!name) return alert("Nombre requerido");
+
+  const id=Date.now().toString();
+
+  state.data[cat].players.push({
+    id,
+    name,
+    birth,
+    number
+  });
+
+  saveData();
+  renderScreen("plantel");
+}
+
+function editPlayer(id,field,value){
+
+  const cat=state.user.category;
+
+  const p=state.data[cat].players.find(x=>x.id==id);
+  if(!p) return;
+
+  p[field]=value;
+
+  saveData();
+}
+
+function deletePlayer(id){
+
+  const cat=state.user.category;
+
+  state.data[cat].players=
+    state.data[cat].players.filter(p=>p.id!=id);
+
+  saveData();
+  renderScreen("plantel");
 }
 
 /**************************************************
