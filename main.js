@@ -249,11 +249,13 @@ function ensureDataStructure(){
   });
 
   if(!state.data.shared){
-    state.data.shared={matches:[]};
+    state.data.shared={matches:{}};
   }
 
   if(!state.data.shared.matches){
     state.data.shared.matches = {};
+
+}
 
 }
 
@@ -548,24 +550,24 @@ function renderLista(container,data){
   const tab = state.listaTab || "toma";
 
   container.innerHTML=`
-    <h1>Lista</h1>
+  <h1>Lista</h1>
 
-    <div class="subnav">
-      <button id="tab-toma" class="${tab==="toma"?"active":""}">
-        Tomar lista
-      </button>
+  <div class="subnav">
+    <button id="tab-toma" class="${tab==="toma"?"active":""}">
+      Tomar lista
+    </button>
 
-      <button id="tab-stats" class="${tab==="stats"?"active":""}">
-        Estadísticas
-      </button>
-    </div>
+    <button id="tab-stats" class="${tab==="stats"?"active":""}">
+      Estadísticas
+    </button>
 
-    <div id="lista-content"></div>
-  `;
-      <button id="tab-matches"
-       class="${tab==="matches"?"active":""}">
-        Partidos
-      </button>
+    <button id="tab-matches" class="${tab==="matches"?"active":""}">
+      Partidos
+    </button>
+  </div>
+
+  <div id="lista-content"></div>
+`;
 
   document.getElementById("tab-matches").onclick=()=>{
   state.listaTab="matches";
@@ -897,36 +899,6 @@ function saveMatch(dateKey){
   showToast("Partido guardado");
 }
 
-function openMatchAttendance(dateKey){
-
-  const cat=state.user.category;
-  const players=state.data[cat].players||[];
-
-  const match=state.data.shared.matches[dateKey];
-
-  if(!match.attendance){
-    match.attendance={};
-  }
-
-  const area=document.getElementById("attendance-area");
-
-  area.innerHTML=`
-    <h3>Asistencia partido</h3>
-
-    ${players.map(p=>`
-      <label>
-        <input type="checkbox"
-          data-id="${p.id}"
-          ${match.attendance[p.id]?"checked":""}>
-        ${p.name}
-      </label>
-    `).join("")}
-
-    <button onclick="saveMatchAttendance('${dateKey}')">
-      Confirmar
-    </button>
-  `;
-}
 
 function openMatchAttendance(dateKey){
 
