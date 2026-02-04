@@ -258,23 +258,23 @@ function ensureDataStructure(){
 
   ["2018","2019","2020"].forEach(cat=>{
 
-    if(!state.data[cat]) state.data[cat]={};
-    if(!state.data[cat].players) state.data[cat].players=[];
-    if(!state.data[cat].agenda) state.data[cat].agenda={};
-    if(!state.data[cat].stats) state.data[cat].stats={};
-    if(!state.data[cat].attendance) state.data[cat].attendance={};
-    if(!state.data[cat].sessions) state.data[cat].sessions={};
+    if(!state.data[cat]) state.data[cat] = {};
+    if(!state.data[cat].players) state.data[cat].players = [];
+    if(!state.data[cat].agenda) state.data[cat].agenda = {};
+    if(!state.data[cat].stats) state.data[cat].stats = {};
+    if(!state.data[cat].attendance) state.data[cat].attendance = {};
+    if(!state.data[cat].sessions) state.data[cat].sessions = {};
 
   });
 
+  
   if(!state.data.shared){
-    state.data.shared = { matches:{} };
+    state.data.shared = {};
   }
 
   if(!state.data.shared.matches){
     state.data.shared.matches = {};
   }
-
 }
 
 /**************************************************
@@ -894,7 +894,7 @@ function openMatchDetail(dateKey){
 function saveMatch(dateKey){
 
   if(!state.data.shared){
-    state.data.shared = { matches:{} };
+    state.data.shared = {};
   }
 
   if(!state.data.shared.matches){
@@ -910,9 +910,8 @@ function saveMatch(dateKey){
   };
 
   saveData();
-
   closeTraining();
-  showToast("Partido guardado");
+  alert("Partido guardado correctamente");
 }
 
 
