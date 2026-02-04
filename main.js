@@ -619,6 +619,8 @@ function renderListaToma(container,data){
 
     <div id="calendar"></div>
     <div id="attendance-area"></div>
+
+    <div id="modal-container"></div>
   `;
 
   let currentYear=today.getFullYear();
@@ -950,9 +952,10 @@ function openMatchAttendance(dateKey){
  * PLANTEL
  **************************************************/
 function renderPlantel(container, data) {
+
   if (!data.players) data.players = [];
 
-  const canEdit = state.user.role === "admin" || state.user.role === "parent";
+  const canEdit = state.user.role === "admin";
 
   container.innerHTML = `
     <section class="section">
@@ -969,7 +972,10 @@ function renderPlantel(container, data) {
           ? "<p>No hay jugadores cargados.</p>"
           : data.players.map(player => `
               <div class="player-card">
-                <span>${player.name}</span>
+                <strong>${player.name}</strong>
+                <div>Nac: ${player.birth || "-"}</div>
+                <div>Camiseta #${player.number || "-"}</div>
+
                 ${canEdit ? `
                   <button class="btn-text delete-player" data-id="${player.id}">
                     ❌
@@ -981,27 +987,39 @@ function renderPlantel(container, data) {
     </section>
   `;
 
-    if (canEdit) {
-    document.getElementById("add-player-btn")
-      ?.addEventListener("click", () => {
-        const name = prompt("Nombre del jugador");
-        if (!name) return;
+  // 👉 AGREGAR JUGADOR
+  if (canEdit) {
+    document.getElementById("add-player-btn")?.addEventListener("click", () => {
 
-        data.players.push({
-          id: Date.now().toString(),
-          name
-        });
+      const name = prompt("Nombre y apellido");
+      if(!name) return;
 
-        saveData();
-        renderScreen("plantel");
+      const birth = prompt("Fecha nacimiento (YYYY-MM-DD)");
+      if(!birth) return;
+
+      const number = prompt("Número de camiseta");
+      if(!number) return;
+
+      data.players.push({
+        id: Date.now().toString(),
+        name,
+        birth,
+        number
       });
+
+      saveData();
+      renderScreen("plantel");
+    });
   }
 
-  
+  // 👉 BORRAR JUGADOR
   container.querySelectorAll(".delete-player").forEach(btn => {
     btn.addEventListener("click", () => {
+
       if (!confirm("¿Eliminar jugador?")) return;
+
       data.players = data.players.filter(p => p.id !== btn.dataset.id);
+
       saveData();
       renderScreen("plantel");
     });
