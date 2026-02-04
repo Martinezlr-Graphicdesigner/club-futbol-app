@@ -156,40 +156,43 @@ function generateYearSessions(cat){
 
   function openAttendance(dateKey){
 
-  const cat = state.user.category;
-  const session = state.data[cat].sessions[dateKey];
-
-  const players = state.data[cat].players || [];
-
-  const area = document.getElementById("attendance-area");
-
-  if(players.length === 0){
-    area.innerHTML = "<p>No hay jugadores cargados en el plantel</p>";
-    return;
-  }
+  const cat=state.user.category;
+  const session=state.data[cat].sessions[dateKey];
+  const players=state.data[cat].players||[];
 
   if(!session.attendance){
-    session.attendance = {};
+    session.attendance={};
   }
 
-  area.innerHTML = `
+  const area=document.getElementById("attendance-area");
+
+  area.innerHTML=`
     <h3>${formatDate(dateKey)}</h3>
 
-    ${players.map(p => `
-      <label style="display:block;margin:6px 0;">
-        <input type="checkbox"
-          data-id="${p.id}"
-          ${session.attendance[p.id] ? "checked" : ""}>
-        ${p.name}
-      </label>
-    `).join("")}
+    <div class="players-grid">
+      ${players.map(p=>`
 
-    <button id="confirm-att">Confirmar asistencia</button>
+        <div class="player-card">
+          <label>
+
+            <input type="checkbox"
+              data-id="${p.id}"
+              ${session.attendance[p.id]?"checked":""}
+            >
+
+            <span>${p.name}</span>
+
+          </label>
+        </div>
+
+      `).join("")}
+    </div>
+
+    <button class="btn-main"
+      onclick="saveAttendanceDate('${dateKey}')">
+      Guardar asistencia
+    </button>
   `;
-
-  document.getElementById("confirm-att").onclick = () => {
-    saveAttendanceDate(dateKey);
-  };
 }
 
 function openSessionDetail(dateKey){
@@ -785,22 +788,45 @@ function renderListaStats(container,data){
 function renderAgenda(container,data){
 
   const sessions=data.sessions||{};
+  const todayKey=getLocalDateKey(new Date());
 
-  const month=new Date().getMonth()+1;
+  let cards="";
 
-  const monthCount=Object.keys(sessions)
-    .filter(d=>Number(d.split("-")[1])===month)
-    .length;
+  Object.keys(sessions)
+    .sort()
+    .forEach(dateKey=>{
+
+      const s=sessions[dateKey];
+      const date=formatDate(dateKey);
+
+      let status="";
+
+      if(dateKey===todayKey){
+        status=`<span style="color:green;">🟢 Sesión activa</span>`;
+      }
+      else if(dateKey<todayKey){
+        status=`<span style="color:gray;">Sesión pasada</span>`;
+      }
+
+      cards+=`
+        <div class="annual-card"
+          onclick="openSessionDetail('${dateKey}')">
+
+          <strong>${date}</strong>
+          <div>Entrenamiento</div>
+          <small>${status}</small>
+
+        </div>
+      `;
+    });
 
   container.innerHTML=`
-    <h3>Agenda</h3>
-
-    <div class="card">
-      Entrenamientos este mes: ${monthCount}
+    <h2>Agenda</h2>
+    <div class="annual-grid">
+      ${cards}
     </div>
+    <div id="modal-container"></div>
   `;
-
-  drawCalendar(container,data);
 }
 
 function openMatchDetail(dateKey){
