@@ -10,6 +10,10 @@ const CONFIG = {
   }
 };
 
+function showToast(msg){
+  console.log("TOAST:", msg);
+}
+
 let state = {
   user: null,              // { category, role }
   currentScreen: "home",
@@ -40,10 +44,7 @@ function checkSession() {
     showLogin();
   }
 
- function showToast(msg){
-   console.log("TOAST:", msg);
-  }
-
+ 
 }
 
 /**************************************************
@@ -599,6 +600,9 @@ else{
   renderListaMatches(content);
 }
 
+
+}
+
 function renderListaToma(container,data){
 
   const cat = state.user.category;
@@ -644,6 +648,8 @@ function renderListaToma(container,data){
   };
 }
 
+}
+
 function renderListaMatches(container){
 
   const matches=state.data.shared.matches||{};
@@ -672,6 +678,8 @@ function renderListaMatches(container){
 function saveResult(key,val){
   state.data.shared.matches[key].result=val;
   saveData();
+}
+
 }
 
 function renderListaStats(container,data){
