@@ -581,6 +581,9 @@ function renderLista(container,data){
 function renderAgenda(container,data){
 
   const cat = state.user.category;
+
+  generateYearSessions(cat);
+
   const sessions = state.data[cat].sessions || {};
 
   const todayKey = getLocalDateKey(new Date());
