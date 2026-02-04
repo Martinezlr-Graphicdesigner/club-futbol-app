@@ -648,7 +648,6 @@ function renderListaToma(container,data){
   };
 }
 
-}
 
 function renderListaMatches(container){
 
@@ -678,8 +677,6 @@ function renderListaMatches(container){
 function saveResult(key,val){
   state.data.shared.matches[key].result=val;
   saveData();
-}
-
 }
 
 function renderListaStats(container,data){
@@ -721,9 +718,6 @@ function renderListaStats(container,data){
   });
 
   container.innerHTML=html;
-}
-
-
 }
 
 function renderAgenda(container,data){
