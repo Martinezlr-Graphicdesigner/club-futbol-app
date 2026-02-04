@@ -516,13 +516,19 @@ function renderCalendar(container, year, month){
     // ENTRENAMIENTO
     if(isTuesday||isThursday){
       className+=" training";
-      cell.onclick=()=> openAttendance(dateKey);
+      cell.onclick=()=>{
+        state.selectedDate=dateKey;
+        openAttendance(dateKey);
+      };
     }
 
     // PARTIDO
     if(isSaturday){
       className+=" match";
-      cell.onclick=()=> openMatchDetail(dateKey);
+      cell.onclick=()=>{
+        state.selectedDate=dateKey;
+        openMatchDetail(dateKey);
+      };
     }
 
     // hoy o seleccionado
@@ -535,13 +541,13 @@ function renderCalendar(container, year, month){
       className+=" today";
     }
 
-    // cerrado
+    // sesión cerrada
     const session = state.data[cat].sessions?.[dateKey];
     if(session?.closed){
       className+=" closed";
     }
 
-    // partido guardado
+    // partido cargado
     const match = state.data.shared.matches?.[dateKey];
     if(match){
       className+=" has-match";
@@ -549,12 +555,6 @@ function renderCalendar(container, year, month){
 
     cell.className=className;
     cell.innerHTML=`<div class="day-number">${day}</div>`;
-
-    // seleccionar fecha
-    cell.addEventListener("click",()=>{
-      state.selectedDate=dateKey;
-      renderScreen("lista");
-    });
 
     grid.appendChild(cell);
   }
@@ -633,25 +633,49 @@ function renderListaToma(container,data){
     </div>
 
     <div id="calendar"></div>
+
     <div id="attendance-area"></div>
 
     <div id="modal-container"></div>
   `;
 
-  let currentYear = state.calYear || today.getFullYear();
+  let currentYear = state.calYear ?? today.getFullYear();
   let currentMonth = state.calMonth ?? today.getMonth();
 
   const calendarDiv=document.getElementById("calendar");
   const title=document.getElementById("cal-title");
 
   function draw(){
-  title.textContent = getMonthLabel(currentYear,currentMonth);
+    title.textContent = getMonthLabel(currentYear,currentMonth);
 
-  // 👉 guardamos mes/año actuales
-  state.calYear = currentYear;
-  state.calMonth = currentMonth;
+    // guardar estado mes/año
+    state.calYear = currentYear;
+    state.calMonth = currentMonth;
 
-  renderCalendar(calendarDiv,currentYear,currentMonth);
+    renderCalendar(calendarDiv,currentYear,currentMonth);
+  }
+
+  // navegación meses
+  document.getElementById("prev-month").onclick=()=>{
+    currentMonth--;
+    if(currentMonth<0){
+      currentMonth=11;
+      currentYear--;
+    }
+    draw();
+  };
+
+  document.getElementById("next-month").onclick=()=>{
+    currentMonth++;
+    if(currentMonth>11){
+      currentMonth=0;
+      currentYear++;
+    }
+    draw();
+  };
+
+  // dibujar inicial
+  draw();
 }
 
 
