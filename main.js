@@ -584,29 +584,77 @@ function renderAgenda(container,data){
   generateYearSessions(cat);
 
   const sessions = state.data[cat].sessions || {};
-  const todayKey = getLocalDateKey(new Date());
+  const today = new Date();
 
+  // estado del mes actual
+  if(!state.agendaMonth){
+    state.agendaMonth = today.getMonth();
+    state.agendaYear = today.getFullYear();
+  }
+
+  const month = state.agendaMonth;
+  const year = state.agendaYear;
+
+  const todayKey = getLocalDateKey(today);
+
+  // header navegación
+  container.innerHTML = `
+    <h1>Agenda</h1>
+
+    <div class="cal-header">
+      <button id="prev-agenda-month">◀</button>
+
+      <select id="agenda-month-select"></select>
+
+      <button id="next-agenda-month">▶</button>
+    </div>
+
+    <div class="annual-grid" id="agenda-cards"></div>
+
+    <div id="modal-container"></div>
+  `;
+
+  const monthSelect = document.getElementById("agenda-month-select");
+
+  // cargar dropdown meses
+  const monthNames = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  monthNames.forEach((name,i)=>{
+    const opt = document.createElement("option");
+    opt.value=i;
+    opt.textContent=`${name} ${year}`;
+    if(i===month) opt.selected=true;
+    monthSelect.appendChild(opt);
+  });
+
+  // filtrar sesiones del mes
   const orderedKeys = Object.keys(sessions).sort();
 
-  let cards = "";
+  let cards="";
 
-  orderedKeys.forEach(dateKey => {
+  orderedKeys.forEach(dateKey=>{
 
-    // ✅ FIX DE FECHA
-    const [y,m,d] = dateKey.split("-");
-    const dateObj = new Date(y, m-1, d);
+    const [y,m,d]=dateKey.split("-");
+    const dateObj=new Date(y,m-1,d);
 
-    const day = dateObj.getDay();
+    if(
+      dateObj.getMonth()!==month ||
+      dateObj.getFullYear()!==year
+    ) return;
 
-    const isTraining = day===2 || day===4;
+    const day=dateObj.getDay();
+
+    const isTraining=day===2||day===4;
     if(!isTraining) return;
 
-    const isToday = dateKey === todayKey;
-    const isPast = dateKey < todayKey;
+    const isToday=dateKey===todayKey;
+    const isPast=dateKey<todayKey;
 
-    cards += `
-      <div class="annual-card 
-           ${isPast ? "past-session" : ""}"
+    cards+=`
+      <div class="annual-card ${isPast?"past-session":""}"
            onclick="openSessionDetail('${dateKey}')">
 
         <strong>Entrenamiento</strong>
@@ -625,13 +673,32 @@ function renderAgenda(container,data){
     `;
   });
 
-  container.innerHTML = `
-    <h1>Agenda</h1>
-    <div class="annual-grid">
-      ${cards}
-    </div>
-    <div id="modal-container"></div>
-  `;
+  document.getElementById("agenda-cards").innerHTML=
+    cards || "<p>No hay entrenamientos este mes</p>";
+
+  // navegación
+  document.getElementById("prev-agenda-month").onclick=()=>{
+    state.agendaMonth--;
+    if(state.agendaMonth<0){
+      state.agendaMonth=11;
+      state.agendaYear--;
+    }
+    renderScreen("agenda");
+  };
+
+  document.getElementById("next-agenda-month").onclick=()=>{
+    state.agendaMonth++;
+    if(state.agendaMonth>11){
+      state.agendaMonth=0;
+      state.agendaYear++;
+    }
+    renderScreen("agenda");
+  };
+
+  monthSelect.onchange=(e)=>{
+    state.agendaMonth=parseInt(e.target.value);
+    renderScreen("agenda");
+  };
 }
 
 /**************************************************
