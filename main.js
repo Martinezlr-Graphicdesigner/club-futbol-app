@@ -32,6 +32,8 @@ let state = {
 function init() {
   setupEventListeners();
   checkSession();
+  initTheme();
+
 }
 
 function checkSession() {
@@ -1119,42 +1121,79 @@ function selectCalendarDate(dateKey){
 /**************************************************
  * PLANTEL
  **************************************************/
-function renderPlantel(container,data){
+function renderPlantel(){
 
-  const players=data.players||[];
+  const cat = state.user.category;
+  const players = state.data[cat].players || [];
 
-  let html=`
-    <h2>Plantel</h2>
+  const app = document.getElementById("app");
 
-    <button onclick="addPlayer()">+ Jugador</button>
+  app.innerHTML = `
+    <section class="card">
 
-    <div class="team-grid">
-  `;
+      <h2>Plantel ${cat}</h2>
 
-  players.forEach((p,i)=>{
+      <button onclick="addPlayer()">➕ Agregar jugador</button>
 
-    const age=p.birth
-      ? new Date().getFullYear()-new Date(p.birth).getFullYear()
-      : "";
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+        gap:12px;
+        margin-top:12px;
+      ">
 
-    html+=`
-      <div class="player-card">
+        ${players.map(p=>`
 
-        <div class="shirt">${p.number||""}</div>
+          <div class="player-card" style="
+            background:white;
+            border-radius:12px;
+            padding:12px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.1);
+            text-align:center;
+          ">
 
-        <h3>${p.name}</h3>
+            ${p.photo ? `
+              <img src="${p.photo}" style="
+                width:80px;
+                height:80px;
+                border-radius:50%;
+                object-fit:cover;
+                margin-bottom:8px;
+              ">
+            ` : `
+              <div style="
+                width:80px;
+                height:80px;
+                border-radius:50%;
+                background:#ddd;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                margin:0 auto 8px;
+                font-size:28px;
+              ">
+                👤
+              </div>
+            `}
 
-        <p>Edad: ${age}</p>
+            <h3 style="margin:4px 0;">${p.name}</h3>
 
-        <button onclick="editPlayer(${i})">Editar</button>
-        <button onclick="deletePlayer(${i})">Eliminar</button>
+            <p>🎽 Nº ${p.number || "-"}</p>
+            <p>🎂 ${p.birth || "-"}</p>
+
+            <div style="margin-top:8px;">
+              <button onclick="editPlayer('${p.id}')">✏️ Editar</button>
+              <button onclick="deletePlayer('${p.id}')">🗑 Eliminar</button>
+            </div>
+
+          </div>
+
+        `).join("")}
 
       </div>
-    `;
-  });
 
-  html+="</div>";
-  container.innerHTML=html;
+    </section>
+  `;
 }
 
 function addPlayer(){
@@ -1260,6 +1299,29 @@ function setupEventListeners() {
   });
 }
 
+function initTheme(){
+
+  const btn = document.getElementById("theme-toggle");
+  if(!btn) return;
+
+  const savedTheme = localStorage.getItem("theme") || "light";
+
+  if(savedTheme === "dark"){
+    document.body.classList.add("dark");
+    btn.textContent = "☀️";
+  }
+
+  btn.onclick = () => {
+
+    document.body.classList.toggle("dark");
+
+    const isDark = document.body.classList.contains("dark");
+
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+
+    btn.textContent = isDark ? "☀️" : "🌙";
+  };
+}
 /**************************************************
  * FIREBASE
  **************************************************/
