@@ -410,6 +410,32 @@ function renderHome(container, data) {
   `;
 }
 
+function renderCoachDashboard(data){
+
+  const players=data.players||[];
+  const sessions=data.sessions||{};
+
+  let total=0, present=0;
+
+  Object.values(sessions).forEach(s=>{
+    if(s.attendance){
+      Object.values(s.attendance).forEach(v=>{
+        total++;
+        if(v) present++;
+      });
+    }
+  });
+
+  const percent=total?Math.round(present*100/total):0;
+
+  return `
+    <div class="card">
+      <h3>Asistencia general</h3>
+      <h1>${percent}%</h1>
+    </div>
+  `;
+}
+
 function openTrainingDetail(w,day){
 
   const week = state.data[state.user.category].agenda[w];
@@ -1095,75 +1121,52 @@ function selectCalendarDate(dateKey){
  **************************************************/
 function renderPlantel(container,data){
 
-  const cat = state.user.category;
-  const isAdmin = state.user.role==="admin";
+  const players=data.players||[];
 
-  let players=data.players||[];
+  let html=`
+    <h2>Plantel</h2>
 
-  let html=`<h3>Plantel</h3>`;
+    <button onclick="addPlayer()">+ Jugador</button>
 
-  // 👉 FORM ALTA JUGADOR
-  if(isAdmin){
-    html+=`
-      <div class="card">
-        <input id="p-name" placeholder="Nombre y Apellido">
-        <input id="p-birth" type="date">
-        <input id="p-number" placeholder="Número camiseta" type="number">
-        <button onclick="addPlayer()">Agregar jugador</button>
-      </div>
-    `;
-  }
+    <div class="team-grid">
+  `;
 
-  // 👉 LISTA
-  players.forEach(p=>{
+  players.forEach((p,i)=>{
+
+    const age=p.birth
+      ? new Date().getFullYear()-new Date(p.birth).getFullYear()
+      : "";
 
     html+=`
       <div class="player-card">
 
-        ${
-          isAdmin
-          ? `
-            <input value="${p.name||""}" 
-              onchange="editPlayer('${p.id}','name',this.value)">
+        <div class="shirt">${p.number||""}</div>
 
-            <input type="date" value="${p.birth||""}" 
-              onchange="editPlayer('${p.id}','birth',this.value)">
+        <h3>${p.name}</h3>
 
-            <input type="number" value="${p.number||""}" 
-              onchange="editPlayer('${p.id}','number',this.value)">
+        <p>Edad: ${age}</p>
 
-            <button onclick="deletePlayer('${p.id}')">
-              Eliminar
-            </button>
-          `
-          : `
-            <strong>${p.name}</strong>
-            <div>Nacimiento: ${p.birth||"-"}</div>
-            <div>Camiseta: ${p.number||"-"}</div>
-          `
-        }
+        <button onclick="editPlayer(${i})">Editar</button>
+        <button onclick="deletePlayer(${i})">Eliminar</button>
 
       </div>
     `;
   });
 
+  html+="</div>";
   container.innerHTML=html;
 }
 
 function addPlayer(){
 
-  const cat=state.user.category;
+  const name=prompt("Nombre y apellido");
+  const birth=prompt("Fecha nacimiento (YYYY-MM-DD)");
+  const number=prompt("Número camiseta");
 
-  const name=document.getElementById("p-name").value;
-  const birth=document.getElementById("p-birth").value;
-  const number=document.getElementById("p-number").value;
+  if(!name) return;
 
-  if(!name) return alert("Nombre requerido");
-
-  const id=Date.now().toString();
-
-  state.data[cat].players.push({
-    id,
+  state.data[state.user.category].players.push({
+    id:Date.now(),
     name,
     birth,
     number
@@ -1173,25 +1176,21 @@ function addPlayer(){
   renderScreen("plantel");
 }
 
-function editPlayer(id,field,value){
+function editPlayer(i){
 
-  const cat=state.user.category;
+  const p=state.data[state.user.category].players[i];
 
-  const p=state.data[cat].players.find(x=>x.id==id);
-  if(!p) return;
-
-  p[field]=value;
+  p.name=prompt("Nombre",p.name);
+  p.birth=prompt("Nacimiento",p.birth);
+  p.number=prompt("Número",p.number);
 
   saveData();
+  renderScreen("plantel");
 }
 
-function deletePlayer(id){
+function deletePlayer(i){
 
-  const cat=state.user.category;
-
-  state.data[cat].players=
-    state.data[cat].players.filter(p=>p.id!=id);
-
+  state.data[state.user.category].players.splice(i,1);
   saveData();
   renderScreen("plantel");
 }
