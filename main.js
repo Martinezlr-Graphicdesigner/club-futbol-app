@@ -1121,78 +1121,24 @@ function selectCalendarDate(dateKey){
 /**************************************************
  * PLANTEL
  **************************************************/
-function renderPlantel(){
+function renderPlantel(container, data){
 
-  const cat = state.user.category;
-  const players = state.data[cat].players || [];
+  const players = data.players || [];
 
-  const app = document.getElementById("app");
+  container.innerHTML = `
+    <h2>Plantel</h2>
 
-  app.innerHTML = `
-    <section class="card">
+    <button onclick="addPlayer()">Agregar jugador</button>
 
-      <h2>Plantel ${cat}</h2>
-
-      <button onclick="addPlayer()">➕ Agregar jugador</button>
-
-      <div style="
-        display:grid;
-        grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-        gap:12px;
-        margin-top:12px;
-      ">
-
-        ${players.map(p=>`
-
-          <div class="player-card" style="
-            background:white;
-            border-radius:12px;
-            padding:12px;
-            box-shadow:0 4px 10px rgba(0,0,0,0.1);
-            text-align:center;
-          ">
-
-            ${p.photo ? `
-              <img src="${p.photo}" style="
-                width:80px;
-                height:80px;
-                border-radius:50%;
-                object-fit:cover;
-                margin-bottom:8px;
-              ">
-            ` : `
-              <div style="
-                width:80px;
-                height:80px;
-                border-radius:50%;
-                background:#ddd;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                margin:0 auto 8px;
-                font-size:28px;
-              ">
-                👤
-              </div>
-            `}
-
-            <h3 style="margin:4px 0;">${p.name}</h3>
-
-            <p>🎽 Nº ${p.number || "-"}</p>
-            <p>🎂 ${p.birth || "-"}</p>
-
-            <div style="margin-top:8px;">
-              <button onclick="editPlayer('${p.id}')">✏️ Editar</button>
-              <button onclick="deletePlayer('${p.id}')">🗑 Eliminar</button>
-            </div>
-
-          </div>
-
-        `).join("")}
-
-      </div>
-
-    </section>
+    <div>
+      ${players.map(p=>`
+        <div class="player-row">
+          <b>${p.name}</b> — ${p.number || "-"}
+          <button onclick="editPlayer('${p.id}')">Editar</button>
+          <button onclick="deletePlayer('${p.id}')">Eliminar</button>
+        </div>
+      `).join("")}
+    </div>
   `;
 }
 
@@ -1313,8 +1259,7 @@ function initTheme(){
 
   btn.onclick = () => {
 
-    document.body.classList.toggle("dark");
-
+    
     const isDark = document.body.classList.contains("dark");
 
     localStorage.setItem("theme", isDark ? "dark" : "light");
