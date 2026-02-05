@@ -1,44 +1,23 @@
-:root {
-  /* COLORES CLUB PRO */
-  --primary: #1E3A8A;
-  --primary-soft: #3B82F6;
-
-  --accent: #10B981;
-  --accent-soft: #D1FAE5;
-
-  --white: #FFFFFF;
-  --glass: rgba(255,255,255,0.75);
-
-  --bg-main: #F3F4F6;
-  --bg-soft: #E5E7EB;
-
-  --text-dark: #111827;
-  --text-soft: #6B7280;
-
-  --success: #22C55E;
-  --error: #EF4444;
-
-  --border-radius: 18px;
-
-  --shadow-soft: 0 8px 24px rgba(0,0,0,0.08);
-  --shadow-glass: 0 8px 32px rgba(0,0,0,0.12);
-
-  --transition: 0.25s ease;
-}
-body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(180deg,#E5E7EB,#F9FAFB);
-  color: var(--text-dark);
-  line-height: 1.5;
-  overflow-x: hidden;
+:root{
+  --primary:#1e3a8a;      /* azul profundo */
+  --primary-light:#3b82f6; 
+  --accent:#0ea5e9;       /* azul celeste suave */
+  --bg:#f5f7fb; 
+  --card:#ffffff;
+  --text:#0f172a;
+  --subtext:#64748b;
 }
 
-h1,h2,h3,.brand-title {
-  font-family: 'Oswald', sans-serif;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
 
+h1,h2,.brand-title{
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:1px;
+}
 .hidden {
     display: none !important;
 }
@@ -59,27 +38,19 @@ button {
     transition: var(--transition);
 }
 
-.btn-primary {
-  background: linear-gradient(135deg,var(--primary),var(--primary-soft));
-  color:white;
-
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  border:none;
+  border-radius:12px;
   padding:14px;
-  border-radius:14px;
-  font-weight:700;
-
-  box-shadow:0 6px 18px rgba(30,58,138,0.35);
-
-  transition:var(--transition);
+  font-weight:600;
+  color:white;
+  transition:.2s;
 }
 
-.btn-primary:hover {
-  transform:translateY(-2px);
+.btn-primary:active{
+  transform:scale(.97);
 }
-
-.btn-primary:active {
-    transform: scale(0.98);
-}
-
 .btn-outline {
     background: transparent;
     border: 2px solid var(--grey);
@@ -199,12 +170,9 @@ button {
 }
 
 /* Header */
-.app-header {
-  background: linear-gradient(135deg,#1E3A8A,#0F172A);
+.app-header{
+  background:linear-gradient(135deg,#1e3a8a,#0f172a);
   color:white;
-  padding:18px;
-
-  box-shadow:0 4px 18px rgba(0,0,0,0.2);
 }
 
 .header-content {
@@ -294,16 +262,12 @@ button {
 }
 
 /* Dashboard Cards */
-.card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 20px;
-
-  border: 1px solid rgba(255,255,255,0.4);
-
-  box-shadow: var(--shadow-glass);
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.06);
+  border:1px solid rgba(0,0,0,0.04);
 }
 
 .stats-grid {
