@@ -1291,3 +1291,69 @@ button {
   padding:20px;
   box-shadow:0 8px 25px rgba(0,0,0,.15);
 }
+
+.screen-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.players-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:16px;
+}
+
+.player-card-ui{
+  background:#fff;
+  border-radius:16px;
+  padding:14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.player-avatar{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#1e3a8a,#3b82f6);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.player-info{
+  flex:1;
+}
+
+.player-name{
+  font-weight:600;
+}
+
+.player-meta{
+  font-size:13px;
+  opacity:0.6;
+}
+
+.player-actions button{
+  border:none;
+  background:none;
+  cursor:pointer;
+  font-size:16px;
+}
+
+.btn-primary{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+

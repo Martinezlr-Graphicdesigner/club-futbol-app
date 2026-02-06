@@ -1126,17 +1126,36 @@ function renderPlantel(container, data){
   const players = data.players || [];
 
   container.innerHTML = `
-    <h2>Plantel</h2>
+    <div class="screen-header">
+      <h2>Plantel</h2>
+      <button class="btn-primary" onclick="addPlayer()">
+        + Jugador
+      </button>
+    </div>
 
-    <button onclick="addPlayer()">Agregar jugador</button>
-
-    <div>
+    <div class="players-grid">
       ${players.map(p=>`
-        <div class="player-row">
-          <b>${p.name}</b> — ${p.number || "-"}
-          <button onclick="editPlayer('${p.id}')">Editar</button>
-          <button onclick="deletePlayer('${p.id}')">Eliminar</button>
+
+        <div class="player-card-ui">
+
+          <div class="player-avatar">
+            ${p.name.charAt(0)}
+          </div>
+
+          <div class="player-info">
+            <div class="player-name">${p.name}</div>
+            <div class="player-meta">
+              #${p.number || "-"}
+            </div>
+          </div>
+
+          <div class="player-actions">
+            <button onclick="editPlayer('${p.id}')">✏️</button>
+            <button onclick="deletePlayer('${p.id}')">🗑️</button>
+          </div>
+
         </div>
+
       `).join("")}
     </div>
   `;
