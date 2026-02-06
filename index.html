@@ -79,105 +79,96 @@
 
 <section class="dashboard">
 
+Perfecto — ahora vamos a hacerlo bien 😄
+Te paso el HTML del Dashboard (Home) para que se vea como la referencia tipo app deportiva que mostraste.
+
+👉 Este HTML va DENTRO de #content-area
+👉 No reemplaza tu index completo
+👉 Solo lo que renderiza la pantalla Home
+
+Tu JS puede hacer:
+
+contentArea.innerHTML = `...`;
+
+
+y pegar esto.
+
+✅ HTML DASHBOARD PRO
 <!-- NEXT MATCH CARD -->
 <div class="card match-card">
+  <h3>PRÓXIMO PARTIDO</h3>
 
-<div class="match-header">
-<span>PRÓXIMO PARTIDO</span>
-<span class="badge">Liga</span>
-</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>Wilcoop</div>
+    <div class="vs">VS</div>
+    <div>Rival</div>
+  </div>
 
-<div class="teams">
-
-<div>
-<p>Wilcoop</p>
-</div>
-
-<h2>VS</h2>
-
-<div>
-<p>Rival</p>
-</div>
-
-</div>
-
-<div class="match-info">
-<p>📅 7 Feb 2026</p>
-<p>⏰ 10:00 AM</p>
-<p>📍 Quilmes</p>
-</div>
-
+  <div class="match-info" style="margin-top:10px;">
+    📅 7 Feb 2026<br>
+    ⏰ 10:00 AM<br>
+    📍 Quilmes
+  </div>
 </div>
 
 <!-- QUICK ACTIONS -->
-<h3 class="section-title">Acciones rápidas</h3>
+<h4 style="margin:10px 0;">Acciones rápidas</h4>
 
-<div class="quick-grid">
+<div class="quick-actions">
+  <button class="action-btn">
+    📅<br>Agenda
+  </button>
 
-<button class="quick-card">
-📅
-<span>Agenda</span>
-</button>
+  <button class="action-btn">
+    ✅<br>Asistencia
+  </button>
 
-<button class="quick-card">
-✅
-<span>Asistencia</span>
-</button>
-
-<button class="quick-card">
-👥
-<span>Plantel</span>
-</button>
-
+  <button class="action-btn">
+    👥<br>Plantel
+  </button>
 </div>
 
-<!-- STATS -->
-<h3 class="section-title">Estadísticas</h3>
+<!-- SEASON STATS -->
+<h4 style="margin:16px 0 10px;">Estadísticas</h4>
 
-<div class="stats-grid">
+<div class="stats">
+  <div class="stat-box">
+    <h4>12</h4>
+    Jugados
+  </div>
 
-<div class="stat">
-<h2>12</h2>
-<span>Jugados</span>
+  <div class="stat-box">
+    <h4>8</h4>
+    Ganados
+  </div>
+
+  <div class="stat-box">
+    <h4>2</h4>
+    Empates
+  </div>
+
+  <div class="stat-box">
+    <h4>2</h4>
+    Perdidos
+  </div>
 </div>
 
-<div class="stat">
-<h2>8</h2>
-<span>Ganados</span>
+<!-- RECENT ACTIVITY -->
+<h4 style="margin:16px 0 10px;">Actividad reciente</h4>
+
+<div class="card">
+  🏆 Resultado cargado<br>
+  <small>Wilcoop 3 - 1 Rival</small>
 </div>
 
-<div class="stat">
-<h2>2</h2>
-<span>Empates</span>
+<div class="card">
+  👤 Nuevo jugador agregado<br>
+  <small>Lucas M. se unió al plantel</small>
 </div>
 
-<div class="stat">
-<h2>2</h2>
-<span>Perdidos</span>
-</div>
-
-</div>
-
-<!-- ACTIVITY -->
-<h3 class="section-title">Actividad</h3>
-
-<div class="card activity">
-
-<div class="activity-item">
-🏆 Resultado cargado
-<span>hace 2h</span>
-</div>
-
-<div class="activity-item">
-👤 Nuevo jugador
-<span>1 día</span>
-</div>
-
-<div class="activity-item">
-📢 Aviso entrenador
-<span>2 días</span>
-</div>
-
+<div class="card">
+  📢 Aviso del DT<br>
+  <small>Entrenamiento movido de cancha</small>
 </div>
 
 </section>
