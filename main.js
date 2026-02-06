@@ -356,59 +356,80 @@ function renderScreen(screen) {
 /**************************************************
  * SCREENS
  **************************************************/
-function renderHome(container, data) {
+function renderHome(container, data){
 
-  const isAdmin = state.user.role === "admin";
+  const catData = state.data[state.user.category];
+  const players = catData.players || [];
+  const sessions = catData.sessions || {};
 
+  // calcular asistencia general
+  let total=0, present=0;
+
+  Object.values(sessions).forEach(s=>{
+    if(s.attendance){
+      Object.values(s.attendance).forEach(v=>{
+        total++;
+        if(v) present++;
+      });
+    }
+  });
+
+  const percent = total ? Math.round((present/total)*100) : 0;
+
+  // próximo partido
   const todayKey = getLocalDateKey(new Date());
 
-  const nextMatchKey = Object.keys(state.data.shared.matches)
+  const nextMatchKey = Object.keys(state.data.shared.matches || {})
     .sort()
-    .find(k => k >= todayKey);
+    .find(k=>k>=todayKey);
 
   const nextMatch = nextMatchKey
     ? state.data.shared.matches[nextMatchKey]
     : null;
 
   container.innerHTML = `
-    <section class="section">
-      <h2>Inicio</h2>
+  <div class="dashboard">
 
-      <div class="card">
-        <h3>Categoría ${state.user.category}</h3>
-        <p>${isAdmin ? "Modo Administrador" : "Modo Profesor"}</p>
+    <h2 class="dash-title">Dashboard</h2>
+
+    <div class="dash-cards">
+
+      <div class="dash-card blue">
+        <span>Jugadores</span>
+        <h1>${players.length}</h1>
       </div>
 
-      <div class="quick-actions">
-        <button class="btn-primary" onclick="navigateTo('agenda')">
-          📅 Ver Agenda
-        </button>
-
-        <button class="btn-primary" onclick="navigateTo('lista')">
-          📋 Tomar Asistencia
-        </button>
-
-        <button class="btn-primary" onclick="navigateTo('plantel')">
-          👥 Plantel
-        </button>
+      <div class="dash-card purple">
+        <span>Asistencia</span>
+        <h1>${percent}%</h1>
       </div>
 
-      <div class="card">
-        <h3>Próximo partido</h3>
+    </div>
 
-        ${
-          nextMatch
-            ? `
-              <p><strong>Fecha:</strong> ${formatDateFull(nextMatchKey)}</p>
-              <p><strong>Rival:</strong> ${nextMatch.rival}</p>
-              <p><strong>Condición:</strong> ${nextMatch.home ? "Local" : "Visitante"}</p>
-              <p><strong>Lugar:</strong> ${nextMatch.location}</p>
-            `
-            : `<p>No hay partidos cargados</p>`
-        }
+    <div class="dash-card large">
 
-      </div>
-    </section>
+      <h3>Próximo partido</h3>
+
+      ${
+        nextMatch
+        ? `
+          <p><b>${nextMatch.rival}</b></p>
+          <p>${formatDateFull(nextMatchKey)}</p>
+          <p>${nextMatch.home?"Local":"Visitante"}</p>
+          <p>${nextMatch.location||""}</p>
+        `
+        : `<p>No hay partidos cargados</p>`
+      }
+
+    </div>
+
+    <div class="dash-actions">
+      <button onclick="navigateTo('lista')">Tomar asistencia</button>
+      <button onclick="navigateTo('plantel')">Ver plantel</button>
+      <button onclick="navigateTo('agenda')">Agenda</button>
+    </div>
+
+  </div>
   `;
 }
 

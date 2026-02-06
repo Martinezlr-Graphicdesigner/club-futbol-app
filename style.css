@@ -1357,3 +1357,62 @@ button {
   cursor:pointer;
 }
 
+.dashboard{
+  padding:20px;
+}
+
+.dash-title{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:18px;
+}
+
+.dash-cards{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+.dash-card{
+  background:white;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.06);
+}
+
+.dash-card.large{
+  margin-bottom:16px;
+}
+
+.dash-card.blue{
+  background:linear-gradient(135deg,#2563eb,#3b82f6);
+  color:white;
+}
+
+.dash-card.purple{
+  background:linear-gradient(135deg,#7c3aed,#a78bfa);
+  color:white;
+}
+
+.dash-card h1{
+  margin:6px 0 0;
+  font-size:28px;
+}
+
+.dash-actions{
+  display:flex;
+  gap:12px;
+}
+
+.dash-actions button{
+  flex:1;
+  background:#1e3a8a;
+  color:white;
+  border:none;
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:600;
+}
+
