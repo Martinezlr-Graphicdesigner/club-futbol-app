@@ -356,80 +356,97 @@ function renderScreen(screen) {
 /**************************************************
  * SCREENS
  **************************************************/
-function renderHome(container, data){
+function renderHome(container, data) {
 
-  const catData = state.data[state.user.category];
-  const players = catData.players || [];
-  const sessions = catData.sessions || {};
+  const players = data.players || [];
+  const sessions = data.sessions || {};
+  const matches = state.data.shared.matches || {};
 
-  // calcular asistencia general
-  let total=0, present=0;
+  const todayKey = getLocalDateKey(new Date());
 
-  Object.values(sessions).forEach(s=>{
-    if(s.attendance){
-      Object.values(s.attendance).forEach(v=>{
+  const nextMatchKey = Object.keys(matches)
+    .sort()
+    .find(k => k >= todayKey);
+
+  const nextMatch = nextMatchKey
+    ? matches[nextMatchKey]
+    : null;
+
+  const playerCount = players.length;
+
+  // asistencia %
+  let total = 0, present = 0;
+  Object.values(sessions).forEach(s => {
+    if (s.attendance) {
+      Object.values(s.attendance).forEach(v => {
         total++;
-        if(v) present++;
+        if (v) present++;
       });
     }
   });
 
-  const percent = total ? Math.round((present/total)*100) : 0;
-
-  // próximo partido
-  const todayKey = getLocalDateKey(new Date());
-
-  const nextMatchKey = Object.keys(state.data.shared.matches || {})
-    .sort()
-    .find(k=>k>=todayKey);
-
-  const nextMatch = nextMatchKey
-    ? state.data.shared.matches[nextMatchKey]
-    : null;
+  const attendancePct = total
+    ? Math.round(present * 100 / total)
+    : 0;
 
   container.innerHTML = `
   <div class="dashboard">
 
-    <h2 class="dash-title">Dashboard</h2>
-
-    <div class="dash-cards">
-
-      <div class="dash-card blue">
-        <span>Jugadores</span>
-        <h1>${players.length}</h1>
-      </div>
-
-      <div class="dash-card purple">
-        <span>Asistencia</span>
-        <h1>${percent}%</h1>
-      </div>
-
+    <div class="dash-header">
+      <h1>Dashboard</h1>
+      <span>${new Date().toLocaleDateString("es-AR", {month:"short",year:"numeric"})}</span>
     </div>
 
-    <div class="dash-card large">
-
-      <h3>Próximo partido</h3>
+    <div class="match-hero">
+      <p class="label">PRÓXIMO PARTIDO</p>
 
       ${
         nextMatch
         ? `
-          <p><b>${nextMatch.rival}</b></p>
-          <p>${formatDateFull(nextMatchKey)}</p>
-          <p>${nextMatch.home?"Local":"Visitante"}</p>
-          <p>${nextMatch.location||""}</p>
-        `
-        : `<p>No hay partidos cargados</p>`
-      }
+        <div class="teams">
+          <div>WILCOOP</div>
+          <span>VS</span>
+          <div>${nextMatch.rival}</div>
+        </div>
 
+        <div class="match-info">
+          <span>📅 ${formatDateFull(nextMatchKey)}</span>
+          <span>📍 ${nextMatch.location || "-"}</span>
+        </div>
+        `
+        : `<p>No hay partidos</p>`
+      }
     </div>
 
-    <div class="dash-actions">
-      <button onclick="navigateTo('lista')">Tomar asistencia</button>
-      <button onclick="navigateTo('plantel')">Ver plantel</button>
-      <button onclick="navigateTo('agenda')">Agenda</button>
+    <div class="quick-grid">
+      <div class="quick-card" onclick="navigateTo('agenda')">
+        📅<span>Agenda</span>
+      </div>
+
+      <div class="quick-card" onclick="navigateTo('lista')">
+        📋<span>Lista</span>
+      </div>
+
+      <div class="quick-card" onclick="navigateTo('plantel')">
+        👥<span>Roster</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <h2>${playerCount}</h2>
+        <p>JUGADORES</p>
+      </div>
+
+      <div class="stat-card">
+        <h2>${attendancePct}%</h2>
+        <p>ASISTENCIA</p>
+      </div>
     </div>
 
   </div>
+
+  <button class="fab">+</button>
   `;
 }
 
