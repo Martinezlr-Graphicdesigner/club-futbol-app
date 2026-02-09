@@ -355,76 +355,58 @@ function renderScreen(screen) {
 /**************************************************
  * SCREENS
  **************************************************/
-function renderHome(){
+function renderHome(container,data){
 
   const cat = state.user.category;
 
   const matches = state.data?.[cat]?.matches || {};
-  const attendances = state.data?.[cat]?.attendance || {};
+  const sessions = state.data?.[cat]?.sessions || {};
 
   // Último partido
   const matchDates = Object.keys(matches).sort().reverse();
-  let lastMatchText = "Sin partidos cargados";
+  let lastMatchText = "Sin partidos";
 
   if(matchDates.length){
     const m = matches[matchDates[0]];
-    lastMatchText = `${matchDates[0]} vs ${m.rival} (${m.goalsFor}-${m.goalsAgainst})`;
+    lastMatchText =
+      `${formatDateFull(matchDates[0])} vs ${m.rival || "?"}`;
   }
 
-  // Última asistencia
-  const attDates = Object.keys(attendances).sort().reverse();
+  // Última asistencia (desde sessions)
+  const attDates = Object.keys(sessions)
+    .filter(k=>sessions[k].closed)
+    .sort()
+    .reverse();
+
   let lastTrainingText = "Sin asistencias";
 
   if(attDates.length){
-    lastTrainingText = `Entrenamiento ${attDates[0]}`;
+    lastTrainingText =
+      `Entrenamiento ${formatDate(attDates[0])}`;
   }
 
-  contentArea.innerHTML = `
+  container.innerHTML = `
   <div class="dashboard">
 
     <div class="dashboard-grid">
 
-      <!-- Agenda -->
-      <div class="dashboard-card" onclick="navigate('agenda')">
-        <div class="icon">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </div>
+      <div class="dashboard-card" onclick="navigateTo('agenda')">
+        <div class="icon">📅</div>
         <h3>Agenda</h3>
       </div>
 
-      <!-- Lista -->
-      <div class="dashboard-card" onclick="navigate('lista')">
-        <div class="icon">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-            <rect x="8" y="2" width="8" height="4" rx="1"></rect>
-            <path d="M9 12l2 2 4-4"></path>
-          </svg>
-        </div>
+      <div class="dashboard-card" onclick="navigateTo('lista')">
+        <div class="icon">📋</div>
         <h3>Lista</h3>
       </div>
 
-      <!-- Plantel -->
-      <div class="dashboard-card" onclick="navigate('plantel')">
-        <div class="icon">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-        </div>
+      <div class="dashboard-card" onclick="navigateTo('plantel')">
+        <div class="icon">👥</div>
         <h3>Plantel</h3>
       </div>
 
     </div>
 
-    <!-- Actividad reciente -->
     <div class="recent-activity">
       <h3>Actividad reciente</h3>
 
