@@ -285,6 +285,8 @@ function ensureDataStructure(){
   }
 });
 
+}
+
 /**************************************************
  * AGENDA BASE (UNA SOLA VEZ)
  **************************************************/
@@ -647,7 +649,8 @@ function renderCalendar(container, year, month){
     }
 
     // partido cargado
-    const match = state.data.shared.matches?.[dateKey];
+    const match =
+  state.data[state.user.category].matches?.[dateKey];
     if(match){
       className+=" has-match";
     }
@@ -805,7 +808,8 @@ function renderListaMatches(container){
 }
 
 function saveResult(key,val){
-  state.data.shared.matches[key].result=val;
+  const cat = state.user.category;
+  state.data[cat].matches[key].result = val;
   saveData();
 }
 
@@ -1053,7 +1057,8 @@ function openMatchAttendance(dateKey){
   const players = state.data[cat].players || [];
   const isAdmin = state.user.role === "admin";
 
-  const match = state.data.shared.matches[dateKey];
+  const match =
+  state.data[state.user.category].matches[dateKey];
 
   if(!match.attendance){
     match.attendance = {};
@@ -1086,7 +1091,8 @@ function openMatchAttendance(dateKey){
 
 function saveMatchAttendance(dateKey){
 
-  const match = state.data.shared.matches[dateKey];
+  const match =
+  state.data[state.user.category].matches[dateKey];
 
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
@@ -1104,7 +1110,8 @@ function saveMatchAttendance(dateKey){
 function drawCalendar(container,data){
 
   const sessions=data.sessions||{};
-  const matches=state.data.shared?.matches||{};
+  const matches=
+  state.data[state.user.category].matches || {};
   const todayKey=getLocalDateKey(new Date());
 
   const now=new Date();
