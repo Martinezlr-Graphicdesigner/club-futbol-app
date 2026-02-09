@@ -355,131 +355,90 @@ function renderScreen(screen) {
 /**************************************************
  * SCREENS
  **************************************************/
-function renderHome(container, data) {
+function renderHome(){
 
   const cat = state.user.category;
-  const matches =
-  state.data[state.user.category].matches || {};
-  const sessions = data.sessions || {};
-  const players = data.players || [];
 
-  const todayKey = getLocalDateKey(new Date());
+  const matches = state.data?.[cat]?.matches || {};
+  const attendances = state.data?.[cat]?.attendance || {};
 
-  const nextMatchKey = Object.keys(matches)
-    .sort()
-    .find(k => k >= todayKey);
+  // Último partido
+  const matchDates = Object.keys(matches).sort().reverse();
+  let lastMatchText = "Sin partidos cargados";
 
-  const nextMatch =
-    nextMatchKey ? matches[nextMatchKey] : null;
+  if(matchDates.length){
+    const m = matches[matchDates[0]];
+    lastMatchText = `${matchDates[0]} vs ${m.rival} (${m.goalsFor}-${m.goalsAgainst})`;
+  }
 
-  // asistencia %
-  let total=0,present=0;
-  Object.values(sessions).forEach(s=>{
-    if(s.attendance){
-      Object.values(s.attendance).forEach(v=>{
-        total++;
-        if(v) present++;
-      });
-    }
-  });
+  // Última asistencia
+  const attDates = Object.keys(attendances).sort().reverse();
+  let lastTrainingText = "Sin asistencias";
 
-  const pct = total
-    ? Math.round(present*100/total)
-    : 0;
+  if(attDates.length){
+    lastTrainingText = `Entrenamiento ${attDates[0]}`;
+  }
 
-  // últimas actividades
-  const lastSession =
-    Object.keys(sessions)
-      .filter(k=>sessions[k].closed)
-      .sort()
-      .pop();
+  contentArea.innerHTML = `
+  <div class="dashboard">
 
-  const lastMatch =
-    Object.keys(matches)
-      .filter(k=>matches[k].result)
-      .sort()
-      .pop();
+    <div class="dashboard-grid">
 
-  container.innerHTML=`
-
-<div class="ag-dashboard">
-
-  <h2 class="ag-title">Dashboard</h2>
-
-  <div class="ag-hero">
-    <p>PRÓXIMO PARTIDO</p>
-
-    ${
-      nextMatch
-      ? `
-      <div class="ag-vs">
-        <div>WILCOOP</div>
-        <span>VS</span>
-        <div>${nextMatch.rival||"—"}</div>
+      <!-- Agenda -->
+      <div class="dashboard-card" onclick="navigate('agenda')">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <h3>Agenda</h3>
       </div>
 
-      <div class="ag-matchrow">
-        <span>📅 ${formatDateFull(nextMatchKey)}</span>
-        <span>📍 ${nextMatch.location||"-"}</span>
+      <!-- Lista -->
+      <div class="dashboard-card" onclick="navigate('lista')">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1"></rect>
+            <path d="M9 12l2 2 4-4"></path>
+          </svg>
+        </div>
+        <h3>Lista</h3>
       </div>
-      `
-      : `<small>No hay partido cargado</small>`
-    }
-  </div>
 
-  <div class="ag-actions">
+      <!-- Plantel -->
+      <div class="dashboard-card" onclick="navigate('plantel')">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <h3>Plantel</h3>
+      </div>
 
-    <div onclick="navigateTo('agenda')" class="ag-action">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="4"/></svg>
-      <span>Agenda</span>
     </div>
 
-    <div onclick="navigateTo('lista')" class="ag-action">
-      <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/></svg>
-      <span>Lista</span>
-    </div>
+    <!-- Actividad reciente -->
+    <div class="recent-activity">
+      <h3>Actividad reciente</h3>
 
-    <div onclick="navigateTo('plantel')" class="ag-action">
-      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/></svg>
-      <span>Plantel</span>
-    </div>
+      <div class="activity-item">
+        ⚽ ${lastMatchText}
+      </div>
 
-  </div>
-
-  <div class="ag-stats">
-
-    <div class="ag-stat">
-      <h3>${players.length}</h3>
-      <p>JUGADORES</p>
-    </div>
-
-    <div class="ag-stat dark">
-      <h3>${pct}%</h3>
-      <p>ASISTENCIA</p>
+      <div class="activity-item">
+        🏃 ${lastTrainingText}
+      </div>
     </div>
 
   </div>
-
-  <h3 class="ag-sub">Actividad reciente</h3>
-
-  <div class="ag-activity">
-
-    ${
-      lastSession
-      ? `<div>📋 Entrenamiento ${formatDate(lastSession)}</div>`
-      : ""
-    }
-
-    ${
-      lastMatch
-      ? `<div>⚽ Resultado ${matches[lastMatch].result}</div>`
-      : ""
-    }
-
-  </div>
-
-</div>
-`;
+  `;
 }
 
 function renderCoachDashboard(data){
@@ -1030,25 +989,28 @@ function openMatchDetail(dateKey){
   `;
 }
 
-function saveMatch(dateKey){
+function saveMatch(date, rival, goalsFor, goalsAgainst){
 
   const cat = state.user.category;
+
+  if(!state.data[cat]){
+    state.data[cat] = {};
+  }
 
   if(!state.data[cat].matches){
     state.data[cat].matches = {};
   }
 
-  state.data[cat].matches[dateKey] = {
-    rival: document.getElementById("m-rival").value,
-    location: document.getElementById("m-location").value,
-    home: document.getElementById("m-home").value === "true",
-    result: "",
-    attendance: {}
+  state.data[cat].matches[date] = {
+    rival: rival,
+    goalsFor: goalsFor,
+    goalsAgainst: goalsAgainst
   };
 
-  saveData();
-  closeTraining();
-  alert("Partido guardado correctamente");
+  database.ref("data/" + cat + "/matches")
+    .set(state.data[cat].matches);
+
+  showToast("Partido guardado ✅");
 }
 
 

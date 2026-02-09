@@ -1599,3 +1599,9 @@ button {
 .ag-activity div{
   margin:6px 0;
 }
+
+.dashboard-card svg {
+  width: 28px;
+  height: 28px;
+  stroke: #1e3a8a;
+}
