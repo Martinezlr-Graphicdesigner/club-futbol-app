@@ -1505,3 +1505,97 @@ button {
   box-shadow:0 8px 20px rgba(0,0,0,.3);
 }
 
+.ag-dashboard{
+  padding:16px;
+}
+
+.ag-title{
+  font-size:22px;
+  margin-bottom:12px;
+}
+
+.ag-hero{
+  background:linear-gradient(160deg,#0f2547,#183b6b);
+  color:white;
+  padding:22px;
+  border-radius:22px;
+}
+
+.ag-hero p{
+  font-size:12px;
+  opacity:.7;
+}
+
+.ag-vs{
+  display:flex;
+  justify-content:space-between;
+  margin:14px 0;
+  font-weight:700;
+}
+
+.ag-matchrow{
+  display:flex;
+  gap:12px;
+  font-size:14px;
+}
+
+.ag-actions{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin:18px 0;
+}
+
+.ag-action{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.ag-action svg{
+  width:28px;
+  height:28px;
+  stroke:#0f2547;
+  fill:none;
+  stroke-width:2;
+}
+
+.ag-action span{
+  display:block;
+  margin-top:6px;
+  font-weight:600;
+}
+
+.ag-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.ag-stat{
+  background:white;
+  padding:18px;
+  border-radius:16px;
+  border-left:6px solid #2f6df6;
+}
+
+.ag-stat.dark{
+  border-left:6px solid #0f2547;
+}
+
+.ag-sub{
+  margin-top:18px;
+}
+
+.ag-activity{
+  background:white;
+  padding:16px;
+  border-radius:16px;
+  font-size:14px;
+}
+
+.ag-activity div{
+  margin:6px 0;
+}

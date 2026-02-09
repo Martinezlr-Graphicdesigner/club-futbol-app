@@ -279,14 +279,11 @@ function ensureDataStructure(){
   });
 
   
-  if(!state.data.shared){
-    state.data.shared = {};
+  ["2018","2019","2020"].forEach(cat=>{
+  if(!state.data[cat].matches){
+    state.data[cat].matches = {};
   }
-
-  if(!state.data.shared.matches){
-    state.data.shared.matches = {};
-  }
-}
+});
 
 /**************************************************
  * AGENDA BASE (UNA SOLA VEZ)
@@ -358,9 +355,11 @@ function renderScreen(screen) {
  **************************************************/
 function renderHome(container, data) {
 
-  const players = data.players || [];
+  const cat = state.user.category;
+  const matches =
+  state.data[state.user.category].matches || {};
   const sessions = data.sessions || {};
-  const matches = state.data.shared.matches || {};
+  const players = data.players || [];
 
   const todayKey = getLocalDateKey(new Date());
 
@@ -368,86 +367,117 @@ function renderHome(container, data) {
     .sort()
     .find(k => k >= todayKey);
 
-  const nextMatch = nextMatchKey
-    ? matches[nextMatchKey]
-    : null;
-
-  const playerCount = players.length;
+  const nextMatch =
+    nextMatchKey ? matches[nextMatchKey] : null;
 
   // asistencia %
-  let total = 0, present = 0;
-  Object.values(sessions).forEach(s => {
-    if (s.attendance) {
-      Object.values(s.attendance).forEach(v => {
+  let total=0,present=0;
+  Object.values(sessions).forEach(s=>{
+    if(s.attendance){
+      Object.values(s.attendance).forEach(v=>{
         total++;
-        if (v) present++;
+        if(v) present++;
       });
     }
   });
 
-  const attendancePct = total
-    ? Math.round(present * 100 / total)
+  const pct = total
+    ? Math.round(present*100/total)
     : 0;
 
-  container.innerHTML = `
-  <div class="dashboard">
+  // últimas actividades
+  const lastSession =
+    Object.keys(sessions)
+      .filter(k=>sessions[k].closed)
+      .sort()
+      .pop();
 
-    <div class="dash-header">
-      <h1>Dashboard</h1>
-      <span>${new Date().toLocaleDateString("es-AR", {month:"short",year:"numeric"})}</span>
+  const lastMatch =
+    Object.keys(matches)
+      .filter(k=>matches[k].result)
+      .sort()
+      .pop();
+
+  container.innerHTML=`
+
+<div class="ag-dashboard">
+
+  <h2 class="ag-title">Dashboard</h2>
+
+  <div class="ag-hero">
+    <p>PRÓXIMO PARTIDO</p>
+
+    ${
+      nextMatch
+      ? `
+      <div class="ag-vs">
+        <div>WILCOOP</div>
+        <span>VS</span>
+        <div>${nextMatch.rival||"—"}</div>
+      </div>
+
+      <div class="ag-matchrow">
+        <span>📅 ${formatDateFull(nextMatchKey)}</span>
+        <span>📍 ${nextMatch.location||"-"}</span>
+      </div>
+      `
+      : `<small>No hay partido cargado</small>`
+    }
+  </div>
+
+  <div class="ag-actions">
+
+    <div onclick="navigateTo('agenda')" class="ag-action">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="4"/></svg>
+      <span>Agenda</span>
     </div>
 
-    <div class="match-hero">
-      <p class="label">PRÓXIMO PARTIDO</p>
-
-      ${
-        nextMatch
-        ? `
-        <div class="teams">
-          <div>WILCOOP</div>
-          <span>VS</span>
-          <div>${nextMatch.rival}</div>
-        </div>
-
-        <div class="match-info">
-          <span>📅 ${formatDateFull(nextMatchKey)}</span>
-          <span>📍 ${nextMatch.location || "-"}</span>
-        </div>
-        `
-        : `<p>No hay partidos</p>`
-      }
+    <div onclick="navigateTo('lista')" class="ag-action">
+      <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/></svg>
+      <span>Lista</span>
     </div>
 
-    <div class="quick-grid">
-      <div class="quick-card" onclick="navigateTo('agenda')">
-        📅<span>Agenda</span>
-      </div>
-
-      <div class="quick-card" onclick="navigateTo('lista')">
-        📋<span>Lista</span>
-      </div>
-
-      <div class="quick-card" onclick="navigateTo('plantel')">
-        👥<span>Roster</span>
-      </div>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card blue">
-        <h2>${playerCount}</h2>
-        <p>JUGADORES</p>
-      </div>
-
-      <div class="stat-card">
-        <h2>${attendancePct}%</h2>
-        <p>ASISTENCIA</p>
-      </div>
+    <div onclick="navigateTo('plantel')" class="ag-action">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/></svg>
+      <span>Plantel</span>
     </div>
 
   </div>
 
-  <button class="fab">+</button>
-  `;
+  <div class="ag-stats">
+
+    <div class="ag-stat">
+      <h3>${players.length}</h3>
+      <p>JUGADORES</p>
+    </div>
+
+    <div class="ag-stat dark">
+      <h3>${pct}%</h3>
+      <p>ASISTENCIA</p>
+    </div>
+
+  </div>
+
+  <h3 class="ag-sub">Actividad reciente</h3>
+
+  <div class="ag-activity">
+
+    ${
+      lastSession
+      ? `<div>📋 Entrenamiento ${formatDate(lastSession)}</div>`
+      : ""
+    }
+
+    ${
+      lastMatch
+      ? `<div>⚽ Resultado ${matches[lastMatch].result}</div>`
+      : ""
+    }
+
+  </div>
+
+</div>
+`;
 }
 
 function renderCoachDashboard(data){
@@ -750,7 +780,8 @@ function renderListaToma(container,data){
 
 function renderListaMatches(container){
 
-  const matches=state.data.shared.matches||{};
+  const matches =
+  state.data[state.user.category].matches || {};
 
   let html="<h3>Resultados</h3>";
 
@@ -947,7 +978,8 @@ function renderAgenda(container,data){
 function openMatchDetail(dateKey){
 
   const isAdmin = state.user.role==="admin";
-  const match = state.data.shared.matches[dateKey] || {};
+  const match =
+  state.data[state.user.category].matches[dateKey] || {};
 
   const area=document.getElementById("modal-container");
 
@@ -995,15 +1027,13 @@ function openMatchDetail(dateKey){
 
 function saveMatch(dateKey){
 
-  if(!state.data.shared){
-    state.data.shared = {};
+  const cat = state.user.category;
+
+  if(!state.data[cat].matches){
+    state.data[cat].matches = {};
   }
 
-  if(!state.data.shared.matches){
-    state.data.shared.matches = {};
-  }
-
-  state.data.shared.matches[dateKey] = {
+  state.data[cat].matches[dateKey] = {
     rival: document.getElementById("m-rival").value,
     location: document.getElementById("m-location").value,
     home: document.getElementById("m-home").value === "true",
