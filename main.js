@@ -817,7 +817,8 @@ function renderListaStats(container,data){
 
   const players=data.players||[];
   const sessions=data.sessions||{};
-  const matches=state.data.shared.matches||{};
+  const matches =
+  state.data[state.user.category].matches || {};
 
   let html=`<h3>Estadísticas</h3>`;
 
@@ -1179,7 +1180,8 @@ function drawCalendar(container,data){
 
 function selectCalendarDate(dateKey){
 
-  const match=state.data.shared.matches?.[dateKey];
+  const match =
+  state.data[state.user.category].matches?.[dateKey];
   const session=state.data[state.user.category]
     .sessions?.[dateKey];
 
