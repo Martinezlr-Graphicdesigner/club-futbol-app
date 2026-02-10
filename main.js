@@ -358,115 +358,83 @@ function renderScreen(screen) {
 function renderHome(container, data){
 
   const cat = state.user.category;
+
   const matches = data.matches || {};
   const sessions = data.sessions || {};
 
-  // 👉 Último partido
-  const lastMatchKey = Object.keys(matches).sort().pop();
-  const lastMatch = lastMatchKey ? matches[lastMatchKey] : null;
+  // ===== ÚLTIMO PARTIDO =====
+  let lastMatch = null;
+  const matchKeys = Object.keys(matches).sort();
+  if(matchKeys.length){
+    lastMatch = matches[matchKeys[matchKeys.length-1]];
+  }
 
-  // 👉 Último entrenamiento
-  const lastTrainingKey = Object.keys(sessions).sort().pop();
-
-  // 👉 Stats asistencia
-  let total=0, present=0;
-
-  Object.values(sessions).forEach(s=>{
-    if(s.attendance){
-      Object.values(s.attendance).forEach(v=>{
-        total++;
-        if(v) present++;
-      });
-    }
-  });
-
-  const percent = total ? Math.round(present*100/total) : 0;
+  // ===== ÚLTIMO ENTRENAMIENTO =====
+  let lastTrainingKey = null;
+  const sessionKeys = Object.keys(sessions).sort();
+  if(sessionKeys.length){
+    lastTrainingKey = sessionKeys[sessionKeys.length-1];
+  }
 
   container.innerHTML = `
+    <h2 class="section-title">Dashboard</h2>
 
-  <h2 class="section-title">Dashboard</h2>
-
-  <div class="home-cards">
-
-    <!-- AGENDA -->
     <div class="home-cards">
 
-  <div class="home-card" onclick="navigateTo('agenda')">
-    <svg viewBox="0 0 24 24" width="28" height="28"
-      stroke="#1f2d3d" fill="none" stroke-width="2">
-      <rect x="3" y="4" width="18" height="18" rx="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-    <span>Agenda</span>
-  </div>
+      <!-- AGENDA -->
+      <div class="home-card" onclick="navigateTo('agenda')">
+        <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span>Agenda</span>
+      </div>
 
-  <div class="home-card" onclick="navigateTo('lista')">
-    <svg viewBox="0 0 24 24" width="28" height="28"
-      stroke="#1f2d3d" fill="none" stroke-width="2">
-      <path d="M8 6h13M8 12h13M8 18h13"/>
-      <circle cx="3" cy="6" r="1"/>
-      <circle cx="3" cy="12" r="1"/>
-      <circle cx="3" cy="18" r="1"/>
-    </svg>
-    <span>Lista</span>
-  </div>
+      <!-- LISTA -->
+      <div class="home-card" onclick="navigateTo('lista')">
+        <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
+          <path d="M8 6h13M8 12h13M8 18h13"/>
+          <circle cx="3" cy="6" r="1"/>
+          <circle cx="3" cy="12" r="1"/>
+          <circle cx="3" cy="18" r="1"/>
+        </svg>
+        <span>Lista</span>
+      </div>
 
-  <div class="home-card" onclick="navigateTo('plantel')">
-    <svg viewBox="0 0 24 24" width="28" height="28"
-      stroke="#1f2d3d" fill="none" stroke-width="2">
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M17 11v6"/>
-      <path d="M21 15h-8"/>
-      <path d="M5 21v-2a4 4 0 0 1 8 0v2"/>
-    </svg>
-    <span>Plantel</span>
-  </div>
+      <!-- PLANTEL -->
+      <div class="home-card" onclick="navigateTo('plantel')">
+        <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M17 11v6"/>
+          <path d="M21 15h-8"/>
+          <path d="M5 21v-2a4 4 0 0 1 8 0v2"/>
+        </svg>
+        <span>Plantel</span>
+      </div>
 
-</div>
-
-${renderDashboardStats(data)}
-
-  <!-- STATS -->
-  <div class="stat-card">
-    <h3>Asistencia general</h3>
-    <h1>${percent}%</h1>
-  </div>
-
-  <h3 class="section-title">Actividad Reciente</h3>
-
-<div class="timeline">
-
-  <div class="timeline-item">
-    <div class="dot"></div>
-    <div>
-      <strong>Asistencia tomada</strong>
-      <p>${lastTraining ? "Entrenamiento "+lastTraining.date : "Sin entrenamientos"}</p>
     </div>
-  </div>
 
-  <div class="timeline-item">
-    <div class="dot gray"></div>
-    <div>
-      <strong>Último partido</strong>
-      <p>${
+    ${renderDashboardStats(data)}
+
+    <h3 class="section-title">Actividad Reciente</h3>
+
+    <div class="activity-box">
+      ${
         lastMatch
-        ? `${lastMatch.rival} (${lastMatch.goalsFor}-${lastMatch.goalsAgainst})`
-        : "Sin partidos"
-      }</p>
+          ? `Último partido: ${lastMatch.rival || "-"} (${lastMatch.goalsFor || 0}-${lastMatch.goalsAgainst || 0})`
+          : "Sin partidos"
+      }
     </div>
-  </div>
 
-</div>
-
-  <div class="activity-box">
-    ${
-      lastTrainingKey
-      ? `🏃 Entrenamiento ${formatDate(lastTrainingKey)}`
-      : "🏃 Sin entrenamientos"
-    }
-  </div>
+    <div class="activity-box">
+      ${
+        lastTrainingKey
+          ? `Entrenamiento ${formatDate(lastTrainingKey)}`
+          : "Sin entrenamientos"
+      }
+    </div>
   `;
 }
 
