@@ -1896,14 +1896,14 @@ button {
 .activity-card{
   background:#f3f4f6;
   border-radius:18px;
-  padding:16px;
+  padding:20px 22px;
 }
 
 .activity-row{
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
-  padding:6px 0;
+  padding:10px 0;
 }
 
 .dot{
@@ -1914,3 +1914,34 @@ button {
 
 .dot.blue{ background:#2f6fed; }
 .dot.gray{ background:#bfc5ce; }
+
+.next-match-card{
+  background:linear-gradient(135deg,#0f2747,#163a63);
+  color:white;
+  padding:20px;
+  border-radius:22px;
+  margin:12px 0 18px;
+}
+
+.nm-title{
+  opacity:.8;
+  font-size:12px;
+  letter-spacing:1px;
+}
+
+.nm-teams{
+  display:flex;
+  justify-content:space-between;
+  font-size:18px;
+  font-weight:700;
+  margin:14px 0;
+}
+
+.nm-info{
+  display:flex;
+  justify-content:space-between;
+  background:rgba(255,255,255,.15);
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:14px;
+}

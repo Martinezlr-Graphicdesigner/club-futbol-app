@@ -398,7 +398,9 @@ function renderHome(container, data){
   /* ========= HTML ========= */
 
   container.innerHTML = `
-    <h2 class="section-title">Dashboard</h2>
+    <h2 class="section-title">Wilcoop C.D</h2>
+ 
+${renderNextMatchCard(matches)}
 
     <!-- CARDS PRINCIPALES -->
     <div class="home-cards">
@@ -494,6 +496,37 @@ function renderHome(container, data){
               : "Sin entrenamientos"
           }
         </div>
+      </div>
+
+    </div>
+  `;
+}
+
+function renderNextMatchCard(matches){
+
+  if(!matches || !Object.keys(matches).length){
+    return "";
+  }
+
+  const nextKey = Object.keys(matches).sort()[0];
+  const m = matches[nextKey];
+
+  if(!m) return "";
+
+  return `
+    <div class="next-match-card">
+
+      <div class="nm-title">PRÓXIMO PARTIDO</div>
+
+      <div class="nm-teams">
+        <div>WILCOOP</div>
+        <div>VS</div>
+        <div>${m.rival || "-"}</div>
+      </div>
+
+      <div class="nm-info">
+        <span>${formatDate(nextKey)}</span>
+        <span>${m.sede || ""}</span>
       </div>
 
     </div>
@@ -625,16 +658,16 @@ function saveTrainingText(w,day){
 
 
 /**************************************************
- * LISTA / PLANTEL / STATS (BÁSICO)
+ * render / PLANTEL / STATS (BÁSICO)
  **************************************************/
 function formatDate(dateKey){
 
-  const [y,m,d] = dateKey.split("-");
+  const [d,m,y] = dateKey.split("-");
   return `${d}/${m}/${y.slice(2)}`;
 }
 
 function formatDateFull(dateKey){
-  const [y,m,d] = dateKey.split("-");
+  const [d,m,y] = dateKey.split("-");
   return `${d}-${m}-${y}`;
 }
 
@@ -863,18 +896,23 @@ function renderListaMatches(container){
     const m = matches[k];
 
     html+=`
-      <div class="player-card">
-        <strong>${formatDateFull(k)}</strong>
+  <div class="player-card">
 
-        <input placeholder="Rival"
-          value="${m.rival||""}"
-          onchange="updateMatchField('${k}','rival',this.value)">
+    <strong>${formatDateFull(k)}</strong>
+    <div>${m.rival||""}</div>
 
-        <input placeholder="Resultado (x-x)"
-          value="${m.result||""}"
-          onchange="updateMatchField('${k}','result',this.value)">
-      </div>
-    `;
+    <input placeholder="Resultado (x-x)"
+      value="${m.result||""}"
+      onchange="saveResult('${k}',this.value)">
+
+    ${
+      state.user.role==="admin"
+      ? `<button onclick="deleteMatch('${k}')">🗑 Borrar</button>`
+      : ""
+    }
+
+  </div>
+`;
   });
 
   container.innerHTML = html;
@@ -910,9 +948,33 @@ function updateMatchField(date,field,value){
 }
 
 function saveResult(key,val){
+
   const cat = state.user.category;
+
+  if(!state.data[cat].matches[key]){
+    state.data[cat].matches[key]={};
+  }
+
   state.data[cat].matches[key].result = val;
+
   saveData();
+
+  showToast("Resultado guardado");
+}
+
+function deleteMatch(dateKey){
+
+  if(!confirm("¿Eliminar partido?")) return;
+
+  const cat = state.user.category;
+
+  delete state.data[cat].matches[dateKey];
+
+  saveData();
+
+  renderScreen("lista");
+
+  showToast("Partido eliminado");
 }
 
 function renderListaStats(container,data){
