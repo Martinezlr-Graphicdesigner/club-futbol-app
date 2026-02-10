@@ -355,70 +355,85 @@ function renderScreen(screen) {
 /**************************************************
  * SCREENS
  **************************************************/
-function renderHome() {
-  const cat = currentCategory;
+function renderHome(container, data) {
 
-  database.ref(`categories/${cat}/matches`).limitToLast(1).once("value", snap => {
-    const lastMatch = snap.val() ? Object.values(snap.val())[0] : null;
+  const cat = state.user.category;
 
-    database.ref(`categories/${cat}/trainings`).limitToLast(1).once("value", s2 => {
-      const lastTraining = s2.val() ? Object.values(s2.val())[0] : null;
+  database.ref(`categories/${cat}/matches`)
+    .limitToLast(1)
+    .once("value", snap => {
 
-      contentArea.innerHTML = `
-        <h2 class="section-title">Dashboard</h2>
+      const lastMatch = snap.val()
+        ? Object.values(snap.val())[0]
+        : null;
 
-        <div class="home-cards">
-          <div class="home-card" onclick="navigate('agenda')">
-            <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <span>Agenda</span>
-          </div>
+      database.ref(`categories/${cat}/trainings`)
+        .limitToLast(1)
+        .once("value", s2 => {
 
-          <div class="home-card" onclick="navigate('lista')">
-            <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
-              <path d="M8 6h13M8 12h13M8 18h13"/>
-              <circle cx="3" cy="6" r="1"/>
-              <circle cx="3" cy="12" r="1"/>
-              <circle cx="3" cy="18" r="1"/>
-            </svg>
-            <span>Lista</span>
-          </div>
+          const lastTraining = s2.val()
+            ? Object.values(s2.val())[0]
+            : null;
 
-          <div class="home-card" onclick="navigate('plantel')">
-            <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M17 11v6"/>
-              <path d="M21 15h-8"/>
-              <path d="M5 21v-2a4 4 0 0 1 8 0v2"/>
-            </svg>
-            <span>Plantel</span>
-          </div>
-        </div>
+          container.innerHTML = `
 
-        <h3 class="section-title">Actividad Reciente</h3>
+            <h2 class="section-title">Dashboard</h2>
 
-        <div class="activity-box">
-          ${
-            lastMatch
-              ? `⚽ Último partido: ${lastMatch.rival || "-"} (${lastMatch.goalsFor || 0}-${lastMatch.goalsAgainst || 0})`
-              : "⚽ Sin partidos"
-          }
-        </div>
+            <div class="home-cards">
 
-        <div class="activity-box">
-          ${
-            lastTraining
-              ? `🏃 Entrenamiento ${lastTraining.date}`
-              : "🏃 Sin entrenamientos"
-          }
-        </div>
-      `;
+              <div class="home-card" onclick="navigateTo('agenda')">
+                <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>Agenda</span>
+              </div>
+
+              <div class="home-card" onclick="navigateTo('lista')">
+                <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
+                  <path d="M8 6h13M8 12h13M8 18h13"/>
+                  <circle cx="3" cy="6" r="1"/>
+                  <circle cx="3" cy="12" r="1"/>
+                  <circle cx="3" cy="18" r="1"/>
+                </svg>
+                <span>Lista</span>
+              </div>
+
+              <div class="home-card" onclick="navigateTo('plantel')">
+                <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2">
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M17 11v6"/>
+                  <path d="M21 15h-8"/>
+                  <path d="M5 21v-2a4 4 0 0 1 8 0v2"/>
+                </svg>
+                <span>Plantel</span>
+              </div>
+
+            </div>
+
+            <h3 class="section-title">Actividad Reciente</h3>
+
+            <div class="activity-box">
+              ${
+                lastMatch
+                  ? `⚽ Último partido: ${lastMatch.rival || "-"} (${lastMatch.goalsFor || 0}-${lastMatch.goalsAgainst || 0})`
+                  : "⚽ Sin partidos"
+              }
+            </div>
+
+            <div class="activity-box">
+              ${
+                lastTraining
+                  ? `🏃 Entrenamiento ${lastTraining.date || ""}`
+                  : "🏃 Sin entrenamientos"
+              }
+            </div>
+
+          `;
+        });
     });
-  });
 }
 
 function renderCoachDashboard(data){
