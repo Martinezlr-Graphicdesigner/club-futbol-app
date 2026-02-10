@@ -1679,3 +1679,54 @@ button {
   border-radius:14px;
   margin:8px 0;
 }
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin:18px 0;
+}
+
+.stat-card{
+  background:#fff;
+  padding:18px;
+  border-radius:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+}
+
+.stat-card h2{
+  margin:0;
+  font-size:26px;
+}
+
+.stat-card span{
+  color:#6b7280;
+  font-size:13px;
+}
+
+.timeline{
+  background:#fff;
+  border-radius:18px;
+  padding:16px;
+}
+
+.timeline-item{
+  display:flex;
+  gap:12px;
+  padding:12px 0;
+  border-left:2px solid #e5e7eb;
+  margin-left:8px;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  background:#2563eb;
+  border-radius:50%;
+  margin-left:-14px;
+  margin-top:6px;
+}
+
+.dot.gray{
+  background:#9ca3af;
+}
