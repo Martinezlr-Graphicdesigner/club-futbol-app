@@ -1834,3 +1834,36 @@ button {
 
 .dot.blue{background:#2d6cdf}
 .dot.gray{background:#bbb}
+
+.home-icon-box{
+  background:#e9eef5;
+  padding:14px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:6px;
+}
+
+.activity-card{
+  background:#f3f4f6;
+  border-radius:18px;
+  padding:16px;
+  margin-top:10px;
+}
+
+.activity-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 0;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+
+.dot.blue{ background:#2f6fed; }
+.dot.gray{ background:#bfc5ce; }
