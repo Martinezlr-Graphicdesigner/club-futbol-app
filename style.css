@@ -1867,3 +1867,50 @@ button {
 
 .dot.blue{ background:#2f6fed; }
 .dot.gray{ background:#bfc5ce; }
+
+.home-icon-box{
+  background:#e9eef5;
+  padding:14px;
+  border-radius:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin-bottom:6px;
+}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:18px;
+}
+
+.stat-card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 4px 0 #163a63;
+}
+
+.activity-card{
+  background:#f3f4f6;
+  border-radius:18px;
+  padding:16px;
+}
+
+.activity-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:6px 0;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+
+.dot.blue{ background:#2f6fed; }
+.dot.gray{ background:#bfc5ce; }

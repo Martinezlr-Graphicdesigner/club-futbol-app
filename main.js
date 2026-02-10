@@ -357,160 +357,146 @@ function renderScreen(screen) {
  **************************************************/
 function renderHome(container, data){
 
-  const cat = state.user.category;
-  const matches = data.matches || {};
-  const sessions = data.sessions || {};
   const players = data.players || [];
+  const sessions = data.sessions || {};
+  const matches = data.matches || {};
 
-  /* =============================
-     📌 PRÓXIMO PARTIDO
-  ============================= */
+  /* ========= STATS ========= */
 
-  let nextMatch = null;
-
-  Object.keys(matches)
-    .sort()
-    .forEach(k=>{
-      if(!nextMatch) nextMatch = {date:k, ...matches[k]};
-    });
-
-  let matchCard = "";
-
-  if(nextMatch){
-    matchCard = `
-      <div class="next-match-card">
-        <div class="nm-title">PRÓXIMO PARTIDO</div>
-
-        <div class="nm-row">
-          <div class="nm-team">
-            <div class="nm-logo">⚽</div>
-            <div>WILCOOP</div>
-          </div>
-
-          <div class="nm-vs">VS</div>
-
-          <div class="nm-team">
-            <div class="nm-logo">🏆</div>
-            <div>${nextMatch.rival || "-"}</div>
-          </div>
-        </div>
-
-        <div class="nm-info">
-          📅 ${formatDateFull(nextMatch.date)}
-          ${nextMatch.location ? " • 📍 "+nextMatch.location : ""}
-        </div>
-      </div>
-    `;
-  }
-
-  /* =============================
-     📌 STATS
-  ============================= */
-
-  let totalTrain=0, abs=0, pres=0;
+  let entrenamientos = 0;
+  let presentes = 0;
+  let ausencias = 0;
 
   Object.values(sessions).forEach(s=>{
     if(s.attendance){
       Object.values(s.attendance).forEach(v=>{
-        totalTrain++;
-        if(v) pres++; else abs++;
+        entrenamientos++;
+        if(v) presentes++;
+        else ausencias++;
       });
     }
   });
 
-  const pct = totalTrain?Math.round((pres*100)/totalTrain):0;
+  const asistenciaPct =
+    entrenamientos
+      ? Math.round((presentes/entrenamientos)*100)
+      : 0;
 
-  const stats = `
-    <div class="stats-grid">
-      <div class="stat-card"><h3>${totalTrain}</h3><p>Entrenamientos</p></div>
-      <div class="stat-card"><h3>${abs}</h3><p>Ausencias</p></div>
-      <div class="stat-card"><h3>${pct}%</h3><p>Asistencia</p></div>
-      <div class="stat-card"><h3>${Object.keys(matches).length}</h3><p>Partidos</p></div>
-    </div>
-  `;
+  const partidosJugados = Object.keys(matches).length;
 
-  /* =============================
-     📌 ÚLTIMA ACTIVIDAD
-  ============================= */
+  /* ========= ÚLTIMOS ========= */
 
-  const lastTrain = Object.keys(sessions).sort().pop();
-  const lastMatch = Object.keys(matches).sort().pop();
+  const lastMatchKey =
+    Object.keys(matches).sort().slice(-1)[0];
+
+  const lastMatch =
+    lastMatchKey ? matches[lastMatchKey] : null;
+
+  const lastTrainingKey =
+    Object.keys(sessions).sort().slice(-1)[0];
+
+  /* ========= HTML ========= */
 
   container.innerHTML = `
     <h2 class="section-title">Dashboard</h2>
 
-    ${matchCard}
-
+    <!-- CARDS PRINCIPALES -->
     <div class="home-cards">
 
-      <div class="home-cards">
+      <div class="home-card" onclick="navigateTo('agenda')">
+        <div class="home-icon-box">
+          <svg viewBox="0 0 24 24" width="24" height="24"
+            fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <span>Agenda</span>
+      </div>
 
-  <div class="home-card" onclick="navigateTo('agenda')">
-    <div class="home-icon-box">
-      <svg viewBox="0 0 24 24" width="24" height="24"
-        fill="none" stroke="currentColor" stroke-width="2.5">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
+      <div class="home-card" onclick="navigateTo('lista')">
+        <div class="home-icon-box">
+          <svg viewBox="0 0 24 24" width="24" height="24"
+            fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M8 6h13M8 12h13M8 18h13"/>
+            <circle cx="3" cy="6" r="1"/>
+            <circle cx="3" cy="12" r="1"/>
+            <circle cx="3" cy="18" r="1"/>
+          </svg>
+        </div>
+        <span>Lista</span>
+      </div>
+
+      <div class="home-card" onclick="navigateTo('plantel')">
+        <div class="home-icon-box">
+          <svg viewBox="0 0 24 24" width="24" height="24"
+            fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M17 11v6"/>
+            <path d="M21 15h-8"/>
+            <path d="M5 21v-2a4 4 0 0 1 8 0v2"/>
+          </svg>
+        </div>
+        <span>Plantel</span>
+      </div>
+
     </div>
-    <span>Agenda</span>
-  </div>
 
-  <div class="home-card" onclick="navigateTo('lista')">
-    <div class="home-icon-box">
-      <svg viewBox="0 0 24 24" width="24" height="24"
-        fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M8 6h13M8 12h13M8 18h13"/>
-        <circle cx="3" cy="6" r="1"/>
-        <circle cx="3" cy="12" r="1"/>
-        <circle cx="3" cy="18" r="1"/>
-      </svg>
+    <!-- STATS -->
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <h3>${entrenamientos}</h3>
+        <span>Entrenamientos</span>
+      </div>
+
+      <div class="stat-card">
+        <h3>${ausencias}</h3>
+        <span>Ausencias</span>
+      </div>
+
+      <div class="stat-card">
+        <h3>${asistenciaPct}%</h3>
+        <span>Asistencia</span>
+      </div>
+
+      <div class="stat-card">
+        <h3>${partidosJugados}</h3>
+        <span>Partidos</span>
+      </div>
+
     </div>
-    <span>Lista</span>
-  </div>
 
-  <div class="home-card" onclick="navigateTo('plantel')">
-    <div class="home-icon-box">
-      <svg viewBox="0 0 24 24" width="24" height="24"
-        fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M17 11v6"/>
-        <path d="M21 15h-8"/>
-        <path d="M5 21v-2a4 4 0 0 1 8 0v2"/>
-      </svg>
-    </div>
-    <span>Plantel</span>
-  </div>
-
-</div>
-
-    ${stats}
-
+    <!-- ACTIVIDAD RECIENTE -->
     <h3 class="section-title">Actividad Reciente</h3>
 
-<div class="activity-card">
+    <div class="activity-card">
 
-  <div class="activity-row">
-    <div class="dot blue"></div>
-    <div>
-      ${lastMatch
-        ? `Resultado vs ${lastMatch.rival || "-"}`
-        : "Sin partidos"}
+      <div class="activity-row">
+        <div class="dot blue"></div>
+        <div>
+          ${
+            lastMatch
+              ? `vs ${lastMatch.rival || "-"}`
+              : "Sin partidos"
+          }
+        </div>
+      </div>
+
+      <div class="activity-row">
+        <div class="dot gray"></div>
+        <div>
+          ${
+            lastTrainingKey
+              ? `Entrenamiento ${formatDate(lastTrainingKey)}`
+              : "Sin entrenamientos"
+          }
+        </div>
+      </div>
+
     </div>
-  </div>
-
-  <div class="activity-row">
-    <div class="dot gray"></div>
-    <div>
-      ${lastTraining
-        ? `Entrenamiento ${lastTraining.date}`
-        : "Sin entrenamientos"}
-    </div>
-  </div>
-
-</div>
   `;
 }
 
