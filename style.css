@@ -1642,3 +1642,40 @@ button {
   margin-bottom:10px;
   box-shadow:0 4px 14px rgba(0,0,0,.06);
 }
+
+.icon-box{
+  font-size:28px;
+  margin-bottom:6px;
+}
+
+.home-cards{
+  display:flex;
+  gap:16px;
+  margin:16px 0;
+}
+
+.home-card{
+  flex:1;
+  background:#fff;
+  border-radius:16px;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  cursor:pointer;
+}
+
+.stat-card{
+  background:#fff;
+  padding:16px;
+  border-radius:16px;
+  margin:10px 0;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  text-align:center;
+}
+
+.activity-box{
+  background:#fff;
+  padding:14px;
+  border-radius:14px;
+  margin:8px 0;
+}
