@@ -1730,3 +1730,107 @@ button {
 .dot.gray{
   background:#9ca3af;
 }
+
+/* Próximo partido */
+.next-match-card{
+  background:linear-gradient(135deg,#0c2d57,#133b6f);
+  color:white;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:18px;
+}
+
+.nm-title{
+  opacity:.7;
+  font-size:12px;
+}
+
+.nm-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:14px 0;
+}
+
+.nm-team{text-align:center}
+.nm-logo{
+  background:rgba(255,255,255,.15);
+  padding:10px;
+  border-radius:12px;
+}
+
+.nm-vs{font-weight:bold;opacity:.7}
+
+.nm-info{
+  background:rgba(255,255,255,.1);
+  padding:10px;
+  border-radius:12px;
+  font-size:13px;
+}
+
+/* Cards */
+.home-cards{
+  display:flex;
+  gap:12px;
+  margin:16px 0;
+}
+
+.home-card{
+  flex:1;
+  background:#fff;
+  padding:16px;
+  border-radius:16px;
+  text-align:center;
+  box-shadow:0 6px 16px rgba(0,0,0,.08);
+}
+
+.icon-wrap{
+  background:#eef3f9;
+  padding:12px;
+  border-radius:12px;
+  display:inline-block;
+  margin-bottom:6px;
+}
+
+/* Stats */
+.stats-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.stat-card{
+  background:white;
+  padding:16px;
+  border-radius:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+  border-bottom:4px solid #133b6f;
+}
+
+.stat-card h3{
+  margin:0;
+  font-size:22px;
+}
+
+/* Timeline */
+.activity-timeline{
+  background:white;
+  padding:16px;
+  border-radius:16px;
+}
+
+.activity-item{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin:10px 0;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+
+.dot.blue{background:#2d6cdf}
+.dot.gray{background:#bbb}
