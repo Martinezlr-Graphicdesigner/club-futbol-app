@@ -218,9 +218,10 @@ function openSessionDetail(dateKey){
               placeholder="Descripción del entrenamiento..."
               style="width:100%;height:120px;">${session.note || ""}</textarea>
 
-            <button onclick="saveSessionNote('${dateKey}')">
-              Guardar
-            </button>
+            <button class="agenda-save"
+  onclick="saveSessionNote('${dateKey}')">
+  GUARDAR ENTRENAMIENTO
+</button>
           `
           : `
             <p>${session.note || "Sin descripción"}</p>
@@ -662,12 +663,14 @@ function saveTrainingText(w,day){
  **************************************************/
 function formatDate(dateKey){
 
-  const [d,m,y] = dateKey.split("-");
-  return `${d}/${m}/${y.slice(2)}`;
+  const [y,m,d] = dateKey.split("-");
+
+  return `${d}-${m}-${y}`;
 }
 
 function formatDateFull(dateKey){
-  const [d,m,y] = dateKey.split("-");
+
+  const [y,m,d] = dateKey.split("-");
   return `${d}-${m}-${y}`;
 }
 
@@ -1051,48 +1054,55 @@ function renderListaStats(container,data){
   container.innerHTML=html;
 }
 
-function renderAgenda(container,data){
+function renderAgenda(data){
 
-  const sessions=data.sessions||{};
-  const todayKey=getLocalDateKey(new Date());
+  const entrenamientos = data.entrenamientos || {};
 
-  // agrupar por mes
-  const months={};
+  let html = `
+    <div class="agenda-header">
+      <div class="agenda-title">Agenda Mensual</div>
 
-  Object.keys(sessions).forEach(dateKey=>{
-    const d=new Date(dateKey);
-    const m=d.getMonth();
-    const y=d.getFullYear();
-    const label=`${y}-${m}`;
+      <select class="month-select">
+        <option>Febrero</option>
+        <option>Marzo</option>
+        <option>Abril</option>
+      </select>
+    </div>
 
-    if(!months[label]) months[label]=[];
-    months[label].push(dateKey);
-  });
-
-  // selector de mes
-  let monthOptions="";
-  Object.keys(months).sort().forEach(label=>{
-    const [y,m]=label.split("-");
-    const name=new Date(y,m)
-      .toLocaleString("es",{month:"long",year:"numeric"});
-    monthOptions+=`<option value="${label}">${name}</option>`;
-  });
-
-  let html=`
-    <h2>Agenda</h2>
-
-    <select id="monthFilter">
-      ${monthOptions}
-    </select>
-
-    <div id="agendaList"></div>
-    <div id="modal-container"></div>
+    <div class="agenda-list">
   `;
 
-  container.innerHTML=html;
+  Object.entries(entrenamientos).forEach(([fecha, ent])=>{
 
-  const select=document.getElementById("monthFilter");
-  const list=document.getElementById("agendaList");
+    const fechaTxt = new Date(fecha).toLocaleDateString('es-AR',{
+      weekday:'long',
+      day:'2-digit',
+      month:'short'
+    });
+
+    html += `
+      <div class="agenda-card" onclick="openTraining('${fecha}')">
+
+        <div class="agenda-info">
+          <div class="agenda-date">
+            ${fechaTxt}
+          </div>
+
+          <div class="agenda-desc">
+            ${ent.descripcion || "Sin descripción"}
+          </div>
+        </div>
+
+        <div class="session-dot ${ent.activo ? '' : 'off'}"></div>
+
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  contentArea.innerHTML = html;
+}
 
   function drawMonth(label){
 
