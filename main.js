@@ -939,8 +939,8 @@ function renderListaMatches(container){
 
         <strong>${formatDateFull(k)}</strong>
         <div>vs ${m.rival||""}</div>
-        <div style="font-size:13px;
-                    color:#666;">
+
+        <div style="font-size:13px;color:#666;">
           ${m.home ? "Local" : "Visitante"}
         </div>
 
@@ -950,15 +950,16 @@ function renderListaMatches(container){
 
         ${
           state.user.role==="admin"
-          ? `<button onclick="deleteMatch('${k}')">
-              🗑 Borrar
-            </button>`
+          ? `<button onclick="deleteMatch('${k}')">🗑 Borrar</button>`
           : ""
         }
 
       </div>
     `;
   });
+
+  container.innerHTML = html;
+}
 
 function openCreateMatchModal(){
 
