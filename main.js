@@ -168,33 +168,30 @@ function generateYearSessions(cat){
   }
 
   const d = new Date(dateKey);
-  const dayName = d.toLocaleDateString("es-AR",{weekday:"long"});
-  const day = d.getDate();
-  const month =
-    d.toLocaleDateString("es-AR",{month:"short"});
 
   const pretty =
-    dayName.charAt(0).toUpperCase()+dayName.slice(1)
-    +" "+day+" "+month;
+    d.toLocaleDateString("es-AR",{
+      weekday:"long",
+      day:"numeric",
+      month:"short"
+    });
 
   document.getElementById("selected-date-label")
-    .textContent = pretty;
+    .textContent = capitalize(pretty);
 
   const area=document.getElementById("attendance-area");
 
   area.innerHTML=`
 
-    <div class="players-grid">
+    <div class="ag-player-list">
       ${players.map(p=>`
 
-        <div class="player-card">
-          <label>
-            <input type="checkbox"
-              data-id="${p.id}"
-              ${session.attendance[p.id]?"checked":""}>
-            <span>${p.name}</span>
-          </label>
-        </div>
+        <label class="player-card">
+          <input type="checkbox"
+            data-id="${p.id}"
+            ${session.attendance[p.id]?"checked":""}>
+          <span>${p.name}</span>
+        </label>
 
       `).join("")}
     </div>
@@ -746,7 +743,7 @@ function renderCalendar(container, year, month){
     const dateKey = getLocalDateKey(dateObj);
 
     const cell=document.createElement("div");
-    let className="cal-cell";
+    let className="cal-cell ag-day";
 
     const isTuesday = dayOfWeek===2;
     const isThursday = dayOfWeek===4;
@@ -770,12 +767,11 @@ function renderCalendar(container, year, month){
       };
     }
 
-    // hoy o seleccionado
+    // hoy
     if(
-      state.selectedDate===dateKey ||
-      (day===today.getDate() &&
-       month===today.getMonth() &&
-       year===today.getFullYear())
+      day===today.getDate() &&
+      month===today.getMonth() &&
+      year===today.getFullYear()
     ){
       className+=" today";
     }
@@ -788,13 +784,14 @@ function renderCalendar(container, year, month){
 
     // partido cargado
     const match =
-  state.data[state.user.category].matches?.[dateKey];
+      state.data[cat].matches?.[dateKey];
+
     if(match){
       className+=" has-match";
     }
 
     cell.className=className;
-    cell.innerHTML=`<div class="day-number">${day}</div>`;
+    cell.innerHTML = day;
 
     grid.appendChild(cell);
   }
@@ -932,25 +929,34 @@ function renderListaMatches(container){
   `;
 
   Object.keys(matches).sort().forEach(k=>{
+
     const m = matches[k];
 
     html+=`
-      <div class="player-card">
+      <div class="match-card">
 
         <strong>${formatDateFull(k)}</strong>
-        <div>vs ${m.rival||""}</div>
+
+        <div style="margin-top:6px;">
+          vs ${m.rival||""}
+        </div>
 
         <div style="font-size:13px;color:#666;">
           ${m.home ? "Local" : "Visitante"}
         </div>
 
-        <input placeholder="Resultado (x-x)"
+        <input 
+          placeholder="Resultado (x-x)"
           value="${m.result||""}"
-          onchange="saveResult('${k}',this.value)">
+          onchange="saveResult('${k}',this.value)"
+          style="margin-top:8px;"
+        >
 
         ${
           state.user.role==="admin"
-          ? `<button onclick="deleteMatch('${k}')">🗑 Borrar</button>`
+          ? `<button onclick="deleteMatch('${k}')">
+              🗑 Borrar
+            </button>`
           : ""
         }
 
@@ -958,7 +964,7 @@ function renderListaMatches(container){
     `;
   });
 
-  container.innerHTML = html;
+  container.innerHTML = html + `<div id="modal-container"></div>`;
 }
 
 function openCreateMatchModal(){
