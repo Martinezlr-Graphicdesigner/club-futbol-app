@@ -186,21 +186,30 @@ function generateYearSessions(cat){
     <div class="ag-player-list">
       ${players.map(p=>`
 
-        <label class="player-card">
+        <label class="ag-player-card">
+
+          <div class="ag-player-info">
+            <strong>${p.name}</strong>
+            <small>
+              ${p.position||"Pos"} · #${p.number||"-"}
+            </small>
+          </div>
+
           <input type="checkbox"
             data-id="${p.id}"
             ${session.attendance[p.id]?"checked":""}>
-          <span>${p.name}</span>
+
         </label>
 
       `).join("")}
     </div>
 
-    <button class="btn-main"
-      style="margin-top:18px;"
-      onclick="saveAttendanceDate('${dateKey}')">
-      GUARDAR SESIÓN
-    </button>
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-main"
+        onclick="saveAttendanceDate('${dateKey}')">
+        GUARDAR SESIÓN
+      </button>
+    </div>
   `;
 }
 
@@ -725,14 +734,14 @@ function renderCalendar(container, year, month){
   const totalDays = lastDay.getDate();
 
   const grid = document.createElement("div");
-  grid.className = "cal-grid";
+  grid.className = "ag-calendar";
 
   const cat = state.user.category;
 
   // espacios vacíos
   for(let i=0;i<startWeekDay;i++){
     const empty=document.createElement("div");
-    empty.className="cal-cell empty";
+    empty.className="ag-day empty";
     grid.appendChild(empty);
   }
 
@@ -743,31 +752,22 @@ function renderCalendar(container, year, month){
     const dateKey = getLocalDateKey(dateObj);
 
     const cell=document.createElement("div");
-    let className="cal-cell ag-day";
+    let className="ag-day";
 
     const isTuesday = dayOfWeek===2;
     const isThursday = dayOfWeek===4;
     const isSaturday = dayOfWeek===6;
 
-    // ENTRENAMIENTO
     if(isTuesday||isThursday){
       className+=" training";
-      cell.onclick=()=>{
-        state.selectedDate=dateKey;
-        openAttendance(dateKey);
-      };
+      cell.onclick=()=>openAttendance(dateKey);
     }
 
-    // PARTIDO
     if(isSaturday){
       className+=" match";
-      cell.onclick=()=>{
-        state.selectedDate=dateKey;
-        openMatchDetail(dateKey);
-      };
+      cell.onclick=()=>openMatchDetail(dateKey);
     }
 
-    // hoy
     if(
       day===today.getDate() &&
       month===today.getMonth() &&
@@ -776,22 +776,13 @@ function renderCalendar(container, year, month){
       className+=" today";
     }
 
-    // sesión cerrada
     const session = state.data[cat].sessions?.[dateKey];
     if(session?.closed){
       className+=" closed";
     }
 
-    // partido cargado
-    const match =
-      state.data[cat].matches?.[dateKey];
-
-    if(match){
-      className+=" has-match";
-    }
-
     cell.className=className;
-    cell.innerHTML = day;
+    cell.innerHTML=`<span>${day}</span>`;
 
     grid.appendChild(cell);
   }
@@ -919,52 +910,38 @@ function renderListaMatches(container){
   const cat = state.user.category;
   const matches = state.data[cat].matches || {};
 
-  let html = `
+  let html=`
     <h3>Partidos</h3>
 
-    <button class="btn-primary"
+    <button class="btn-main"
       onclick="openCreateMatchModal()">
       + Agendar partido
     </button>
   `;
 
   Object.keys(matches).sort().forEach(k=>{
-
-    const m = matches[k];
+    const m=matches[k];
 
     html+=`
-      <div class="match-card">
+      <div class="ag-match-card">
 
-        <strong>${formatDateFull(k)}</strong>
-
-        <div style="margin-top:6px;">
-          vs ${m.rival||""}
+        <div class="ag-match-top">
+          <strong>${formatDateFull(k)}</strong>
+          <span>${m.home?"Local":"Visitante"}</span>
         </div>
 
-        <div style="font-size:13px;color:#666;">
-          ${m.home ? "Local" : "Visitante"}
-        </div>
+        <h3>vs ${m.rival}</h3>
 
         <input 
-          placeholder="Resultado (x-x)"
+          placeholder="Resultado"
           value="${m.result||""}"
-          onchange="saveResult('${k}',this.value)"
-          style="margin-top:8px;"
-        >
-
-        ${
-          state.user.role==="admin"
-          ? `<button onclick="deleteMatch('${k}')">
-              🗑 Borrar
-            </button>`
-          : ""
-        }
+          onchange="saveResult('${k}',this.value)">
 
       </div>
     `;
   });
 
-  container.innerHTML = html + `<div id="modal-container"></div>`;
+  container.innerHTML=html+`<div id="modal-container"></div>`;
 }
 
 function openCreateMatchModal(){
@@ -1100,72 +1077,99 @@ function renderListaStats(container,data){
 
   const players=data.players||[];
   const sessions=data.sessions||{};
-  const matches =
-  state.data[state.user.category].matches || {};
+  const matches=state.data[state.user.category].matches||{};
 
-  let html=`<h3>Estadísticas</h3>`;
+  let html="";
 
   let ranking=[];
+  let globalTotal=0;
+  let globalPresent=0;
 
   players.forEach(p=>{
 
-    let presTrain=0;
-    let absTrain=0;
+    let presTrain=0, absTrain=0;
+    let presMatch=0, absMatch=0;
 
-    let presMatch=0;
-    let absMatch=0;
-
-    // entrenamientos
     Object.values(sessions).forEach(s=>{
       if(s.attendance?.[p.id]===true) presTrain++;
       if(s.attendance?.[p.id]===false) absTrain++;
     });
 
-    // partidos
     Object.values(matches).forEach(m=>{
       if(m.attendance?.[p.id]===true) presMatch++;
       if(m.attendance?.[p.id]===false) absMatch++;
     });
 
-    const totalTrain=presTrain+absTrain;
-    const totalMatch=presMatch+absMatch;
+    const total=presTrain+absTrain+presMatch+absMatch;
+    const present=presTrain+presMatch;
 
-    const pctTrain=
-      totalTrain?Math.round((presTrain/totalTrain)*100):0;
+    const pct = total?Math.round(present*100/total):0;
 
-    const pctMatch=
-      totalMatch?Math.round((presMatch/totalMatch)*100):0;
+    globalTotal+=total;
+    globalPresent+=present;
 
     html+=`
-      <div class="card">
-        <strong>${p.name}</strong><br>
+      <div class="ag-stat-card">
 
-        Entrenamientos:
-        ${presTrain}/${totalTrain} (${pctTrain}%)<br>
+        <div class="ag-stat-top">
+          <strong>${p.name}</strong>
+          <span>${pct}%</span>
+        </div>
 
-        Partidos:
-        ${presMatch}/${totalMatch} (${pctMatch}%)
+        <div class="ag-bar">
+          <div style="width:${pct}%"></div>
+        </div>
+
+        <small>
+          Entrenamientos ${presTrain} · 
+          Partidos ${presMatch}
+        </small>
+
       </div>
     `;
 
-    ranking.push({
-      name:p.name,
-      pres:presTrain+presMatch
-    });
+    ranking.push({name:p.name,pos:p.position,pct});
   });
 
-  // 👉 ranking
-  ranking.sort((a,b)=>b.pres-a.pres);
+  const globalPct =
+    globalTotal?Math.round(globalPresent*100/globalTotal):0;
 
-  html+=`<h3>Ranking asistencia</h3>`;
+  html=`
+    <div class="ag-summary-card">
+      <h3>Asistencia global</h3>
+      <h1>${globalPct}%</h1>
+    </div>
+  `+html;
+
+  ranking.sort((a,b)=>b.pct-a.pct);
+
+  html+=`<div class="ag-ranking-card"><h3>Ranking</h3>`;
 
   ranking.forEach((r,i)=>{
     html+=`
-      <div>
-        ${i+1}° ${r.name} — ${r.pres} presencias
+      <div class="ag-rank-row">
+
+        <div class="rank-pos ${i===0?"gold":""}">
+          ${i+1}
+        </div>
+
+        <div class="rank-player">
+          <div class="avatar">
+            ${r.name.charAt(0)}
+          </div>
+          <div>
+            <strong>${r.name}</strong>
+            <small>${r.pos||""}</small>
+          </div>
+        </div>
+
+        <strong>${r.pct}%</strong>
+
       </div>
     `;
   });
+
+  html+=`</div>`;
 
   container.innerHTML=html;
 }
