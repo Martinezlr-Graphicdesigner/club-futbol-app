@@ -1102,11 +1102,21 @@ function drawMonth(monthIndex) {
   const trainings = data.trainings || [];
 
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr =
+    String(today.getDate()).padStart(2,"0")+"-"+
+    String(today.getMonth()+1).padStart(2,"0")+"-"+
+    today.getFullYear();
+
+  // 👉 Parse fecha dd-mm-yyyy
+  function parseDate(str){
+    if(!str) return null;
+    const [day,month,year] = str.split("-");
+    return new Date(year, month-1, day);
+  }
 
   const filtered = trainings.filter(t => {
-    if (!t.date) return false;
-    const d = new Date(t.date);
+    const d = parseDate(t.date);
+    if(!d) return false;
     return d.getMonth() === monthIndex;
   });
 
@@ -1117,7 +1127,7 @@ function drawMonth(monthIndex) {
 
   agendaList.innerHTML = filtered.map(t => {
 
-    const d = new Date(t.date);
+    const d = parseDate(t.date);
 
     const day = String(d.getDate()).padStart(2,"0");
     const month = monthNames[d.getMonth()].slice(0,3);
