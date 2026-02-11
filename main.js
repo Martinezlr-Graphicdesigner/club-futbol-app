@@ -136,10 +136,11 @@ function generateYearSessions(cat){
 
       if(!sessions[key]){
         sessions[key] = {
-          closed:false,
-          attendance:{},
-          note:""
-        };
+  closed:false,
+  attendance:{},
+  note:"",
+  title:""
+};
         changed = true;
       } else if(sessions[key].note === undefined){
         sessions[key].note = "";
@@ -223,16 +224,25 @@ function openSessionDetail(dateKey){
         ${
           canEdit
           ? `
-            <textarea id="session-note"
+            <input
+              id="session-title"
+              class="training-input"
+              placeholder="Título (ej: Definición, Presión alta...)"
+              value="${session.title||""}"
+            >
+
+            <textarea
+              id="session-note"
               class="training-textarea"
-              placeholder="Descripción del entrenamiento...">${session.note||""}</textarea>
+              placeholder="Descripción...">${session.note||""}</textarea>
 
             <button class="btn-antigravity"
               onclick="saveSessionNote('${dateKey}')">
-              GUARDAR DESCRIPCIÓN
+              GUARDAR
             </button>
           `
           : `
+            <h4>${session.title||""}</h4>
             <div class="training-textarea">
               ${session.note||"Sin descripción"}
             </div>
@@ -240,22 +250,30 @@ function openSessionDetail(dateKey){
         }
 
       </div>
-
     </div>
   `;
 }
 
 function saveSessionNote(dateKey){
 
-  const cat = state.user.category;
-  const val = document.getElementById("session-note").value;
+  const cat=state.user.category;
 
-  state.data[cat].sessions[dateKey].note = val;
+  const note =
+    document.getElementById("session-note").value;
+
+  const title =
+    document.getElementById("session-title").value;
+
+  const session =
+    state.data[cat].sessions[dateKey];
+
+  session.note = note;
+  session.title = title;
 
   saveData();
   closeTraining();
 
-  showToast("Descripción guardada");
+  showToast("Guardado ✅");
 }
 
 function saveAttendanceDate(dateKey){
@@ -1102,7 +1120,9 @@ function renderAgenda(){
 
 function drawMonth(monthIndex){
 
-  const agendaList = document.getElementById("agendaList");
+  const agendaList =
+    document.getElementById("agendaList");
+
   if(!agendaList) return;
 
   const monthNames=[
@@ -1111,64 +1131,98 @@ function drawMonth(monthIndex){
   ];
 
   const sessions =
-    state.data[state.user.category].sessions || {};
+    state.data[state.user.category].sessions||{};
 
-  // 👉 convertir objeto en array usable
-  const list = Object.keys(sessions).map(dateKey=>{
-    const s = sessions[dateKey];
+  const today=new Date();
+  const todayKey=getLocalDateKey(today);
 
-    const [y,m,d] = dateKey.split("-");
-    const date = new Date(y,m-1,d);
+  const list = Object.keys(sessions).map(k=>{
+
+    const [y,m,d]=k.split("-");
+    const date=new Date(y,m-1,d);
 
     return {
-      dateKey,
+      key:k,
       date,
-      note: s.note
+      ...sessions[k]
     };
   });
 
-  // 👉 filtrar por mes
-  const filtered = list.filter(item =>
-    item.date.getMonth() === monthIndex
-  );
+  const filtered=list
+    .filter(s=>{
 
-  if(filtered.length===0){
-    agendaList.innerHTML =
-      `<div class="empty">Sin entrenamientos este mes</div>`;
+      // SOLO mes actual
+      if(s.date.getMonth()!==monthIndex)
+        return false;
+
+      // SOLO martes (2) y jueves (4)
+      const day=s.date.getDay();
+      return day===2 || day===4;
+
+    })
+    .sort((a,b)=>a.date-b.date);
+
+  if(!filtered.length){
+    agendaList.innerHTML=
+      `<div class="empty">Sin entrenamientos</div>`;
     return;
   }
 
-  // 👉 ordenar por fecha
-  filtered.sort((a,b)=>a.date-b.date);
+  agendaList.innerHTML=
+    filtered.map(s=>{
 
-  agendaList.innerHTML = filtered.map(item=>{
+      const d=s.date;
 
-    const d=item.date;
+      const weekday=
+        d.toLocaleDateString("es-AR",{weekday:"long"});
 
-    const weekday = d.toLocaleDateString("es-AR",{weekday:"long"});
-    const day = String(d.getDate()).padStart(2,"0");
-    const month = monthNames[d.getMonth()].slice(0,3);
+      const day=
+        String(d.getDate()).padStart(2,"0");
 
-    return `
-      <div class="agenda-card"
-        onclick="openSessionDetail('${item.dateKey}')">
+      const month=
+        monthNames[d.getMonth()].slice(0,3);
 
-        <div>
-          <div class="agenda-title">
-            ${weekday} ${day} ${month}
+      const isToday = s.key===todayKey;
+      const isPast = d < today && !isToday;
+
+      return `
+        <div
+          class="agenda-card
+            ${isPast?"past":""}
+            ${isToday?"active":""}
+          "
+          onclick="openSessionDetail('${s.key}')"
+        >
+
+          <div>
+
+            <div class="agenda-title">
+              ${weekday} ${day} ${month}
+            </div>
+
+            <div class="agenda-sub">
+              ${s.title||"Sin título"}
+            </div>
+
+            ${
+              s.note
+              ? `<div class="session-loaded">
+                   Sesión cargada
+                 </div>`
+              : ""
+            }
+
           </div>
 
-          <div class="agenda-sub">
-            ${item.note || "Sin descripción"}
-          </div>
+          ${
+            isToday
+            ? `<span class="session-dot"></span>`
+            : ""
+          }
+
         </div>
-
-        <span class="session-dot"></span>
-
-      </div>
-    `;
-
-  }).join("");
+      `;
+    }).join("");
 }
  
 function openMatchDetail(dateKey){
