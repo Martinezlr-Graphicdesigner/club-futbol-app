@@ -167,24 +167,32 @@ function generateYearSessions(cat){
     session.attendance={};
   }
 
+  const d = new Date(dateKey);
+  const dayName = d.toLocaleDateString("es-AR",{weekday:"long"});
+  const day = d.getDate();
+  const month =
+    d.toLocaleDateString("es-AR",{month:"short"});
+
+  const pretty =
+    dayName.charAt(0).toUpperCase()+dayName.slice(1)
+    +" "+day+" "+month;
+
+  document.getElementById("selected-date-label")
+    .textContent = pretty;
+
   const area=document.getElementById("attendance-area");
 
   area.innerHTML=`
-    <h3>${formatDate(dateKey)}</h3>
 
     <div class="players-grid">
       ${players.map(p=>`
 
         <div class="player-card">
           <label>
-
             <input type="checkbox"
               data-id="${p.id}"
-              ${session.attendance[p.id]?"checked":""}
-            >
-
+              ${session.attendance[p.id]?"checked":""}>
             <span>${p.name}</span>
-
           </label>
         </div>
 
@@ -192,8 +200,9 @@ function generateYearSessions(cat){
     </div>
 
     <button class="btn-main"
+      style="margin-top:18px;"
       onclick="saveAttendanceDate('${dateKey}')">
-      Guardar asistencia
+      GUARDAR SESIÓN
     </button>
   `;
 }
@@ -843,38 +852,45 @@ function renderLista(container,data){
 
 function renderListaToma(container,data){
 
+  const cat = state.user.category;
+  generateYearSessions(cat);
+
   const today=new Date();
 
-  let currentYear=state.calYear??today.getFullYear();
-  let currentMonth=state.calMonth??today.getMonth();
-
   container.innerHTML=`
-
-    <div class="ag-calendar-card">
-
-      <div class="cal-header">
-        <button id="prev-month">◀</button>
-        <h3 id="cal-title"></h3>
-        <button id="next-month">▶</button>
-      </div>
-
-      <div id="calendar"></div>
-
+    <div class="cal-header">
+      <button id="prev-month">◀</button>
+      <h3 id="cal-title"></h3>
+      <button id="next-month">▶</button>
     </div>
 
-    <div id="attendance-area"></div>
+    <div id="calendar"></div>
+
+    <div id="selected-date-label"
+      style="margin-top:18px;
+             font-weight:600;
+             font-size:16px;">
+    </div>
+
+    <div id="attendance-area"
+      style="margin-top:14px;">
+    </div>
+
     <div id="modal-container"></div>
   `;
 
-  const title=document.getElementById("cal-title");
+  let currentYear = state.calYear ?? today.getFullYear();
+  let currentMonth = state.calMonth ?? today.getMonth();
+
   const calendarDiv=document.getElementById("calendar");
+  const title=document.getElementById("cal-title");
 
   function draw(){
+    title.textContent =
+      getMonthLabel(currentYear,currentMonth);
 
-    title.textContent=getMonthLabel(currentYear,currentMonth);
-
-    state.calYear=currentYear;
-    state.calMonth=currentMonth;
+    state.calYear = currentYear;
+    state.calMonth = currentMonth;
 
     renderCalendar(calendarDiv,currentYear,currentMonth);
   }
@@ -909,8 +925,9 @@ function renderListaMatches(container){
   let html = `
     <h3>Partidos</h3>
 
-    <button class="btn-primary" onclick="createMatch()">
-      + Nuevo partido
+    <button class="btn-primary"
+      onclick="openCreateMatchModal()">
+      + Agendar partido
     </button>
   `;
 
@@ -918,27 +935,100 @@ function renderListaMatches(container){
     const m = matches[k];
 
     html+=`
-  <div class="player-card">
+      <div class="player-card">
 
-    <strong>${formatDateFull(k)}</strong>
-    <div>${m.rival||""}</div>
+        <strong>${formatDateFull(k)}</strong>
+        <div>vs ${m.rival||""}</div>
+        <div style="font-size:13px;
+                    color:#666;">
+          ${m.home ? "Local" : "Visitante"}
+        </div>
 
-    <input placeholder="Resultado (x-x)"
-      value="${m.result||""}"
-      onchange="saveResult('${k}',this.value)">
+        <input placeholder="Resultado (x-x)"
+          value="${m.result||""}"
+          onchange="saveResult('${k}',this.value)">
 
-    ${
-      state.user.role==="admin"
-      ? `<button onclick="deleteMatch('${k}')">🗑 Borrar</button>`
-      : ""
-    }
+        ${
+          state.user.role==="admin"
+          ? `<button onclick="deleteMatch('${k}')">
+              🗑 Borrar
+            </button>`
+          : ""
+        }
 
-  </div>
-`;
+      </div>
+    `;
   });
 
-  container.innerHTML = html;
+function openCreateMatchModal(){
+
+  const area =
+    document.getElementById("modal-container");
+
+  area.innerHTML=`
+    <div class="modal-overlay"
+         onclick="closeTraining(event)">
+
+      <div class="detail-modal slide-up">
+
+        <h3>Nuevo Partido</h3>
+
+        <input id="match-date"
+          type="date">
+
+        <input id="match-rival"
+          placeholder="Rival">
+
+        <select id="match-home">
+          <option value="true">Local</option>
+          <option value="false">Visitante</option>
+        </select>
+
+        <button class="btn-main"
+          onclick="saveNewMatch()">
+          GUARDAR PARTIDO
+        </button>
+
+        <button onclick="closeTraining()">
+          Cancelar
+        </button>
+
+      </div>
+    </div>
+  `;
 }
+
+function saveNewMatch(){
+
+  const date =
+    document.getElementById("match-date").value;
+  const rival =
+    document.getElementById("match-rival").value;
+  const home =
+    document.getElementById("match-home").value==="true";
+
+  if(!date || !rival){
+    alert("Completar datos");
+    return;
+  }
+
+  const cat = state.user.category;
+
+  if(!state.data[cat].matches){
+    state.data[cat].matches={};
+  }
+
+  state.data[cat].matches[date]={
+    rival,
+    home,
+    result:""
+  };
+
+  saveData();
+  closeTraining();
+  renderScreen("lista");
+}
+
 
 function createMatch(){
 
