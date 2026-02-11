@@ -1089,28 +1089,28 @@ function renderAgenda() {
   drawMonth(currentMonth);
 }
 
-function drawMonth(monthIndex) {
+function drawMonth(monthIndex){
+
+  const agendaList = document.getElementById("agendaList");
+  if(!agendaList) return;
+
+  const cat = state.user.category;
+  const sessions = state.data[cat].sessions || {};
 
   const monthNames = [
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
 
-  const agendaList = document.getElementById("agendaList");
+  // Filtrar sesiones del mes
+  const filtered = Object.entries(sessions)
+    .filter(([dateKey,s])=>{
+      const d = new Date(dateKey);
+      return d.getMonth() === monthIndex;
+    })
+    .sort((a,b)=>a[0].localeCompare(b[0]));
 
-  if (!agendaList) return;
-
-  const trainings = data.trainings || [];
-
-  // Filtrar por mes
-  const filtered = trainings.filter(t => {
-    if (!t.date) return false;
-    const d = new Date(t.date);
-    return d.getMonth() === monthIndex;
-  });
-
-  // Si no hay entrenamientos
-  if (filtered.length === 0) {
+  if(filtered.length === 0){
     agendaList.innerHTML = `
       <div class="empty">
         Sin entrenamientos este mes
@@ -1119,28 +1119,28 @@ function drawMonth(monthIndex) {
     return;
   }
 
-  // Dibujar cards
-  agendaList.innerHTML = filtered.map(t => {
+  agendaList.innerHTML = filtered.map(([dateKey,s])=>{
 
-    const d = new Date(t.date);
+    const d = new Date(dateKey);
 
     const day = String(d.getDate()).padStart(2,"0");
     const month = monthNames[d.getMonth()].slice(0,3);
     const weekday = d.toLocaleDateString("es-AR",{weekday:"long"});
 
     return `
-      <div class="agenda-card" onclick="openTraining('${t.date}')">
+      <div class="agenda-card" onclick="openSessionDetail('${dateKey}')">
 
         <div>
           <div class="agenda-title">
             ${weekday} ${day} ${month}
           </div>
+
           <div class="agenda-sub">
-            Enfoque: ${t.focus || "Sin enfoque"}
+            ${s.note || "Sin descripción"}
           </div>
         </div>
 
-        ${t.active ? `<span class="session-dot"></span>` : ""}
+        <span class="session-dot"></span>
 
       </div>
     `;
