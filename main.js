@@ -130,7 +130,7 @@ function generateYearSessions(cat){
 
     const day = d.getDay();
 
-    if(day===2 || day===4 || day===6){
+    if(day===2 || day===4){
 
       const key = getLocalDateKey(d);
 
@@ -201,36 +201,42 @@ function openSessionDetail(dateKey){
 
   const cat = state.user.category;
   const session = state.data[cat].sessions[dateKey];
-  const isAdmin = state.user.role==="admin";
+  const isCoach =
+    state.user.role==="admin" ||
+    state.user.role==="prof";
 
-  const area = document.getElementById("modal-container");
+  const area =
+    document.getElementById("modal-container");
 
-  area.innerHTML = `
-    <div class="modal-overlay">
-      <div class="detail-modal">
+  area.innerHTML=`
+    <div class="modal-overlay"
+         onclick="closeTraining(event)">
+
+      <div class="detail-modal slide-up">
 
         <h3>${formatDate(dateKey)}</h3>
 
         ${
-          isAdmin
+          isCoach
           ? `
             <textarea id="session-note"
-              placeholder="Descripción del entrenamiento..."
-              style="width:100%;height:120px;">${session.note || ""}</textarea>
+              placeholder="Descripción..."
+              style="width:100%;height:120px;">
+              ${session.note||""}
+            </textarea>
 
-            <button class="agenda-save"
-  onclick="saveSessionNote('${dateKey}')">
-  GUARDAR ENTRENAMIENTO
-</button>
+            <button class="btn-main"
+              onclick="saveSessionNote('${dateKey}')">
+              Guardar descripción
+            </button>
           `
           : `
-            <p>${session.note || "Sin descripción"}</p>
+            <p>${session.note||"Sin descripción"}</p>
           `
         }
 
-        <button onclick="closeTraining()">Cerrar</button>
-
       </div>
+
     </div>
   `;
 }
@@ -1054,7 +1060,7 @@ function renderListaStats(container,data){
   container.innerHTML=html;
 }
 
-function renderAgenda() {
+function renderAgenda(){
 
   const monthNames = [
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
@@ -1076,16 +1082,17 @@ function renderAgenda() {
 
       <div id="agendaList"></div>
 
+      <!-- 👇 IMPORTANTE -->
+      <div id="modal-container"></div>
+
     </div>
   `;
 
-  // evento cambio de mes
   document.getElementById("monthSelect")
     .addEventListener("change", e=>{
       drawMonth(parseInt(e.target.value));
     });
 
-  // dibujar mes actual
   drawMonth(currentMonth);
 }
 

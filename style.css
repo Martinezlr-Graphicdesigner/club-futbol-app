@@ -2065,3 +2065,18 @@ button {
   font-size:15px;
   box-shadow:0 4px 12px rgba(0,0,0,0.05);
 }
+
+.slide-up{
+  animation: slideUp .25s ease;
+}
+
+@keyframes slideUp{
+  from{
+    transform:translateY(40px);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0);
+    opacity:1;
+  }
+}
