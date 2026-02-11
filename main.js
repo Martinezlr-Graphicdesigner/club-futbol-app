@@ -796,32 +796,28 @@ function renderCalendar(container, year, month){
 
 function renderLista(container,data){
 
-  const tab = state.listaTab || "toma";
+  const tab=state.listaTab||"toma";
 
   container.innerHTML=`
-  <h1>Lista</h1>
 
-  <div class="subnav">
-    <button id="tab-toma" class="${tab==="toma"?"active":""}">
-      Tomar lista
-    </button>
+    <h2 class="section-title">Lista</h2>
 
-    <button id="tab-stats" class="${tab==="stats"?"active":""}">
-      Estadísticas
-    </button>
+    <div class="ag-tabs">
+      <button class="${tab==="toma"?"active":""}" id="tab-toma">
+        TOMAR LISTA
+      </button>
 
-    <button id="tab-matches" class="${tab==="matches"?"active":""}">
-      Partidos
-    </button>
-  </div>
+      <button class="${tab==="stats"?"active":""}" id="tab-stats">
+        ESTADÍSTICAS
+      </button>
 
-  <div id="lista-content"></div>
-`;
+      <button class="${tab==="matches"?"active":""}" id="tab-matches">
+        PARTIDOS
+      </button>
+    </div>
 
-  document.getElementById("tab-matches").onclick=()=>{
-  state.listaTab="matches";
-  renderScreen("lista");
- };
+    <div id="lista-content"></div>
+  `;
 
   document.getElementById("tab-toma").onclick=()=>{
     state.listaTab="toma";
@@ -833,60 +829,56 @@ function renderLista(container,data){
     renderScreen("lista");
   };
 
+  document.getElementById("tab-matches").onclick=()=>{
+    state.listaTab="matches";
+    renderScreen("lista");
+  };
+
   const content=document.getElementById("lista-content");
 
-  if(tab==="toma"){
-  renderListaToma(content,data);
-}
-else if(tab==="stats"){
-  renderListaStats(content,data);
-}
-else{
-  renderListaMatches(content);
-}
-
-
+  if(tab==="toma") renderListaToma(content,data);
+  if(tab==="stats") renderListaStats(content,data);
+  if(tab==="matches") renderListaMatches(content);
 }
 
 function renderListaToma(container,data){
 
-  const cat = state.user.category;
-
-  generateYearSessions(cat);
-
   const today=new Date();
 
+  let currentYear=state.calYear??today.getFullYear();
+  let currentMonth=state.calMonth??today.getMonth();
+
   container.innerHTML=`
-    <div class="cal-header">
-      <button id="prev-month">◀</button>
-      <h3 id="cal-title"></h3>
-      <button id="next-month">▶</button>
+
+    <div class="ag-calendar-card">
+
+      <div class="cal-header">
+        <button id="prev-month">◀</button>
+        <h3 id="cal-title"></h3>
+        <button id="next-month">▶</button>
+      </div>
+
+      <div id="calendar"></div>
+
     </div>
 
-    <div id="calendar"></div>
-
     <div id="attendance-area"></div>
-
     <div id="modal-container"></div>
   `;
 
-  let currentYear = state.calYear ?? today.getFullYear();
-  let currentMonth = state.calMonth ?? today.getMonth();
-
-  const calendarDiv=document.getElementById("calendar");
   const title=document.getElementById("cal-title");
+  const calendarDiv=document.getElementById("calendar");
 
   function draw(){
-    title.textContent = getMonthLabel(currentYear,currentMonth);
 
-    // guardar estado mes/año
-    state.calYear = currentYear;
-    state.calMonth = currentMonth;
+    title.textContent=getMonthLabel(currentYear,currentMonth);
+
+    state.calYear=currentYear;
+    state.calMonth=currentMonth;
 
     renderCalendar(calendarDiv,currentYear,currentMonth);
   }
 
-  // navegación meses
   document.getElementById("prev-month").onclick=()=>{
     currentMonth--;
     if(currentMonth<0){
@@ -905,7 +897,6 @@ function renderListaToma(container,data){
     draw();
   };
 
-  // dibujar inicial
   draw();
 }
 

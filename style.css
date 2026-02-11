@@ -2193,3 +2193,33 @@ button {
 .agenda-card.disabled{
   opacity:.45;
 }
+
+.ag-tabs{
+  display:flex;
+  background:#e9eef6;
+  border-radius:14px;
+  padding:4px;
+  margin-bottom:16px;
+}
+
+.ag-tabs button{
+  flex:1;
+  border:none;
+  background:transparent;
+  padding:10px;
+  border-radius:10px;
+  font-weight:600;
+  color:#6b7280;
+}
+
+.ag-tabs button.active{
+  background:#3b82f6;
+  color:white;
+}
+
+.ag-calendar-card{
+  background:white;
+  padding:16px;
+  border-radius:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+}
