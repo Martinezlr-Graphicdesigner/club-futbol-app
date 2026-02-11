@@ -1054,7 +1054,7 @@ function renderListaStats(container,data){
   container.innerHTML=html;
 }
 
-function renderAgenda(data){
+function renderAgenda(container, data){
 
   const entrenamientos = data.entrenamientos || {};
 
@@ -1101,59 +1101,10 @@ function renderAgenda(data){
 
   html += `</div>`;
 
-  contentArea.innerHTML = html;
+  container.innerHTML = html;
 }
 
-  function drawMonth(label){
-
-    if(!months[label]) return;
-
-    let grid=`<div class="annual-grid">`;
-
-    months[label]
-      .sort()
-      .forEach(dateKey=>{
-
-        const date=formatDate(dateKey);
-
-        let status="";
-        let bg="white";
-
-        if(dateKey===todayKey){
-          status="🟢 Sesión activa";
-          bg="#E8F5E9";
-        }
-        else if(dateKey<todayKey){
-          status="Sesión pasada";
-          bg="#f2f2f2";
-        }
-
-        grid+=`
-          <div class="annual-card"
-            onclick="openSessionDetail('${dateKey}')"
-            style="background:${bg};">
-
-            <strong>${date}</strong>
-            <div>Entrenamiento</div>
-            <small>${status}</small>
-
-          </div>
-        `;
-      });
-
-    grid+="</div>";
-    list.innerHTML=grid;
-  }
-
-  select.onchange=()=>drawMonth(select.value);
-
-  // mes actual por defecto
-  const now=new Date();
-  const current=`${now.getFullYear()}-${now.getMonth()}`;
-  select.value=current;
-  drawMonth(current);
-}
-
+ 
 function openMatchDetail(dateKey){
 
   const isAdmin = state.user.role==="admin";
