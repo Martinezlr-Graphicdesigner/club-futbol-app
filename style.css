@@ -2189,3 +2189,7 @@ button {
   font-family:inherit;
   margin-bottom:10px;
 }
+
+.agenda-card.disabled{
+  opacity:.45;
+}
