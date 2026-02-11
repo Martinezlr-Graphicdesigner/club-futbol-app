@@ -2080,3 +2080,38 @@ button {
     opacity:1;
   }
 }
+
+/* TÍTULO */
+.training-title{
+  font-size:18px;
+  font-weight:600;
+  margin-bottom:12px;
+}
+
+/* TEXTAREA */
+.training-textarea{
+  width:100%;
+  height:120px;
+  border-radius:14px;
+  border:none;
+  padding:14px;
+  font-family:inherit;
+  font-size:14px;
+  background:#f2f3f5;
+  resize:none;
+  outline:none;
+}
+
+/* BOTÓN AZUL */
+.btn-antigravity{
+  width:100%;
+  margin-top:16px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  font-weight:600;
+  font-size:15px;
+  color:white;
+  background:linear-gradient(180deg,#4a8cff,#2f6fe4);
+  cursor:pointer;
+}

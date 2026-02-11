@@ -201,42 +201,47 @@ function openSessionDetail(dateKey){
 
   const cat = state.user.category;
   const session = state.data[cat].sessions[dateKey];
-  const isCoach =
-    state.user.role==="admin" ||
-    state.user.role==="prof";
 
-  const area =
-    document.getElementById("modal-container");
+  // 👉 pueden editar admin y profesor
+  const canEdit =
+    state.user.role === "admin" ||
+    state.user.role === "coach" ||
+    state.user.role === "prof";
 
-  area.innerHTML=`
-    <div class="modal-overlay"
-         onclick="closeTraining(event)">
+  const area = document.getElementById("modal-container");
 
-      <div class="detail-modal slide-up">
+  area.innerHTML = `
+    <div class="modal-overlay" onclick="closeTraining(event)">
+      <div class="detail-modal">
 
-        <h3>${formatDate(dateKey)}</h3>
+        <h3 class="training-title">
+          Entrenamiento - ${formatDateFull(dateKey)}
+        </h3>
 
         ${
-          isCoach
+          canEdit
           ? `
             <textarea id="session-note"
-              placeholder="Descripción..."
-              style="width:100%;height:120px;">
-              ${session.note||""}
-            </textarea>
+              class="training-textarea"
+              placeholder="Descripción del entrenamiento...">${session.note || ""}</textarea>
 
-            <button class="btn-main"
+            <button class="btn-antigravity"
               onclick="saveSessionNote('${dateKey}')">
-              Guardar descripción
+              GUARDAR DESCRIPCIÓN
             </button>
           `
           : `
-            <p>${session.note||"Sin descripción"}</p>
+            <div class="training-textarea">
+              ${session.note || "Sin descripción"}
+            </div>
           `
         }
 
-      </div>
+        <button onclick="closeTraining()" class="close-btn">
+          Cerrar
+        </button>
 
+      </div>
     </div>
   `;
 }
@@ -1135,8 +1140,7 @@ function drawMonth(monthIndex){
     const day =
       String(d.getDate()).padStart(2,"0");
 
-    const weekday =
-      d.toLocaleDateString("es-AR",{weekday:"long"});
+    const weekday = d.toLocaleDateString("es-AR",{weekday:"short"});
 
     const month =
       monthNames[d.getMonth()];
