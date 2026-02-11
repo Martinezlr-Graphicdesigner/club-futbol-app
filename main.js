@@ -1131,9 +1131,14 @@ function drawMonth(monthIndex){
   const cat=state.user.category;
   const sessions=state.data[cat].sessions||{};
 
-  const todayKey=getLocalDateKey(new Date());
+  const today=new Date();
+  const todayKey=getLocalDateKey(today);
 
-  // Filtrar solo martes y jueves del mes seleccionado
+  function capitalize(str){
+    return str.charAt(0).toUpperCase()+str.slice(1);
+  }
+
+  // 👉 SOLO martes y jueves del mes
   const filtered=Object.keys(sessions).filter(dateKey=>{
     const d=new Date(dateKey+"T00:00:00");
     const day=d.getDay(); // 2=martes,4=jueves
@@ -1150,31 +1155,39 @@ function drawMonth(monthIndex){
     const d=new Date(dateKey+"T00:00:00");
 
     let weekday=d.toLocaleDateString("es-AR",{weekday:"long"});
-    weekday=capitalize(weekday); // 👈 AQUI la mayúscula
+    weekday=capitalize(weekday); // ✅ mayúscula
 
     const dayNum=String(d.getDate()).padStart(2,"0");
     const month=monthNames[d.getMonth()].slice(0,3);
 
-    const s=sessions[dateKey];
+    const s=sessions[dateKey]||{};
 
     const isToday=dateKey===todayKey;
+    const isPast=d < today && !isToday;
 
     return `
-      <div class="agenda-card"
+      <div class="agenda-card ${isPast?"disabled":""}"
         onclick="openSessionDetail('${dateKey}')">
 
         <div>
+
           <div class="agenda-title">
             ${weekday} ${dayNum} ${month}
           </div>
 
           <div class="agenda-sub">
-            ${s.title||"Sin título"}
+            ${s.title || "Sin título"}
           </div>
 
-          ${isToday?`<small style="color:#22c55e">Sesión activa</small>`:""}
+          ${isToday?`
+            <small style="color:#22c55e;font-weight:600">
+              Sesión activa
+            </small>
+          `:""}
 
         </div>
+
+        ${isToday?`<span class="session-dot"></span>`:""}
 
       </div>
     `;
