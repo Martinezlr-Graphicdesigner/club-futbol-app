@@ -1089,54 +1089,56 @@ function renderAgenda() {
   drawMonth(currentMonth);
 }
 
-function drawMonth(monthIndex) {
-
-  const monthNames = [
-    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-  ];
+function drawMonth(monthIndex){
 
   const agendaList = document.getElementById("agendaList");
-  if (!agendaList) return;
+  if(!agendaList) return;
 
-  const trainings = data.trainings || [];
+  const cat = state.user.category;
+  const sessions = state.data[cat].sessions || {};
 
-  const today = new Date();
-  const todayStr =
-    String(today.getDate()).padStart(2,"0")+"-"+
-    String(today.getMonth()+1).padStart(2,"0")+"-"+
-    today.getFullYear();
+  const monthNames = [
+    "Ene","Feb","Mar","Abr","May","Jun",
+    "Jul","Ago","Sep","Oct","Nov","Dic"
+  ];
 
-  // 👉 Parse fecha dd-mm-yyyy
-  function parseDate(str){
-    if(!str) return null;
-    const [day,month,year] = str.split("-");
-    return new Date(year, month-1, day);
-  }
+  const todayKey = getLocalDateKey(new Date());
 
-  const filtered = trainings.filter(t => {
-    const d = parseDate(t.date);
-    if(!d) return false;
-    return d.getMonth() === monthIndex;
-  });
+  // 👉 convertir sessions en array
+  const list = Object.keys(sessions)
+    .map(dateKey => ({ date: dateKey, ...sessions[dateKey] }))
+    .filter(s => {
 
-  if (filtered.length === 0) {
-    agendaList.innerHTML = `<div class="empty">Sin entrenamientos este mes</div>`;
+      const d = new Date(s.date);
+      return d.getMonth() === monthIndex;
+
+    })
+    .sort((a,b)=> new Date(a.date)-new Date(b.date));
+
+  if(list.length===0){
+    agendaList.innerHTML =
+      `<div class="empty">Sin entrenamientos este mes</div>`;
     return;
   }
 
-  agendaList.innerHTML = filtered.map(t => {
+  agendaList.innerHTML = list.map(s => {
 
-    const d = parseDate(t.date);
+    const d = new Date(s.date);
 
-    const day = String(d.getDate()).padStart(2,"0");
-    const month = monthNames[d.getMonth()].slice(0,3);
-    const weekday = d.toLocaleDateString("es-AR",{weekday:"long"});
+    const day =
+      String(d.getDate()).padStart(2,"0");
 
-    const isToday = t.date === todayStr;
+    const weekday =
+      d.toLocaleDateString("es-AR",{weekday:"long"});
+
+    const month =
+      monthNames[d.getMonth()];
+
+    const isToday = s.date===todayKey;
 
     return `
-      <div class="agenda-card" onclick="openTraining('${t.date}')">
+      <div class="agenda-card"
+           onclick="openSessionDetail('${s.date}')">
 
         <div>
           <div class="agenda-title">
@@ -1144,14 +1146,15 @@ function drawMonth(monthIndex) {
           </div>
 
           <div class="agenda-sub">
-            ${t.focus || "Sin descripción"}
+            ${s.note || "Sin descripción"}
           </div>
         </div>
 
-        ${isToday ? `<span class="session-dot"></span>` : ""}
+        ${isToday ? `<span class="session-dot"></span>`:""}
 
       </div>
     `;
+
   }).join("");
 }
  
