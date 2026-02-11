@@ -2115,3 +2115,55 @@ button {
   background:linear-gradient(180deg,#4a8cff,#2f6fe4);
   cursor:pointer;
 }
+
+.slide-up{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:white;
+  border-radius:22px 22px 0 0;
+  padding:20px;
+  animation:slideUp .35s ease;
+}
+
+@keyframes slideUp{
+  from{
+    transform:translateY(100%);
+  }
+  to{
+    transform:translateY(0);
+  }
+}
+
+.modal-handle{
+  width:40px;
+  height:5px;
+  background:#ccc;
+  border-radius:10px;
+  margin:0 auto 12px;
+}
+
+.training-textarea{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  background:#f3f4f6;
+  font-family:inherit;
+  font-size:15px;
+  resize:none;
+  min-height:120px;
+}
+
+.btn-antigravity{
+  width:100%;
+  margin-top:14px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#3b82f6;
+  color:white;
+  font-weight:600;
+  font-size:15px;
+}

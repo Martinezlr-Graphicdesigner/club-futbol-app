@@ -199,22 +199,24 @@ function generateYearSessions(cat){
 
 function openSessionDetail(dateKey){
 
-  const cat = state.user.category;
-  const session = state.data[cat].sessions[dateKey];
+  const cat=state.user.category;
+  const session=state.data[cat].sessions[dateKey];
 
-  // 👉 pueden editar admin y profesor
   const canEdit =
-    state.user.role === "admin" ||
-    state.user.role === "coach" ||
-    state.user.role === "prof";
+    state.user.role==="admin" ||
+    state.user.role==="coach" ||
+    state.user.role==="prof";
 
-  const area = document.getElementById("modal-container");
+  const area=document.getElementById("modal-container");
 
-  area.innerHTML = `
+  area.innerHTML=`
     <div class="modal-overlay" onclick="closeTraining(event)">
-      <div class="detail-modal">
 
-        <h3 class="training-title">
+      <div class="detail-modal slide-up">
+
+        <div class="modal-handle"></div>
+
+        <h3>
           Entrenamiento - ${formatDateFull(dateKey)}
         </h3>
 
@@ -223,7 +225,7 @@ function openSessionDetail(dateKey){
           ? `
             <textarea id="session-note"
               class="training-textarea"
-              placeholder="Descripción del entrenamiento...">${session.note || ""}</textarea>
+              placeholder="Descripción del entrenamiento...">${session.note||""}</textarea>
 
             <button class="btn-antigravity"
               onclick="saveSessionNote('${dateKey}')">
@@ -232,16 +234,13 @@ function openSessionDetail(dateKey){
           `
           : `
             <div class="training-textarea">
-              ${session.note || "Sin descripción"}
+              ${session.note||"Sin descripción"}
             </div>
           `
         }
 
-        <button onclick="closeTraining()" class="close-btn">
-          Cerrar
-        </button>
-
       </div>
+
     </div>
   `;
 }
@@ -1106,50 +1105,53 @@ function drawMonth(monthIndex){
   const agendaList = document.getElementById("agendaList");
   if(!agendaList) return;
 
-  const cat = state.user.category;
-  const sessions = state.data[cat].sessions || {};
-
-  const monthNames = [
-    "Ene","Feb","Mar","Abr","May","Jun",
-    "Jul","Ago","Sep","Oct","Nov","Dic"
+  const monthNames=[
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
 
-  const todayKey = getLocalDateKey(new Date());
+  const sessions =
+    state.data[state.user.category].sessions || {};
 
-  // 👉 convertir sessions en array
-  const list = Object.keys(sessions)
-    .map(dateKey => ({ date: dateKey, ...sessions[dateKey] }))
-    .filter(s => {
+  // 👉 convertir objeto en array usable
+  const list = Object.keys(sessions).map(dateKey=>{
+    const s = sessions[dateKey];
 
-      const d = new Date(s.date);
-      return d.getMonth() === monthIndex;
+    const [y,m,d] = dateKey.split("-");
+    const date = new Date(y,m-1,d);
 
-    })
-    .sort((a,b)=> new Date(a.date)-new Date(b.date));
+    return {
+      dateKey,
+      date,
+      note: s.note
+    };
+  });
 
-  if(list.length===0){
+  // 👉 filtrar por mes
+  const filtered = list.filter(item =>
+    item.date.getMonth() === monthIndex
+  );
+
+  if(filtered.length===0){
     agendaList.innerHTML =
       `<div class="empty">Sin entrenamientos este mes</div>`;
     return;
   }
 
-  agendaList.innerHTML = list.map(s => {
+  // 👉 ordenar por fecha
+  filtered.sort((a,b)=>a.date-b.date);
 
-    const d = new Date(s.date);
+  agendaList.innerHTML = filtered.map(item=>{
 
-    const day =
-      String(d.getDate()).padStart(2,"0");
+    const d=item.date;
 
-    const weekday = d.toLocaleDateString("es-AR",{weekday:"short"});
-
-    const month =
-      monthNames[d.getMonth()];
-
-    const isToday = s.date===todayKey;
+    const weekday = d.toLocaleDateString("es-AR",{weekday:"long"});
+    const day = String(d.getDate()).padStart(2,"0");
+    const month = monthNames[d.getMonth()].slice(0,3);
 
     return `
       <div class="agenda-card"
-           onclick="openSessionDetail('${s.date}')">
+        onclick="openSessionDetail('${item.dateKey}')">
 
         <div>
           <div class="agenda-title">
@@ -1157,11 +1159,11 @@ function drawMonth(monthIndex){
           </div>
 
           <div class="agenda-sub">
-            ${s.note || "Sin descripción"}
+            ${item.note || "Sin descripción"}
           </div>
         </div>
 
-        ${isToday ? `<span class="session-dot"></span>`:""}
+        <span class="session-dot"></span>
 
       </div>
     `;
