@@ -1054,56 +1054,99 @@ function renderListaStats(container,data){
   container.innerHTML=html;
 }
 
-function renderAgenda(container, data){
+function renderAgenda() {
 
-  const entrenamientos = data.entrenamientos || {};
+  const monthNames = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
 
-  let html = `
-    <div class="agenda-header">
-      <div class="agenda-title">Agenda Mensual</div>
+  const currentMonth = new Date().getMonth();
 
-      <select class="month-select">
-        <option>Febrero</option>
-        <option>Marzo</option>
-        <option>Abril</option>
+  document.getElementById("content-area").innerHTML = `
+    <div class="agenda-screen">
+
+      <h2 class="section-title">Agenda Mensual</h2>
+
+      <select id="monthSelect" class="month-select">
+        ${monthNames.map((m,i)=>
+          `<option value="${i}" ${i===currentMonth?"selected":""}>${m}</option>`
+        ).join("")}
       </select>
-    </div>
 
-    <div class="agenda-list">
+      <div id="agendaList"></div>
+
+    </div>
   `;
 
-  Object.entries(entrenamientos).forEach(([fecha, ent])=>{
-
-    const fechaTxt = new Date(fecha).toLocaleDateString('es-AR',{
-      weekday:'long',
-      day:'2-digit',
-      month:'short'
+  // evento cambio de mes
+  document.getElementById("monthSelect")
+    .addEventListener("change", e=>{
+      drawMonth(parseInt(e.target.value));
     });
 
-    html += `
-      <div class="agenda-card" onclick="openTraining('${fecha}')">
+  // dibujar mes actual
+  drawMonth(currentMonth);
+}
 
-        <div class="agenda-info">
-          <div class="agenda-date">
-            ${fechaTxt}
+function drawMonth(monthIndex) {
+
+  const monthNames = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  const agendaList = document.getElementById("agendaList");
+
+  if (!agendaList) return;
+
+  const trainings = data.trainings || [];
+
+  // Filtrar por mes
+  const filtered = trainings.filter(t => {
+    if (!t.date) return false;
+    const d = new Date(t.date);
+    return d.getMonth() === monthIndex;
+  });
+
+  // Si no hay entrenamientos
+  if (filtered.length === 0) {
+    agendaList.innerHTML = `
+      <div class="empty">
+        Sin entrenamientos este mes
+      </div>
+    `;
+    return;
+  }
+
+  // Dibujar cards
+  agendaList.innerHTML = filtered.map(t => {
+
+    const d = new Date(t.date);
+
+    const day = String(d.getDate()).padStart(2,"0");
+    const month = monthNames[d.getMonth()].slice(0,3);
+    const weekday = d.toLocaleDateString("es-AR",{weekday:"long"});
+
+    return `
+      <div class="agenda-card" onclick="openTraining('${t.date}')">
+
+        <div>
+          <div class="agenda-title">
+            ${weekday} ${day} ${month}
           </div>
-
-          <div class="agenda-desc">
-            ${ent.descripcion || "Sin descripción"}
+          <div class="agenda-sub">
+            Enfoque: ${t.focus || "Sin enfoque"}
           </div>
         </div>
 
-        <div class="session-dot ${ent.activo ? '' : 'off'}"></div>
+        ${t.active ? `<span class="session-dot"></span>` : ""}
 
       </div>
     `;
-  });
 
-  html += `</div>`;
-
-  container.innerHTML = html;
+  }).join("");
 }
-
  
 function openMatchDetail(dateKey){
 

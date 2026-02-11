@@ -2034,3 +2034,9 @@ button {
   font-weight:700;
   margin-top:14px;
 }
+
+.agenda-card{
+  padding:18px 20px;
+  border-radius:18px;
+  margin-bottom:14px;
+}
