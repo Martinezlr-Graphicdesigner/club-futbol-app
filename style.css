@@ -1953,8 +1953,9 @@ button {
 }
 
 .agenda-title{
-  font-size:26px;
-  font-weight:800;
+  font-size:16px;
+  font-weight:600;
+  color:#1c2b3a;
 }
 
 .month-select{
@@ -2036,7 +2037,31 @@ button {
 }
 
 .agenda-card{
-  padding:18px 20px;
-  border-radius:18px;
+  background:white;
+  border-radius:16px;
+  padding:16px 18px;
   margin-bottom:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 6px 16px rgba(0,0,0,0.06);
+}
+
+.month-select{
+  margin-bottom:20px;
+}
+
+.agenda-title{
+  font-size:16px;
+  font-weight:600;
+  color:#1c2b3a;
+}
+
+.month-select{
+  background:white;
+  border:none;
+  border-radius:14px;
+  padding:14px;
+  font-size:15px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
 }

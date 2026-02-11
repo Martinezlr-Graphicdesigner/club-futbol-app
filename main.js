@@ -1089,46 +1089,44 @@ function renderAgenda() {
   drawMonth(currentMonth);
 }
 
-function drawMonth(monthIndex){
-
-  const agendaList = document.getElementById("agendaList");
-  if(!agendaList) return;
-
-  const cat = state.user.category;
-  const sessions = state.data[cat].sessions || {};
+function drawMonth(monthIndex) {
 
   const monthNames = [
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
 
-  // Filtrar sesiones del mes
-  const filtered = Object.entries(sessions)
-    .filter(([dateKey,s])=>{
-      const d = new Date(dateKey);
-      return d.getMonth() === monthIndex;
-    })
-    .sort((a,b)=>a[0].localeCompare(b[0]));
+  const agendaList = document.getElementById("agendaList");
+  if (!agendaList) return;
 
-  if(filtered.length === 0){
-    agendaList.innerHTML = `
-      <div class="empty">
-        Sin entrenamientos este mes
-      </div>
-    `;
+  const trainings = data.trainings || [];
+
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+
+  const filtered = trainings.filter(t => {
+    if (!t.date) return false;
+    const d = new Date(t.date);
+    return d.getMonth() === monthIndex;
+  });
+
+  if (filtered.length === 0) {
+    agendaList.innerHTML = `<div class="empty">Sin entrenamientos este mes</div>`;
     return;
   }
 
-  agendaList.innerHTML = filtered.map(([dateKey,s])=>{
+  agendaList.innerHTML = filtered.map(t => {
 
-    const d = new Date(dateKey);
+    const d = new Date(t.date);
 
     const day = String(d.getDate()).padStart(2,"0");
     const month = monthNames[d.getMonth()].slice(0,3);
     const weekday = d.toLocaleDateString("es-AR",{weekday:"long"});
 
+    const isToday = t.date === todayStr;
+
     return `
-      <div class="agenda-card" onclick="openSessionDetail('${dateKey}')">
+      <div class="agenda-card" onclick="openTraining('${t.date}')">
 
         <div>
           <div class="agenda-title">
@@ -1136,15 +1134,14 @@ function drawMonth(monthIndex){
           </div>
 
           <div class="agenda-sub">
-            ${s.note || "Sin descripción"}
+            ${t.focus || "Sin descripción"}
           </div>
         </div>
 
-        <span class="session-dot"></span>
+        ${isToday ? `<span class="session-dot"></span>` : ""}
 
       </div>
     `;
-
   }).join("");
 }
  
