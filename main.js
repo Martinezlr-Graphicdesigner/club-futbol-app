@@ -1120,109 +1120,69 @@ function renderAgenda(){
 
 function drawMonth(monthIndex){
 
-  const agendaList =
-    document.getElementById("agendaList");
-
-  if(!agendaList) return;
-
   const monthNames=[
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
 
-  const sessions =
-    state.data[state.user.category].sessions||{};
+  const agendaList=document.getElementById("agendaList");
+  if(!agendaList) return;
 
-  const today=new Date();
-  const todayKey=getLocalDateKey(today);
+  const cat=state.user.category;
+  const sessions=state.data[cat].sessions||{};
 
-  const list = Object.keys(sessions).map(k=>{
+  const todayKey=getLocalDateKey(new Date());
 
-    const [y,m,d]=k.split("-");
-    const date=new Date(y,m-1,d);
-
-    return {
-      key:k,
-      date,
-      ...sessions[k]
-    };
+  // Filtrar solo martes y jueves del mes seleccionado
+  const filtered=Object.keys(sessions).filter(dateKey=>{
+    const d=new Date(dateKey+"T00:00:00");
+    const day=d.getDay(); // 2=martes,4=jueves
+    return d.getMonth()===monthIndex && (day===2||day===4);
   });
 
-  const filtered=list
-    .filter(s=>{
-
-      // SOLO mes actual
-      if(s.date.getMonth()!==monthIndex)
-        return false;
-
-      // SOLO martes (2) y jueves (4)
-      const day=s.date.getDay();
-      return day===2 || day===4;
-
-    })
-    .sort((a,b)=>a.date-b.date);
-
-  if(!filtered.length){
-    agendaList.innerHTML=
-      `<div class="empty">Sin entrenamientos</div>`;
+  if(filtered.length===0){
+    agendaList.innerHTML=`<div class="empty">Sin entrenamientos este mes</div>`;
     return;
   }
 
-  agendaList.innerHTML=
-    filtered.map(s=>{
+  agendaList.innerHTML=filtered.map(dateKey=>{
 
-      const d=s.date;
+    const d=new Date(dateKey+"T00:00:00");
 
-      const weekday=
-        d.toLocaleDateString("es-AR",{weekday:"long"});
+    let weekday=d.toLocaleDateString("es-AR",{weekday:"long"});
+    weekday=capitalize(weekday); // 👈 AQUI la mayúscula
 
-      const day=
-        String(d.getDate()).padStart(2,"0");
+    const dayNum=String(d.getDate()).padStart(2,"0");
+    const month=monthNames[d.getMonth()].slice(0,3);
 
-      const month=
-        monthNames[d.getMonth()].slice(0,3);
+    const s=sessions[dateKey];
 
-      const isToday = s.key===todayKey;
-      const isPast = d < today && !isToday;
+    const isToday=dateKey===todayKey;
 
-      return `
-        <div
-          class="agenda-card
-            ${isPast?"past":""}
-            ${isToday?"active":""}
-          "
-          onclick="openSessionDetail('${s.key}')"
-        >
+    return `
+      <div class="agenda-card"
+        onclick="openSessionDetail('${dateKey}')">
 
-          <div>
-
-            <div class="agenda-title">
-              ${weekday} ${day} ${month}
-            </div>
-
-            <div class="agenda-sub">
-              ${s.title||"Sin título"}
-            </div>
-
-            ${
-              s.note
-              ? `<div class="session-loaded">
-                   Sesión cargada
-                 </div>`
-              : ""
-            }
-
+        <div>
+          <div class="agenda-title">
+            ${weekday} ${dayNum} ${month}
           </div>
 
-          ${
-            isToday
-            ? `<span class="session-dot"></span>`
-            : ""
-          }
+          <div class="agenda-sub">
+            ${s.title||"Sin título"}
+          </div>
+
+          ${isToday?`<small style="color:#22c55e">Sesión activa</small>`:""}
 
         </div>
-      `;
-    }).join("");
+
+      </div>
+    `;
+  }).join("");
+}
+
+function capitalize(str){
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
  
 function openMatchDetail(dateKey){
