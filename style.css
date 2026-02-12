@@ -2311,3 +2311,68 @@ button {
   background:linear-gradient(90deg,#2563eb,#60a5fa);
   border-radius:8px;
 }
+
+.ag-calendar-card{
+  background:#fff;
+  padding:16px;
+  border-radius:18px;
+}
+
+.ag-week{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  text-align:center;
+  opacity:.6;
+  margin-bottom:10px;
+}
+
+.ag-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:10px;
+}
+
+.ag-day{
+  background:#f1f1f1;
+  padding:10px 0;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.training-day{
+  background:#3b82f6;
+  color:white;
+}
+
+.selected{
+  outline:2px solid #3b82f6;
+  background:white;
+}
+
+.ag-player-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  margin-bottom:10px;
+}
+
+.ag-player-left{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.avatar{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#e5e7eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}

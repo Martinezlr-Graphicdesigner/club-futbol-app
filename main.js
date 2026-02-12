@@ -722,72 +722,124 @@ function getMonthLabel(year,month){
     .toLocaleString("es-AR",{month:"long",year:"numeric"});
 }
 
-function renderCalendar(container, year, month){ 
+function renderCalendar(container, year, month){
 
-  container.innerHTML = "";
+  const monthNames=[
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
 
-  const today = new Date();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
+  const daysShort=["D","L","M","M","J","V","S"];
 
-  const startWeekDay = firstDay.getDay();
-  const totalDays = lastDay.getDate();
+  const firstDay=new Date(year,month,1);
+  const startDay=firstDay.getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
 
-  const grid = document.createElement("div");
-  grid.className = "ag-calendar";
+  let html=`
+  <div class="ag-calendar-card">
 
-  const cat = state.user.category;
+    <div class="ag-cal-header">
+      <button onclick="changeMonth(-1)">◀</button>
+      <h3>${monthNames[month]} ${year}</h3>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
 
-  // espacios vacíos
-  for(let i=0;i<startWeekDay;i++){
-    const empty=document.createElement("div");
-    empty.className="ag-day empty";
-    grid.appendChild(empty);
+    <div class="ag-week">
+      ${daysShort.map(d=>`<div>${d}</div>`).join("")}
+    </div>
+
+    <div class="ag-grid">
+  `;
+
+  // espacios vacíos antes del día 1
+  for(let i=0;i<startDay;i++){
+    html+=`<div></div>`;
   }
 
-  for(let day=1; day<=totalDays; day++){
+  for(let d=1;d<=daysInMonth;d++){
 
-    const dateObj = new Date(year,month,day);
-    const dayOfWeek = dateObj.getDay();
-    const dateKey = getLocalDateKey(dateObj);
+    const date=new Date(year,month,d);
+    const day=date.getDay();
 
-    const cell=document.createElement("div");
-    let className="ag-day";
+    const isTraining=(day===2 || day===4); // Mar/Jue
 
-    const isTuesday = dayOfWeek===2;
-    const isThursday = dayOfWeek===4;
-    const isSaturday = dayOfWeek===6;
+    const selected=
+      state.selectedDate &&
+      state.selectedDate.getDate()===d &&
+      state.selectedDate.getMonth()===month
+        ? "selected"
+        : "";
 
-    if(isTuesday||isThursday){
-      className+=" training";
-      cell.onclick=()=>openAttendance(dateKey);
-    }
+    const blue=isTraining?"training-day":"";
 
-    if(isSaturday){
-      className+=" match";
-      cell.onclick=()=>openMatchDetail(dateKey);
-    }
-
-    if(
-      day===today.getDate() &&
-      month===today.getMonth() &&
-      year===today.getFullYear()
-    ){
-      className+=" today";
-    }
-
-    const session = state.data[cat].sessions?.[dateKey];
-    if(session?.closed){
-      className+=" closed";
-    }
-
-    cell.className=className;
-    cell.innerHTML=`<span>${day}</span>`;
-
-    grid.appendChild(cell);
+    html+=`
+      <div
+        class="ag-day ${blue} ${selected}"
+        onclick="selectDate(${year},${month},${d})"
+      >
+        ${d}
+      </div>
+    `;
   }
 
-  container.appendChild(grid);
+  html+=`</div></div>`;
+
+  container.innerHTML=html;
+}
+
+function selectDate(y,m,d){
+  state.selectedDate=new Date(y,m,d);
+
+  const container=document.getElementById("calendarContainer");
+  renderCalendar(container,y,m);
+
+  renderAttendance(); // refresca jugadores abajo
+}
+
+function renderAttendance(){
+
+  const container=document.getElementById("attendanceList");
+  if(!container) return;
+
+  const players=state.data[state.user.category].players||[];
+
+  let html="";
+
+  players.forEach(p=>{
+
+    const checked=
+      state.tempAttendance?.[p.id] ? "checked" : "";
+
+    html+=`
+      <div class="ag-player-row">
+
+        <div class="ag-player-left">
+          <div class="avatar">
+            ${p.name.charAt(0)}
+          </div>
+
+          <div>
+            <strong>${p.name}</strong>
+            <small>${p.position||""} #${p.number||""}</small>
+          </div>
+        </div>
+
+        <input
+          type="checkbox"
+          ${checked}
+          onchange="toggleAttendance('${p.id}')"
+        >
+
+      </div>
+    `;
+  });
+
+  container.innerHTML=html;
+}
+
+function toggleAttendance(id){
+  if(!state.tempAttendance) state.tempAttendance={};
+  state.tempAttendance[id]=!state.tempAttendance[id];
 }
 
 
