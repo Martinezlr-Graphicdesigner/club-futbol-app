@@ -785,23 +785,17 @@ function renderCalendar(container, year, month){
 
 function selectDate(year,month,day){
 
-  // guardar fecha seleccionada
   state.selectedDate = new Date(year,month,day);
 
-  // volver a dibujar calendario
-  const cal = document.getElementById("calendar-container");
+  const cal = document.getElementById("calendar");
   if(cal){
     renderCalendar(cal,year,month);
   }
 
-  // 👉 actualizar texto debajo del calendario
-  const label = document.getElementById("selected-date-label");
-  if(label){
-    label.textContent = formatSelectedDate();
-  }
+  const dateKey = getLocalDateKey(state.selectedDate);
 
-  // refrescar lista jugadores
-  renderAttendance();
+  // 👉 ESTA LÍNEA ES LA CLAVE
+  openAttendance(dateKey);
 }
 
 function formatSelectedDate(){
@@ -822,62 +816,6 @@ function formatSelectedDate(){
 
   return `${dayName}, ${state.selectedDate.getDate()} ${months[state.selectedDate.getMonth()]}`;
 }
-function renderAttendance(){
-
-  const container = document.getElementById("attendance-list");
-  if(!container) return;
-
-  let html = "";
-
-  state.players.forEach(p => {
-
-    // ✔️ INICIALES
-    const initials = p.name
-      ? p.name
-          .split(" ")
-          .map(n => n[0])
-          .join("")
-          .toUpperCase()
-          .slice(0,2)
-      : "P";
-
-    const checked = state.attendance[p.id] ? "checked" : "";
-
-    html += `
-      <div class="ag-player-card" onclick="toggleAttendance('${p.id}')">
-
-        <div class="ag-avatar">${initials}</div>
-
-        <div class="ag-player-info">
-          <div class="ag-name">${p.name}</div>
-          <div class="ag-pos">${p.position || ""}</div>
-        </div>
-
-        <div class="ag-check ${checked}">
-          ✔
-        </div>
-
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-}
-
-function toggleAttendance(playerId){
-
-  const dateKey = state.selectedDate.toISOString().split("T")[0];
-  const session = state.data[state.user.category]
-    .sessions[dateKey];
-
-  session.attendance[playerId] =
-    !session.attendance[playerId];
-
-  renderAttendance(
-    document.getElementById("attendance-container")
-  );
-}
-
 
 function renderLista(container,data){
 
@@ -1656,9 +1594,12 @@ function addPlayer(){
   renderScreen("plantel");
 }
 
-function editPlayer(i){
+function editPlayer(id){
 
-  const p=state.data[state.user.category].players[i];
+  const players = state.data[state.user.category].players;
+  const p = players.find(pl=>pl.id==id);
+
+  if(!p) return;
 
   p.name=prompt("Nombre",p.name);
   p.birth=prompt("Nacimiento",p.birth);
@@ -1668,9 +1609,13 @@ function editPlayer(i){
   renderScreen("plantel");
 }
 
-function deletePlayer(i){
+function deletePlayer(id){
 
-  state.data[state.user.category].players.splice(i,1);
+  const players = state.data[state.user.category].players;
+
+  state.data[state.user.category].players =
+    players.filter(p=>p.id!=id);
+
   saveData();
   renderScreen("plantel");
 }
