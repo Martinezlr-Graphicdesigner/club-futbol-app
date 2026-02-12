@@ -783,79 +783,83 @@ function renderCalendar(container, year, month){
   container.innerHTML=html;
 }
 
-function selectDate(year, month, day){
+function selectDate(year,month,day){
 
-  state.selectedDate = new Date(year, month, day);
+  // guardar fecha seleccionada
+  state.selectedDate = new Date(year,month,day);
 
-  const calendarDiv=document.getElementById("calendar");
+  // volver a dibujar calendario
+  const cal = document.getElementById("calendar-container");
+  if(cal){
+    renderCalendar(cal,year,month);
+  }
 
-  renderCalendar(calendarDiv, year, month);
+  // 👉 actualizar texto debajo del calendario
+  const label = document.getElementById("selected-date-label");
+  if(label){
+    label.textContent = formatSelectedDate();
+  }
 
-  const dateKey=getLocalDateKey(state.selectedDate);
-
-  openAttendance(dateKey);
+  // refrescar lista jugadores
+  renderAttendance();
 }
 
-function renderAttendance(container){
+function formatSelectedDate(){
 
-  const data = state.data[state.user.category];
-  const players = data.players || [];
+  if(!state.selectedDate) return "";
 
-  if(!state.selectedDate){
-    container.innerHTML = "<p>Seleccioná una fecha</p>";
-    return;
-  }
+  const days = [
+    "Domingo","Lunes","Martes",
+    "Miércoles","Jueves","Viernes","Sábado"
+  ];
 
-  const dateKey = state.selectedDate.toISOString().split("T")[0];
+  const months = [
+    "ene","feb","mar","abr","may","jun",
+    "jul","ago","sep","oct","nov","dic"
+  ];
 
-  if(!data.sessions) data.sessions = {};
-  if(!data.sessions[dateKey]){
-    data.sessions[dateKey] = { attendance:{} };
-  }
+  const dayName = days[state.selectedDate.getDay()];
 
-  const session = data.sessions[dateKey];
+  return `${dayName}, ${state.selectedDate.getDate()} ${months[state.selectedDate.getMonth()]}`;
+}
+function renderAttendance(){
+
+  const container = document.getElementById("attendance-list");
+  if(!container) return;
 
   let html = "";
 
-  players.forEach(p=>{
+  state.players.forEach(p => {
 
-    const present = session.attendance[p.id]===true;
-
+    // ✔️ INICIALES
     const initials = p.name
-      .split(" ")
-      .map(n=>n[0])
-      .join("")
-      .substring(0,2);
+      ? p.name
+          .split(" ")
+          .map(n => n[0])
+          .join("")
+          .toUpperCase()
+          .slice(0,2)
+      : "P";
+
+    const checked = state.attendance[p.id] ? "checked" : "";
 
     html += `
       <div class="ag-player-card" onclick="toggleAttendance('${p.id}')">
 
-        <div class="ag-player-left">
+        <div class="ag-avatar">${initials}</div>
 
-          <div class="ag-avatar">
-            ${initials}
-          </div>
-
-          <div>
-            <strong>${p.name}</strong>
-            <small>${p.position || ""} ${p.number ? "· #"+p.number : ""}</small>
-          </div>
-
+        <div class="ag-player-info">
+          <div class="ag-name">${p.name}</div>
+          <div class="ag-pos">${p.position || ""}</div>
         </div>
 
-        <div class="ag-check ${present?"checked":""}">
+        <div class="ag-check ${checked}">
           ✔
         </div>
 
       </div>
     `;
   });
-
-  html += `
-    <button class="ag-save-btn" onclick="saveSession()">
-      GUARDAR SESIÓN
-    </button>
-  `;
 
   container.innerHTML = html;
 }
