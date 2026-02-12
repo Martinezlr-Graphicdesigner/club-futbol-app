@@ -796,50 +796,82 @@ function selectDate(year, month, day){
   openAttendance(dateKey);
 }
 
-function renderAttendance(){
+function renderAttendance(container){
 
-  const container=document.getElementById("attendanceList");
-  if(!container) return;
+  const data = state.data[state.user.category];
+  const players = data.players || [];
 
-  const players=state.data[state.user.category].players||[];
+  if(!state.selectedDate){
+    container.innerHTML = "<p>Seleccioná una fecha</p>";
+    return;
+  }
 
-  let html="";
+  const dateKey = state.selectedDate.toISOString().split("T")[0];
+
+  if(!data.sessions) data.sessions = {};
+  if(!data.sessions[dateKey]){
+    data.sessions[dateKey] = { attendance:{} };
+  }
+
+  const session = data.sessions[dateKey];
+
+  let html = "";
 
   players.forEach(p=>{
 
-    const checked=
-      state.tempAttendance?.[p.id] ? "checked" : "";
+    const present = session.attendance[p.id]===true;
 
-    html+=`
-      <div class="ag-player-row">
+    const initials = p.name
+      .split(" ")
+      .map(n=>n[0])
+      .join("")
+      .substring(0,2);
+
+    html += `
+      <div class="ag-player-card" onclick="toggleAttendance('${p.id}')">
 
         <div class="ag-player-left">
-          <div class="avatar">
-            ${p.name.charAt(0)}
+
+          <div class="ag-avatar">
+            ${initials}
           </div>
 
           <div>
             <strong>${p.name}</strong>
-            <small>${p.position||""} #${p.number||""}</small>
+            <small>${p.position || ""} ${p.number ? "· #"+p.number : ""}</small>
           </div>
+
         </div>
 
-        <input
-          type="checkbox"
-          ${checked}
-          onchange="toggleAttendance('${p.id}')"
-        >
+        <div class="ag-check ${present?"checked":""}">
+          ✔
+        </div>
 
       </div>
     `;
   });
 
-  container.innerHTML=html;
+  html += `
+    <button class="ag-save-btn" onclick="saveSession()">
+      GUARDAR SESIÓN
+    </button>
+  `;
+
+  container.innerHTML = html;
 }
 
-function toggleAttendance(id){
-  if(!state.tempAttendance) state.tempAttendance={};
-  state.tempAttendance[id]=!state.tempAttendance[id];
+function toggleAttendance(playerId){
+
+  const dateKey = state.selectedDate.toISOString().split("T")[0];
+  const session = state.data[state.user.category]
+    .sessions[dateKey];
+
+  session.attendance[playerId] =
+    !session.attendance[playerId];
+
+  renderAttendance(
+    document.getElementById("attendance-container")
+  );
 }
 
 
