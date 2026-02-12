@@ -722,10 +722,7 @@ function getMonthLabel(year,month){
     .toLocaleString("es-AR",{month:"long",year:"numeric"});
 }
 
-function renderCalendar(year, month){
-
-  const container = document.getElementById("content-area");
-  if(!container) return;
+function renderCalendar(container, year, month){
 
   const monthNames=[
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
@@ -739,15 +736,8 @@ function renderCalendar(year, month){
   const daysInMonth=new Date(year,month+1,0).getDate();
 
   let html=`
-  <div class="lista-screen">
 
     <div class="ag-calendar-card">
-
-      <div class="ag-cal-header">
-        <button onclick="changeMonth(-1)">◀</button>
-        <h3>${monthNames[month]} ${year}</h3>
-        <button onclick="changeMonth(1)">▶</button>
-      </div>
 
       <div class="ag-week">
         ${daysShort.map(d=>`<div>${d}</div>`).join("")}
@@ -766,13 +756,13 @@ function renderCalendar(year, month){
     const date=new Date(year,month,d);
     const day=date.getDay();
 
-    // SOLO Martes y Jueves
     const isTraining=(day===2 || day===4);
 
     const selected=
       state.selectedDate &&
       state.selectedDate.getDate()===d &&
-      state.selectedDate.getMonth()===month
+      state.selectedDate.getMonth()===month &&
+      state.selectedDate.getFullYear()===year
         ? "selected"
         : "";
 
@@ -788,43 +778,22 @@ function renderCalendar(year, month){
     `;
   }
 
-  html+=`
-      </div>
-    </div>
-
-    <div id="attendanceContainer"></div>
-
-  </div>
-  `;
+  html+=`</div></div>`;
 
   container.innerHTML=html;
 }
 
-function changeMonth(step){
-  state.currentMonth+=step;
-
-  if(state.currentMonth<0){
-    state.currentMonth=11;
-    state.currentYear--;
-  }
-  if(state.currentMonth>11){
-    state.currentMonth=0;
-    state.currentYear++;
-  }
-
-  renderCalendar(state.currentYear,state.currentMonth);
-}
-
 function selectDate(year, month, day){
 
-  // guardamos fecha seleccionada
   state.selectedDate = new Date(year, month, day);
 
-  // redibujar calendario (marca selected)
-  renderCalendar(year, month);
+  const calendarDiv=document.getElementById("calendar");
 
-  // mostrar asistencia debajo
-  renderAttendance();
+  renderCalendar(calendarDiv, year, month);
+
+  const dateKey=getLocalDateKey(state.selectedDate);
+
+  openAttendance(dateKey);
 }
 
 function renderAttendance(){
@@ -938,9 +907,7 @@ function renderListaToma(container,data){
     <div id="calendar"></div>
 
     <div id="selected-date-label"
-      style="margin-top:18px;
-             font-weight:600;
-             font-size:16px;">
+      style="margin-top:18px;font-weight:600;font-size:16px;">
     </div>
 
     <div id="attendance-area"
