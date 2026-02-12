@@ -722,7 +722,10 @@ function getMonthLabel(year,month){
     .toLocaleString("es-AR",{month:"long",year:"numeric"});
 }
 
-function renderCalendar(container, year, month){
+function renderCalendar(year, month){
+
+  const container = document.getElementById("content-area");
+  if(!container) return;
 
   const monthNames=[
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
@@ -736,22 +739,24 @@ function renderCalendar(container, year, month){
   const daysInMonth=new Date(year,month+1,0).getDate();
 
   let html=`
-  <div class="ag-calendar-card">
+  <div class="lista-screen">
 
-    <div class="ag-cal-header">
-      <button onclick="changeMonth(-1)">◀</button>
-      <h3>${monthNames[month]} ${year}</h3>
-      <button onclick="changeMonth(1)">▶</button>
-    </div>
+    <div class="ag-calendar-card">
 
-    <div class="ag-week">
-      ${daysShort.map(d=>`<div>${d}</div>`).join("")}
-    </div>
+      <div class="ag-cal-header">
+        <button onclick="changeMonth(-1)">◀</button>
+        <h3>${monthNames[month]} ${year}</h3>
+        <button onclick="changeMonth(1)">▶</button>
+      </div>
 
-    <div class="ag-grid">
+      <div class="ag-week">
+        ${daysShort.map(d=>`<div>${d}</div>`).join("")}
+      </div>
+
+      <div class="ag-grid">
   `;
 
-  // espacios vacíos antes del día 1
+  // espacios vacíos
   for(let i=0;i<startDay;i++){
     html+=`<div></div>`;
   }
@@ -761,7 +766,8 @@ function renderCalendar(container, year, month){
     const date=new Date(year,month,d);
     const day=date.getDay();
 
-    const isTraining=(day===2 || day===4); // Mar/Jue
+    // SOLO Martes y Jueves
+    const isTraining=(day===2 || day===4);
 
     const selected=
       state.selectedDate &&
@@ -782,18 +788,43 @@ function renderCalendar(container, year, month){
     `;
   }
 
-  html+=`</div></div>`;
+  html+=`
+      </div>
+    </div>
+
+    <div id="attendanceContainer"></div>
+
+  </div>
+  `;
 
   container.innerHTML=html;
 }
 
-function selectDate(y,m,d){
-  state.selectedDate=new Date(y,m,d);
+function changeMonth(step){
+  state.currentMonth+=step;
 
-  const container=document.getElementById("calendarContainer");
-  renderCalendar(container,y,m);
+  if(state.currentMonth<0){
+    state.currentMonth=11;
+    state.currentYear--;
+  }
+  if(state.currentMonth>11){
+    state.currentMonth=0;
+    state.currentYear++;
+  }
 
-  renderAttendance(); // refresca jugadores abajo
+  renderCalendar(state.currentYear,state.currentMonth);
+}
+
+function selectDate(year, month, day){
+
+  // guardamos fecha seleccionada
+  state.selectedDate = new Date(year, month, day);
+
+  // redibujar calendario (marca selected)
+  renderCalendar(year, month);
+
+  // mostrar asistencia debajo
+  renderAttendance();
 }
 
 function renderAttendance(){
