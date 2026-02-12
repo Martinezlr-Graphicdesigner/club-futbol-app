@@ -1116,7 +1116,7 @@ function renderListaStats(container,data){
           <span>${pct}%</span>
         </div>
 
-        <div class="ag-bar">
+        <div class="stat-bar">
           <div style="width:${pct}%"></div>
         </div>
 

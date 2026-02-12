@@ -2276,3 +2276,38 @@ button {
   margin:10px 0;
   box-shadow:0 6px 16px rgba(0,0,0,.08);
 }
+
+.ag-calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  padding:10px;
+}
+
+.ag-day{
+  background:white;
+  border-radius:12px;
+  padding:10px 0;
+  text-align:center;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+}
+
+.ag-day.today{
+  border:2px solid #4da3ff;
+}
+
+.stat-bar{
+  height:8px;
+  background:#e5e7eb;
+  border-radius:8px;
+  overflow:hidden;
+  margin:6px 0;
+}
+
+.stat-bar div{
+  height:100%;
+  background:linear-gradient(90deg,#2563eb,#60a5fa);
+  border-radius:8px;
+}
