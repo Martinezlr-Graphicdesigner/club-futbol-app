@@ -986,11 +986,11 @@ function renderListaMatches(container){
 
   const cat = state.user.category;
 
-  // 👇 usamos globalMatches si existe
-  const matches =
-    state.data.globalMatches ||
-    state.data[cat].matches ||
-    {};
+  const global =
+    state.data.globalMatches || {};
+
+  const catMatches =
+    state.data[cat].matches || {};
 
   let html = `
     <h3>Partidos</h3>
@@ -1001,24 +1001,20 @@ function renderListaMatches(container){
     </button>
   `;
 
-  const sorted = Object.keys(matches).sort();
+  const sorted = Object.keys(global).sort();
 
   sorted.forEach(dateKey=>{
 
-    const m = matches[dateKey];
-    if(!m) return;
+    const g = global[dateKey];
+    if(!g || g.status==="cancelled") return;
 
-    const isCancelled = m.status === "cancelled";
+    const c = catMatches[dateKey] || {};
 
     html += `
-
-      <div class="match-card ${isCancelled ? "cancelled" : ""}">
+      <div class="match-card">
 
         <div class="mc-top">
           <span>${formatDateFull(dateKey)}</span>
-          <span>
-            ${isCancelled ? "🚫 Cancelado" : ""}
-          </span>
         </div>
 
         <div class="score-row">
@@ -1027,44 +1023,34 @@ function renderListaMatches(container){
 
           <div class="score-box">
             <input type="number"
-              value="${m.goalsFor??""}"
-              onchange="saveGoals('${dateKey}','for',this.value)"
-              ${isCancelled ? "disabled":""}>
+              value="${c.goalsFor??""}"
+              onchange="saveGoals('${dateKey}','for',this.value)">
 
             <span>-</span>
 
             <input type="number"
-              value="${m.goalsAgainst??""}"
-              onchange="saveGoals('${dateKey}','against',this.value)"
-              ${isCancelled ? "disabled":""}>
+              value="${c.goalsAgainst??""}"
+              onchange="saveGoals('${dateKey}','against',this.value)">
           </div>
 
-          <span class="team">${m.rival||"-"}</span>
+          <span class="team">${g.rival||"-"}</span>
 
         </div>
 
         <div class="mc-bottom">
 
-          <span class="loc-badge ${m.home?"local":"visitante"}">
-            ${m.home?"Local":"Visitante"}
+          <span class="loc-badge ${g.home?"local":"visitante"}">
+            ${g.home?"Local":"Visitante"}
           </span>
 
-          <span>${m.location||""}</span>
+          <span>${g.location||""}</span>
 
         </div>
 
-        <div style="margin-top:10px;text-align:center;">
-
-          ${
-            isCancelled
-            ? `<button onclick="reactivateMatch('${dateKey}')">
-                 🔄 Reactivar
-               </button>`
-            : `<button onclick="cancelMatch('${dateKey}')">
-                 ❌ Cancelar
-               </button>`
-          }
-
+        <div style="text-align:center;margin-top:8px;">
+          <button onclick="cancelMatch('${dateKey}')">
+            ❌ Cancelar
+          </button>
         </div>
 
       </div>
@@ -1073,6 +1059,7 @@ function renderListaMatches(container){
 
   container.innerHTML = html;
 }
+
 
 
 function reactivateMatch(dateKey){
@@ -1178,6 +1165,14 @@ function saveGoals(date,type,value){
 
   const cat = state.user.category;
 
+  if(!state.data[cat].matches){
+    state.data[cat].matches = {};
+  }
+
+  if(!state.data[cat].matches[date]){
+    state.data[cat].matches[date] = {};
+  }
+
   if(type==="for"){
     state.data[cat].matches[date].goalsFor =
       value===""?null:Number(value);
@@ -1188,6 +1183,7 @@ function saveGoals(date,type,value){
 
   saveData();
 }
+
 
 
 function openCreateMatchModal(){
@@ -1244,23 +1240,21 @@ function saveNewMatch(){
     return;
   }
 
-  const cat = state.user.category;
-
-  if(!state.data[cat].matches){
-    state.data[cat].matches = {};
+  if(!state.data.globalMatches){
+    state.data.globalMatches = {};
   }
 
-  state.data[cat].matches[date] = {
+  state.data.globalMatches[date] = {
     rival,
     location,
-    home,
-    result:""
+    home
   };
 
   saveData();
   closeTraining();
   renderScreen("lista");
 }
+
 
 
 
@@ -1320,14 +1314,14 @@ function cancelMatch(dateKey){
     state.data.globalMatches[dateKey] = {};
   }
 
-  state.data.globalMatches[dateKey].status = "cancelled";
+  state.data.globalMatches[dateKey].status="cancelled";
 
   saveData();
-
   renderScreen("lista");
 
   showToast("Partido cancelado");
 }
+
 
 
 
