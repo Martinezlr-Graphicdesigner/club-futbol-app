@@ -936,7 +936,9 @@ function renderListaMatches(container){
   const cat = state.user.category;
   const matches = state.data[cat].matches || {};
 
-  let html=`
+  const todayKey = getLocalDateKey(new Date());
+
+  let html = `
     <h3>Partidos</h3>
 
     <button class="btn-main"
@@ -945,49 +947,75 @@ function renderListaMatches(container){
     </button>
   `;
 
-  Object.keys(matches).sort().forEach(k=>{
-    const m=matches[k];
+  const sorted = Object.keys(matches).sort();
 
-    html+=`
-      <div class="ag-match-card">
+  if(!sorted.length){
+    container.innerHTML = html + "<p>Sin partidos cargados</p>";
+    return;
+  }
 
-        <div class="ag-match-top">
-          <strong>${formatDateFull(k)}</strong>
-          <span>${m.home?"Local":"Visitante"}</span>
+  sorted.forEach(k=>{
+
+    const m = matches[k];
+
+    const isPast = k < todayKey;
+    const played = m.result && m.result.length>0;
+
+    const status = played ? "Jugado" : "Pendiente";
+
+    html += `
+      <div class="match-card ${isPast?"match-past":""}">
+
+        <div class="mc-top">
+          <span>${formatDateFull(k)}</span>
+          <span class="badge ${played?"badge-done":"badge-pending"}">
+            ${status}
+          </span>
         </div>
 
-        <h3>vs ${m.rival}</h3>
+        <div class="mc-middle">
+          <strong>WILCOOP</strong>
+          <span>vs</span>
+          <strong>${m.rival || "-"}</strong>
+        </div>
 
-        <input 
-          placeholder="Resultado"
-          value="${m.result||""}"
-          onchange="saveResult('${k}',this.value)">
+        <div class="mc-bottom">
+          <span class="loc-badge ${m.home?"local":"visitante"}">
+            ${m.home?"Local":"Visitante"}
+          </span>
+
+          <input 
+            placeholder="Resultado"
+            value="${m.result||""}"
+            onchange="saveResult('${k}',this.value)">
+        </div>
 
       </div>
     `;
   });
 
-  container.innerHTML=html+`<div id="modal-container"></div>`;
+  container.innerHTML = html + `<div id="modal-container"></div>`;
 }
+
 
 function openCreateMatchModal(){
 
-  const area =
-    document.getElementById("modal-container");
+  const area = document.getElementById("modal-container");
 
-  area.innerHTML=`
-    <div class="modal-overlay"
-         onclick="closeTraining(event)">
+  area.innerHTML = `
+    <div class="modal-overlay" onclick="closeTraining(event)">
 
       <div class="detail-modal slide-up">
 
         <h3>Nuevo Partido</h3>
 
-        <input id="match-date"
-          type="date">
+        <input id="match-date" type="date">
 
         <input id="match-rival"
           placeholder="Rival">
+
+        <input id="match-location"
+          placeholder="Dirección / Sede">
 
         <select id="match-home">
           <option value="true">Local</option>
@@ -996,11 +1024,7 @@ function openCreateMatchModal(){
 
         <button class="btn-main"
           onclick="saveNewMatch()">
-          GUARDAR PARTIDO
-        </button>
-
-        <button onclick="closeTraining()">
-          Cancelar
+          GUARDAR
         </button>
 
       </div>
@@ -1008,12 +1032,18 @@ function openCreateMatchModal(){
   `;
 }
 
+
 function saveNewMatch(){
 
   const date =
     document.getElementById("match-date").value;
+
   const rival =
     document.getElementById("match-rival").value;
+
+  const location =
+    document.getElementById("match-location").value;
+
   const home =
     document.getElementById("match-home").value==="true";
 
@@ -1025,11 +1055,12 @@ function saveNewMatch(){
   const cat = state.user.category;
 
   if(!state.data[cat].matches){
-    state.data[cat].matches={};
+    state.data[cat].matches = {};
   }
 
-  state.data[cat].matches[date]={
+  state.data[cat].matches[date] = {
     rival,
+    location,
     home,
     result:""
   };
@@ -1038,6 +1069,7 @@ function saveNewMatch(){
   closeTraining();
   renderScreen("lista");
 }
+
 
 
 function createMatch(){

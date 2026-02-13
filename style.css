@@ -2554,3 +2554,73 @@ button {
 .gray{
   background:#e5e7eb;
 }
+/* MATCH CARDS */
+
+.match-card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  margin:12px 0;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+}
+
+.match-past{
+  opacity:.5;
+}
+
+.mc-top{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  opacity:.7;
+}
+
+.mc-middle{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  font-size:18px;
+  margin:10px 0;
+}
+
+.mc-bottom{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* BADGES */
+
+.badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.badge-pending{
+  background:#DBEAFE;
+  color:#2563EB;
+}
+
+.badge-done{
+  background:#DCFCE7;
+  color:#16A34A;
+}
+
+.loc-badge{
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.local{
+  background:#E0F2FE;
+  color:#0284C7;
+}
+
+.visitante{
+  background:#FEF3C7;
+  color:#CA8A04;
+}
