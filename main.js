@@ -106,11 +106,12 @@ function saveData(){
 function getLocalDateKey(date){
 
   const y = date.getFullYear();
-  const m = String(date.getMonth()+1).padStart(2,"0");
-  const d = String(date.getDate()).padStart(2,"0");
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
 
-  return `${y}-${m}-${d}`; // formato ISO
+  return `${y}-${m}-${d}`;
 }
+
 
 function generateYearSessions(cat){
 
@@ -941,27 +942,22 @@ function renderListaMatches(container){
   let html = `
     <h3>Partidos</h3>
 
-    <button class="btn-main"
+    <button class="btn-match"
       onclick="openCreateMatchModal()">
-      + Agendar partido
+      + AGENDAR PARTIDO
     </button>
   `;
 
   const sorted = Object.keys(matches).sort();
-
-  if(!sorted.length){
-    container.innerHTML = html + "<p>Sin partidos cargados</p>";
-    return;
-  }
 
   sorted.forEach(k=>{
 
     const m = matches[k];
 
     const isPast = k < todayKey;
-    const played = m.result && m.result.length>0;
 
-    const status = played ? "Jugado" : "Pendiente";
+    const played =
+      m.goalsFor!=null && m.goalsAgainst!=null;
 
     html += `
       <div class="match-card ${isPast?"match-past":""}">
@@ -969,25 +965,36 @@ function renderListaMatches(container){
         <div class="mc-top">
           <span>${formatDateFull(k)}</span>
           <span class="badge ${played?"badge-done":"badge-pending"}">
-            ${status}
+            ${played?"Jugado":"Pendiente"}
           </span>
         </div>
 
-        <div class="mc-middle">
-          <strong>WILCOOP</strong>
-          <span>vs</span>
-          <strong>${m.rival || "-"}</strong>
+        <div class="score-row">
+
+          <span class="team">WILCOOP</span>
+
+          <div class="score-box">
+            <input type="number"
+              value="${m.goalsFor??""}"
+              onchange="saveGoals('${k}','for',this.value)">
+            <span>-</span>
+            <input type="number"
+              value="${m.goalsAgainst??""}"
+              onchange="saveGoals('${k}','against',this.value)">
+          </div>
+
+          <span class="team">${m.rival||"-"}</span>
+
         </div>
 
         <div class="mc-bottom">
+
           <span class="loc-badge ${m.home?"local":"visitante"}">
             ${m.home?"Local":"Visitante"}
           </span>
 
-          <input 
-            placeholder="Resultado"
-            value="${m.result||""}"
-            onchange="saveResult('${k}',this.value)">
+          <span>${m.location||""}</span>
+
         </div>
 
       </div>
@@ -995,6 +1002,21 @@ function renderListaMatches(container){
   });
 
   container.innerHTML = html + `<div id="modal-container"></div>`;
+}
+
+function saveGoals(date,type,value){
+
+  const cat = state.user.category;
+
+  if(type==="for"){
+    state.data[cat].matches[date].goalsFor =
+      value===""?null:Number(value);
+  }else{
+    state.data[cat].matches[date].goalsAgainst =
+      value===""?null:Number(value);
+  }
+
+  saveData();
 }
 
 

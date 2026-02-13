@@ -2624,3 +2624,48 @@ button {
   background:#FEF3C7;
   color:#CA8A04;
 }
+
+.btn-match{
+  display:block;
+  width:100%;
+  text-align:center;
+  background:linear-gradient(90deg,#3b82f6,#2563eb);
+  color:white;
+  border:none;
+  padding:14px;
+  border-radius:14px;
+  font-weight:700;
+  margin:16px 0;
+}
+
+.score-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:16px 0;
+}
+
+.team{
+  font-weight:700;
+  font-size:16px;
+}
+
+.score-box{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#f3f4f6;
+  padding:8px 14px;
+  border-radius:12px;
+}
+
+.score-box input{
+  width:36px;
+  text-align:center;
+  border:none;
+  background:white;
+  padding:6px;
+  border-radius:8px;
+  font-weight:700;
+}
+
