@@ -551,34 +551,73 @@ ${renderNextMatchCard(matches)}
 
 function renderNextMatchCard(matches){
 
-  if(!matches || !Object.keys(matches).length){
-    return "";
+  const next = getNextMatch(matches);
+
+  if(!next){
+    return `
+      <div class="next-match-card empty">
+        <span>Sin próximos partidos</span>
+      </div>
+    `;
   }
-
-  const nextKey = Object.keys(matches).sort()[0];
-  const m = matches[nextKey];
-
-  if(!m) return "";
 
   return `
     <div class="next-match-card">
 
-      <div class="nm-title">PRÓXIMO PARTIDO</div>
-
-      <div class="nm-teams">
-        <div>WILCOOP</div>
-        <div>VS</div>
-        <div>${m.rival || "-"}</div>
+      <div class="nmc-top">
+        Próximo Partido
       </div>
 
-      <div class="nm-info">
-        <span>${formatDate(nextKey)}</span>
-        <span>${m.sede || ""}</span>
+      <div class="nmc-date">
+        ${formatDateFull(next.date)}
+      </div>
+
+      <div class="nmc-middle">
+
+        <span>WILCOOP</span>
+
+        <span class="vs">vs</span>
+
+        <span>${next.rival || "-"}</span>
+
+      </div>
+
+      <div class="nmc-bottom">
+
+        <span class="loc-badge ${next.home?"local":"visitante"}">
+          ${next.home?"Local":"Visitante"}
+        </span>
+
+        <span>
+          ${next.location || ""}
+        </span>
+
       </div>
 
     </div>
   `;
 }
+
+
+function getNextMatch(matches){
+
+  const today = getLocalDateKey(new Date());
+
+  const futureMatches = Object.keys(matches)
+    .filter(d => d >= today)
+    .sort();
+
+  if(!futureMatches.length) return null;
+
+  const nextDate = futureMatches[0];
+
+  return {
+    date: nextDate,
+    ...matches[nextDate]
+  };
+}
+
+
 
 function renderDashboardStats(data){
 
@@ -960,7 +999,9 @@ function renderListaMatches(container){
       m.goalsFor!=null && m.goalsAgainst!=null;
 
     html += `
-      <div class="match-card ${isPast?"match-past":""}">
+      <div class="match-card
+  onclick="editMatch('${k}')"
+
 
         <div class="mc-top">
           <span>${formatDateFull(k)}</span>
@@ -1003,6 +1044,90 @@ function renderListaMatches(container){
 
   container.innerHTML = html + `<div id="modal-container"></div>`;
 }
+
+function editMatch(date){
+
+  const cat = state.user.category;
+  const m = state.data[cat].matches[date];
+
+  const area =
+    document.getElementById("modal-container");
+
+  area.innerHTML = `
+    <div class="modal-overlay">
+
+      <div class="detail-modal slide-up">
+
+        <h3>Editar Partido</h3>
+
+        <input id="edit-date"
+          type="date"
+          value="${date}">
+
+        <input id="edit-rival"
+          value="${m.rival||""}"
+          placeholder="Rival">
+
+        <input id="edit-location"
+          value="${m.location||""}"
+          placeholder="Dirección">
+
+        <select id="edit-home">
+          <option value="true"
+            ${m.home?"selected":""}>Local</option>
+          <option value="false"
+            ${!m.home?"selected":""}>Visitante</option>
+        </select>
+
+        <button class="btn-main"
+          onclick="saveEditMatch('${date}')">
+          GUARDAR
+        </button>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveEditMatch(oldDate){
+
+  const cat = state.user.category;
+
+  const newDate =
+    document.getElementById("edit-date").value;
+
+  const rival =
+    document.getElementById("edit-rival").value;
+
+  const location =
+    document.getElementById("edit-location").value;
+
+  const home =
+    document.getElementById("edit-home").value==="true";
+
+  if(!newDate || !rival){
+    alert("Completar datos");
+    return;
+  }
+
+  const oldData =
+    state.data[cat].matches[oldDate];
+
+  delete state.data[cat].matches[oldDate];
+
+  state.data[cat].matches[newDate] = {
+    ...oldData,
+    rival,
+    location,
+    home
+  };
+
+  saveData();
+  closeTraining();
+  renderScreen("lista");
+}
+
+
 
 function saveGoals(date,type,value){
 

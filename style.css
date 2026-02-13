@@ -2669,3 +2669,45 @@ button {
   font-weight:700;
 }
 
+.next-match-card{
+  background:linear-gradient(135deg,#1e3a8a,#2563eb);
+  color:white;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:18px;
+}
+
+.nmc-top{
+  font-size:12px;
+  opacity:.8;
+}
+
+.nmc-date{
+  font-weight:700;
+  margin:6px 0;
+}
+
+.nmc-middle{
+  display:flex;
+  justify-content:space-between;
+  font-size:18px;
+  font-weight:700;
+  margin:10px 0;
+}
+
+.vs{
+  opacity:.7;
+}
+
+.nmc-bottom{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  opacity:.9;
+}
+
+.next-match-card.empty{
+  background:#e5e7eb;
+  color:#333;
+}
+
