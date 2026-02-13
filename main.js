@@ -159,15 +159,17 @@ function generateYearSessions(cat){
 
   function openAttendance(dateKey){
 
-  const cat=state.user.category;
-  const session=state.data[cat].sessions[dateKey];
-  const players=state.data[cat].players||[];
+  const cat = state.user.category;
+  const session = state.data[cat].sessions[dateKey];
+  const players = state.data[cat].players || [];
 
   if(!session.attendance){
-    session.attendance={};
+    session.attendance = {};
   }
 
-  const d = new Date(dateKey);
+  // FIX timezone
+  const [y,m,dn] = dateKey.split("-");
+  const d = new Date(y, m-1, dn);
 
   const pretty =
     d.toLocaleDateString("es-AR",{
@@ -205,13 +207,12 @@ function generateYearSessions(cat){
     </div>
 
     <div style="text-align:center;margin-top:20px;">
-      <button class="btn-main"
+      <button class="btn-primary"
         onclick="saveAttendanceDate('${dateKey}')">
         GUARDAR SESIÓN
       </button>
     </div>
   `;
-}
 
 function openSessionDetail(dateKey){
 
