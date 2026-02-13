@@ -1101,40 +1101,123 @@ function deleteMatch(dateKey){
 
 function renderListaStats(container,data){
 
-  const players=data.players||[];
-  const sessions=data.sessions||{};
-  const matches=state.data[state.user.category].matches||{};
+  const players = data.players || [];
+  const sessions = data.sessions || {};
+  const matches = state.data[state.user.category].matches || {};
 
-  let html="";
+  let html = "";
 
-  let ranking=[];
-  let globalTotal=0;
-  let globalPresent=0;
+  /* =========================
+     RESUMEN GLOBAL
+  ========================= */
 
-  players.forEach(p=>{
+  let totalTrain = 0;
+  let presentTrain = 0;
 
-    let presTrain=0, absTrain=0;
-    let presMatch=0, absMatch=0;
+  let totalMatch = 0;
+  let presentMatch = 0;
+
+  players.forEach(p => {
 
     Object.values(sessions).forEach(s=>{
-      if(s.attendance?.[p.id]===true) presTrain++;
-      if(s.attendance?.[p.id]===false) absTrain++;
+      if(s.attendance?.[p.id] !== undefined){
+        totalTrain++;
+        if(s.attendance[p.id]) presentTrain++;
+      }
     });
 
     Object.values(matches).forEach(m=>{
-      if(m.attendance?.[p.id]===true) presMatch++;
-      if(m.attendance?.[p.id]===false) absMatch++;
+      if(m.attendance?.[p.id] !== undefined){
+        totalMatch++;
+        if(m.attendance[p.id]) presentMatch++;
+      }
     });
 
-    const total=presTrain+absTrain+presMatch+absMatch;
-    const present=presTrain+presMatch;
+  });
 
-    const pct = total?Math.round(present*100/total):0;
+  const trainPct = totalTrain
+    ? Math.round((presentTrain/totalTrain)*100)
+    : 0;
 
-    globalTotal+=total;
-    globalPresent+=present;
+  const matchPct = totalMatch
+    ? Math.round((presentMatch/totalMatch)*100)
+    : 0;
 
-    html+=`
+  const globalTotal = totalTrain + totalMatch;
+  const globalPresent = presentTrain + presentMatch;
+
+  const globalPct = globalTotal
+    ? Math.round((globalPresent/globalTotal)*100)
+    : 0;
+
+  /* =========================
+     CARD RESUMEN
+  ========================= */
+
+  html += `
+    <div class="ag-summary-card">
+
+      <h3>Resumen Categoría</h3>
+
+      <div style="font-size:32px;font-weight:800">
+        ${globalPct}%
+      </div>
+
+      <div class="stat-bar">
+        <div style="width:${globalPct}%"></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:14px;opacity:.8">
+        <span>Entrenamientos ${trainPct}%</span>
+        <span>Partidos ${matchPct}%</span>
+      </div>
+
+    </div>
+  `;
+
+  /* =========================
+     JUGADORES
+  ========================= */
+
+  let ranking = [];
+
+  players.forEach(p=>{
+
+    let pTrainTotal=0, pTrainPresent=0;
+    let pMatchTotal=0, pMatchPresent=0;
+
+    Object.values(sessions).forEach(s=>{
+      if(s.attendance?.[p.id] !== undefined){
+        pTrainTotal++;
+        if(s.attendance[p.id]) pTrainPresent++;
+      }
+    });
+
+    Object.values(matches).forEach(m=>{
+      if(m.attendance?.[p.id] !== undefined){
+        pMatchTotal++;
+        if(m.attendance[p.id]) pMatchPresent++;
+      }
+    });
+
+    const trainPct = pTrainTotal
+      ? Math.round((pTrainPresent/pTrainTotal)*100)
+      : 0;
+
+    const matchPct = pMatchTotal
+      ? Math.round((pMatchPresent/pMatchTotal)*100)
+      : 0;
+
+    const total = pTrainTotal + pMatchTotal;
+    const present = pTrainPresent + pMatchPresent;
+
+    const pct = total
+      ? Math.round((present/total)*100)
+      : 0;
+
+    ranking.push({name:p.name,pos:p.position,pct});
+
+    html += `
       <div class="ag-stat-card">
 
         <div class="ag-stat-top">
@@ -1146,33 +1229,31 @@ function renderListaStats(container,data){
           <div style="width:${pct}%"></div>
         </div>
 
-        <small>
-          Entrenamientos ${presTrain} · 
-          Partidos ${presMatch}
-        </small>
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          margin-top:8px;
+          font-size:13px;
+          opacity:.8;
+        ">
+          <span>${trainPct}% Entrenam.</span>
+          <span>${matchPct}% Partidos</span>
+        </div>
 
       </div>
     `;
-
-    ranking.push({name:p.name,pos:p.position,pct});
   });
 
-  const globalPct =
-    globalTotal?Math.round(globalPresent*100/globalTotal):0;
-
-  html=`
-    <div class="ag-summary-card">
-      <h3>Asistencia global</h3>
-      <h1>${globalPct}%</h1>
-    </div>
-  `+html;
+  /* =========================
+     RANKING
+  ========================= */
 
   ranking.sort((a,b)=>b.pct-a.pct);
 
-  html+=`<div class="ag-ranking-card"><h3>Ranking</h3>`;
+  html += `<div class="ag-ranking-card"><h3>Ranking de Asistencia</h3>`;
 
   ranking.forEach((r,i)=>{
-    html+=`
+    html += `
       <div class="ag-rank-row">
 
         <div class="rank-pos ${i===0?"gold":""}">
@@ -1195,10 +1276,11 @@ function renderListaStats(container,data){
     `;
   });
 
-  html+=`</div>`;
+  html += `</div>`;
 
-  container.innerHTML=html;
+  container.innerHTML = html;
 }
+
 
 function renderAgenda(){
 
