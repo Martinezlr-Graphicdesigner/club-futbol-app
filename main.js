@@ -213,6 +213,7 @@ function generateYearSessions(cat){
       </button>
     </div>
   `;
+}
 
 function openSessionDetail(dateKey){
 
