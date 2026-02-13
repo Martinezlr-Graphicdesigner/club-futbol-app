@@ -2772,3 +2772,8 @@ button {
   font-weight:700;
   text-decoration:none;
 }
+
+.cancelled{
+  opacity:.5;
+  filter:grayscale(1);
+}
