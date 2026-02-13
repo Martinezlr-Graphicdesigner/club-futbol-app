@@ -562,7 +562,8 @@ function renderNextMatchCard(matches){
   }
 
   const mapLink = next.location
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(next.location)}`
+    ? "https://www.google.com/maps/search/?api=1&query="
+      + encodeURIComponent(next.location)
     : null;
 
   return `
@@ -574,13 +575,9 @@ function renderNextMatchCard(matches){
       </div>
 
       <div class="nmc-teams">
-
         <span class="team-name">WILCOOP</span>
-
         <span class="vs">vs</span>
-
         <span class="team-name">${next.rival || "-"}</span>
-
       </div>
 
       <div class="nmc-footer">
@@ -591,9 +588,11 @@ function renderNextMatchCard(matches){
 
         ${
           mapLink
-          ? `<a class="map-btn" href="${mapLink}" target="_blank">
-              Ver mapa
-            </a>`
+          ? `<a class="map-btn"
+               href="${mapLink}"
+               target="_blank">
+               Ver mapa
+             </a>`
           : ""
         }
 
@@ -602,6 +601,7 @@ function renderNextMatchCard(matches){
     </div>
   `;
 }
+
 
 
 
