@@ -1107,18 +1107,12 @@ function renderListaStats(container,data){
 
   let html = "";
 
-  /* =========================
-     RESUMEN GLOBAL
-  ========================= */
+  /* ========= RESUMEN GLOBAL ========= */
 
-  let totalTrain = 0;
-  let presentTrain = 0;
+  let totalTrain=0, presentTrain=0;
+  let totalMatch=0, presentMatch=0;
 
-  let totalMatch = 0;
-  let presentMatch = 0;
-
-  players.forEach(p => {
-
+  players.forEach(p=>{
     Object.values(sessions).forEach(s=>{
       if(s.attendance?.[p.id] !== undefined){
         totalTrain++;
@@ -1132,154 +1126,130 @@ function renderListaStats(container,data){
         if(m.attendance[p.id]) presentMatch++;
       }
     });
-
   });
 
-  const trainPct = totalTrain
-    ? Math.round((presentTrain/totalTrain)*100)
-    : 0;
-
-  const matchPct = totalMatch
-    ? Math.round((presentMatch/totalMatch)*100)
-    : 0;
+  const trainPct = totalTrain ? Math.round(presentTrain*100/totalTrain) : 0;
+  const matchPct = totalMatch ? Math.round(presentMatch*100/totalMatch) : 0;
 
   const globalTotal = totalTrain + totalMatch;
   const globalPresent = presentTrain + presentMatch;
+  const globalPct = globalTotal ? Math.round(globalPresent*100/globalTotal) : 0;
 
-  const globalPct = globalTotal
-    ? Math.round((globalPresent/globalTotal)*100)
-    : 0;
-
-  /* =========================
-     CARD RESUMEN
-  ========================= */
+  /* ========= CARD RESUMEN ========= */
 
   html += `
-    <div class="ag-summary-card">
+  <div class="stat-summary">
 
-      <h3>Resumen Categoría</h3>
+    <h3>Resumen Categoría</h3>
 
-      <div style="font-size:32px;font-weight:800">
-        ${globalPct}%
-      </div>
+    <div class="big-percent">${globalPct}%</div>
 
-      <div class="stat-bar">
-        <div style="width:${globalPct}%"></div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:14px;opacity:.8">
-        <span>Entrenamientos ${trainPct}%</span>
-        <span>Partidos ${matchPct}%</span>
-      </div>
-
+    <div class="gradient-bar">
+      <div style="width:${globalPct}%"></div>
     </div>
+
+    <div class="split-stats">
+      <div>
+        <strong>${trainPct}%</strong>
+        <span>Entrenamientos</span>
+      </div>
+      <div>
+        <strong>${matchPct}%</strong>
+        <span>Partidos</span>
+      </div>
+    </div>
+
+  </div>
   `;
 
-  /* =========================
-     JUGADORES
-  ========================= */
+  /* ========= JUGADORES ========= */
 
-  let ranking = [];
+  let ranking=[];
 
   players.forEach(p=>{
 
-    let pTrainTotal=0, pTrainPresent=0;
-    let pMatchTotal=0, pMatchPresent=0;
+    let tTot=0,tPre=0,mTot=0,mPre=0;
 
     Object.values(sessions).forEach(s=>{
       if(s.attendance?.[p.id] !== undefined){
-        pTrainTotal++;
-        if(s.attendance[p.id]) pTrainPresent++;
+        tTot++;
+        if(s.attendance[p.id]) tPre++;
       }
     });
 
     Object.values(matches).forEach(m=>{
       if(m.attendance?.[p.id] !== undefined){
-        pMatchTotal++;
-        if(m.attendance[p.id]) pMatchPresent++;
+        mTot++;
+        if(m.attendance[p.id]) mPre++;
       }
     });
 
-    const trainPct = pTrainTotal
-      ? Math.round((pTrainPresent/pTrainTotal)*100)
-      : 0;
+    const trainPct = tTot?Math.round(tPre*100/tTot):0;
+    const matchPct = mTot?Math.round(mPre*100/mTot):0;
 
-    const matchPct = pMatchTotal
-      ? Math.round((pMatchPresent/pMatchTotal)*100)
-      : 0;
+    const total=tTot+mTot;
+    const present=tPre+mPre;
+    const pct=total?Math.round(present*100/total):0;
 
-    const total = pTrainTotal + pMatchTotal;
-    const present = pTrainPresent + pMatchPresent;
-
-    const pct = total
-      ? Math.round((present/total)*100)
-      : 0;
-
-    ranking.push({name:p.name,pos:p.position,pct});
+    ranking.push({name:p.name,pct});
 
     html += `
-      <div class="ag-stat-card">
+    <div class="player-stat-card">
 
-        <div class="ag-stat-top">
-          <strong>${p.name}</strong>
-          <span>${pct}%</span>
-        </div>
-
-        <div class="stat-bar">
-          <div style="width:${pct}%"></div>
-        </div>
-
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          margin-top:8px;
-          font-size:13px;
-          opacity:.8;
-        ">
-          <span>${trainPct}% Entrenam.</span>
-          <span>${matchPct}% Partidos</span>
-        </div>
-
+      <div class="ps-top">
+        <strong>${p.name}</strong>
+        <span>${pct}%</span>
       </div>
+
+      <div class="gradient-bar">
+        <div style="width:${pct}%"></div>
+      </div>
+
+      <div class="ps-bottom">
+        <div>
+          <strong>${trainPct}%</strong>
+          <span>ENTRENAM.</span>
+        </div>
+        <div>
+          <strong>${matchPct}%</strong>
+          <span>PARTIDOS</span>
+        </div>
+      </div>
+
+    </div>
     `;
   });
 
-  /* =========================
-     RANKING
-  ========================= */
+  /* ========= RANKING ========= */
 
   ranking.sort((a,b)=>b.pct-a.pct);
 
-  html += `<div class="ag-ranking-card"><h3>Ranking de Asistencia</h3>`;
+  html += `<div class="ranking-card"><h3>Ranking de Asistencia</h3>`;
 
   ranking.forEach((r,i)=>{
-    html += `
-      <div class="ag-rank-row">
+    html+=`
+    <div class="rank-row">
 
-        <div class="rank-pos ${i===0?"gold":""}">
-          ${i+1}
-        </div>
-
-        <div class="rank-player">
-          <div class="avatar">
-            ${r.name.charAt(0)}
-          </div>
-          <div>
-            <strong>${r.name}</strong>
-            <small>${r.pos||""}</small>
-          </div>
-        </div>
-
-        <strong>${r.pct}%</strong>
-
+      <div class="rank-num ${i===0?"gold":"gray"}">
+        ${i+1}
       </div>
+
+      <div class="rank-name">
+        <div class="avatar">${r.name.charAt(0)}</div>
+        ${r.name}
+      </div>
+
+      <strong>${r.pct}%</strong>
+
+    </div>
     `;
   });
 
   html += `</div>`;
 
-  container.innerHTML = html;
+  container.innerHTML=html;
 }
+
 
 
 function renderAgenda(){

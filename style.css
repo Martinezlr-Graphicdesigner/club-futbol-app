@@ -2434,3 +2434,123 @@ button {
   font-weight:600;
   font-size:16px;
 }
+
+/* ===== STATS ANTIGRAVITY STYLE ===== */
+
+.stat-summary{
+  background:white;
+  padding:22px;
+  border-radius:20px;
+  margin-bottom:20px;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+}
+
+.big-percent{
+  font-size:34px;
+  font-weight:800;
+}
+
+.gradient-bar{
+  height:8px;
+  background:#eee;
+  border-radius:20px;
+  margin:10px 0;
+  overflow:hidden;
+}
+
+.gradient-bar div{
+  height:100%;
+  background:linear-gradient(90deg,#22c55e,#3b82f6,#8b5cf6);
+  border-radius:20px;
+}
+
+.split-stats{
+  display:flex;
+  justify-content:space-between;
+  text-align:center;
+}
+
+.split-stats span{
+  font-size:12px;
+  opacity:.6;
+}
+
+/* PLAYER CARDS */
+
+.player-stat-card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+}
+
+.ps-top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:700;
+}
+
+.ps-bottom{
+  display:flex;
+  justify-content:space-between;
+  text-align:center;
+  margin-top:10px;
+}
+
+.ps-bottom span{
+  font-size:11px;
+  opacity:.6;
+}
+
+/* RANKING */
+
+.ranking-card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+}
+
+.rank-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:12px;
+}
+
+.rank-name{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:600;
+}
+
+.avatar{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:#e5e7eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+}
+
+.rank-num{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+}
+
+.gold{
+  background:#facc15;
+}
+
+.gray{
+  background:#e5e7eb;
+}
