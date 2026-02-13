@@ -2711,3 +2711,63 @@ button {
   color:#333;
 }
 
+/* NEXT MATCH CARD */
+
+.next-match-card{
+  background:linear-gradient(135deg,#1e40af,#3b82f6);
+  color:white;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:18px;
+  box-shadow:0 6px 18px rgba(0,0,0,.15);
+}
+
+.next-match-card.empty{
+  background:#e5e7eb;
+  color:#333;
+  text-align:center;
+  font-weight:600;
+}
+
+.nmc-header{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  opacity:.9;
+}
+
+.nmc-teams{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:14px 0;
+  font-size:20px;
+  font-weight:800;
+}
+
+.team-name{
+  max-width:40%;
+  text-align:center;
+}
+
+.vs{
+  opacity:.8;
+  font-size:14px;
+}
+
+.nmc-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.map-btn{
+  background:white;
+  color:#2563eb;
+  padding:6px 12px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:700;
+  text-decoration:none;
+}
+

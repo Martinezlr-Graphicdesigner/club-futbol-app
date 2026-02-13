@@ -556,47 +556,53 @@ function renderNextMatchCard(matches){
   if(!next){
     return `
       <div class="next-match-card empty">
-        <span>Sin próximos partidos</span>
+        Sin próximos partidos
       </div>
     `;
   }
 
+  const mapLink = next.location
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(next.location)}`
+    : null;
+
   return `
     <div class="next-match-card">
 
-      <div class="nmc-top">
-        Próximo Partido
+      <div class="nmc-header">
+        <span>PRÓXIMO PARTIDO</span>
+        <span>${formatDateFull(next.date)}</span>
       </div>
 
-      <div class="nmc-date">
-        ${formatDateFull(next.date)}
-      </div>
+      <div class="nmc-teams">
 
-      <div class="nmc-middle">
-
-        <span>WILCOOP</span>
+        <span class="team-name">WILCOOP</span>
 
         <span class="vs">vs</span>
 
-        <span>${next.rival || "-"}</span>
+        <span class="team-name">${next.rival || "-"}</span>
 
       </div>
 
-      <div class="nmc-bottom">
+      <div class="nmc-footer">
 
         <span class="loc-badge ${next.home?"local":"visitante"}">
           ${next.home?"Local":"Visitante"}
         </span>
 
-        <span>
-          ${next.location || ""}
-        </span>
+        ${
+          mapLink
+          ? `<a class="map-btn" href="${mapLink}" target="_blank">
+              Ver mapa
+            </a>`
+          : ""
+        }
 
       </div>
 
     </div>
   `;
 }
+
 
 
 function getNextMatch(matches){
