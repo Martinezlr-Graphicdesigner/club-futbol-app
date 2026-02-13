@@ -1057,8 +1057,12 @@ function renderListaMatches(container){
     `;
   });
 
+  // 👇 ESTA LÍNEA ES LA CLAVE
+  html += `<div id="modal-container"></div>`;
+
   container.innerHTML = html;
 }
+
 
 
 
