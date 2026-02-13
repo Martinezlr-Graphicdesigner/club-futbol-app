@@ -1005,8 +1005,9 @@ function renderListaMatches(container){
       m.goalsFor!=null && m.goalsAgainst!=null;
 
     html += `
-      <div class="match-card
-  onclick="editMatch('${k}')"
+      <div class="match-card"
+  onclick="editMatch('${k}')">
+
 
 
         <div class="mc-top">
