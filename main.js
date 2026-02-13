@@ -406,7 +406,9 @@ function renderHome(container, data){
 
   const players = data.players || [];
   const sessions = data.sessions || {};
-  const matches = data.globalMatches || {};
+  const matches =
+  state.data.globalMatches || {};
+
 
 
   /* ========= STATS ========= */
@@ -1006,15 +1008,21 @@ function renderListaMatches(container){
   sorted.forEach(dateKey=>{
 
     const g = global[dateKey];
-    if(!g || g.status==="cancelled") return;
+    if(!g) return;
+
+    const isCancelled =
+      g.status === "cancelled";
 
     const c = catMatches[dateKey] || {};
 
     html += `
-      <div class="match-card">
+      <div class="match-card ${isCancelled?"cancelled":""}">
 
         <div class="mc-top">
           <span>${formatDateFull(dateKey)}</span>
+          <span>
+            ${isCancelled?"🚫 Cancelado":""}
+          </span>
         </div>
 
         <div class="score-row">
@@ -1024,13 +1032,15 @@ function renderListaMatches(container){
           <div class="score-box">
             <input type="number"
               value="${c.goalsFor??""}"
-              onchange="saveGoals('${dateKey}','for',this.value)">
+              onchange="saveGoals('${dateKey}','for',this.value)"
+              ${isCancelled?"disabled":""}>
 
             <span>-</span>
 
             <input type="number"
               value="${c.goalsAgainst??""}"
-              onchange="saveGoals('${dateKey}','against',this.value)">
+              onchange="saveGoals('${dateKey}','against',this.value)"
+              ${isCancelled?"disabled":""}>
           </div>
 
           <span class="team">${g.rival||"-"}</span>
@@ -1048,16 +1058,23 @@ function renderListaMatches(container){
         </div>
 
         <div style="text-align:center;margin-top:8px;">
-          <button onclick="cancelMatch('${dateKey}')">
-            ❌ Cancelar
-          </button>
+
+          ${
+            isCancelled
+            ? `<button onclick="reactivateMatch('${dateKey}')">
+                 🔄 Reactivar
+               </button>`
+            : `<button onclick="cancelMatch('${dateKey}')">
+                 ❌ Cancelar
+               </button>`
+          }
+
         </div>
 
       </div>
     `;
   });
 
-  // 👇 ESTA LÍNEA ES LA CLAVE
   html += `<div id="modal-container"></div>`;
 
   container.innerHTML = html;
@@ -1066,19 +1083,20 @@ function renderListaMatches(container){
 
 
 
+
 function reactivateMatch(dateKey){
 
-  if(!state.data.globalMatches[dateKey]) return;
+  if(!state.data.globalMatches) return;
 
-  delete state.data.globalMatches[dateKey].status;
+  if(state.data.globalMatches[dateKey]){
+    state.data.globalMatches[dateKey].status = "active";
+  }
 
   saveData();
-
   renderScreen("lista");
 
   showToast("Partido reactivado");
 }
-
 
 
 function editMatch(date){
@@ -1244,6 +1262,7 @@ function saveNewMatch(){
     return;
   }
 
+  // 👉 GLOBAL MATCHES
   if(!state.data.globalMatches){
     state.data.globalMatches = {};
   }
@@ -1251,13 +1270,15 @@ function saveNewMatch(){
   state.data.globalMatches[date] = {
     rival,
     location,
-    home
+    home,
+    status:"active"
   };
 
   saveData();
   closeTraining();
   renderScreen("lista");
 }
+
 
 
 
@@ -1310,24 +1331,17 @@ function cancelMatch(dateKey){
 
   if(!confirm("¿Cancelar partido?")) return;
 
-  if(!state.data.globalMatches){
-    state.data.globalMatches = {};
-  }
+  if(!state.data.globalMatches) return;
 
-  if(!state.data.globalMatches[dateKey]){
-    state.data.globalMatches[dateKey] = {};
+  if(state.data.globalMatches[dateKey]){
+    state.data.globalMatches[dateKey].status = "cancelled";
   }
-
-  state.data.globalMatches[dateKey].status="cancelled";
 
   saveData();
   renderScreen("lista");
 
   showToast("Partido cancelado");
 }
-
-
-
 
 
 

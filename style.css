@@ -2777,3 +2777,8 @@ button {
   opacity:.5;
   filter:grayscale(1);
 }
+
+.match-card.cancelled{
+  opacity:0.5;
+  filter:grayscale(60%);
+}
