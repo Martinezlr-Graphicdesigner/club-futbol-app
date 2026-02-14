@@ -1842,18 +1842,29 @@ function renderPlantel(container, data){
   container.innerHTML = `
     <div class="screen-header">
       <h2>Plantel</h2>
+
       <button class="btn-primary" onclick="addPlayer()">
         + Jugador
       </button>
     </div>
 
     <div class="players-grid">
+
       ${players.map(p=>`
 
         <div class="player-card-ui">
 
-          <div class="player-avatar">
-            ${p.name.charAt(0)}
+          <div class="player-avatar"
+            onclick="changePlayerPhoto('${p.id}')"
+            style="
+              cursor:pointer;
+              background-image:${p.photo ? `url(${p.photo})` : "none"};
+              background-size:cover;
+              background-position:center;
+            ">
+
+            ${!p.photo ? p.name.charAt(0).toUpperCase() : ""}
+
           </div>
 
           <div class="player-info">
@@ -1871,28 +1882,70 @@ function renderPlantel(container, data){
         </div>
 
       `).join("")}
+
     </div>
+
+    <input type="file"
+      id="photo-input"
+      accept="image/*"
+      style="display:none;">
   `;
+}
+
+function changePlayerPhoto(playerId){
+
+  const input = document.getElementById("photo-input");
+
+  input.onchange = function(){
+
+    const file = this.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+      const players =
+        state.data[state.user.category].players;
+
+      const p = players.find(pl=>pl.id==playerId);
+
+      if(!p) return;
+
+      p.photo = e.target.result;
+
+      saveData();
+      renderScreen("plantel");
+
+      showToast("Foto actualizada 📸");
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  input.click();
 }
 
 function addPlayer(){
 
-  const name=prompt("Nombre y apellido");
-  const birth=prompt("Fecha nacimiento (YYYY-MM-DD)");
-  const number=prompt("Número camiseta");
+  const name = prompt("Nombre y apellido");
+  const birth = prompt("Fecha nacimiento (YYYY-MM-DD)");
+  const number = prompt("Número camiseta");
 
   if(!name) return;
 
   state.data[state.user.category].players.push({
-    id:Date.now(),
+    id: Date.now(),
     name,
     birth,
-    number
+    number,
+    photo: null
   });
 
   saveData();
   renderScreen("plantel");
 }
+
 
 function editPlayer(id){
 

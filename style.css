@@ -2782,3 +2782,17 @@ button {
   opacity:0.5;
   filter:grayscale(60%);
 }
+
+.player-avatar{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#3b82f6;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  font-weight:bold;
+  overflow:hidden;
+}
