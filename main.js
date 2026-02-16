@@ -1381,6 +1381,8 @@ function renderListaStats(container,data){
   let totalMatch=0, presentMatch=0;
 
   players.forEach(p=>{
+
+    // ENTRENAMIENTOS
     Object.values(sessions).forEach(s=>{
       if(s.attendance?.[p.id] !== undefined){
         totalTrain++;
@@ -1388,12 +1390,14 @@ function renderListaStats(container,data){
       }
     });
 
+    // PARTIDOS
     Object.values(matches).forEach(m=>{
       if(m.attendance?.[p.id] !== undefined){
         totalMatch++;
         if(m.attendance[p.id]) presentMatch++;
       }
     });
+
   });
 
   const trainPct = totalTrain ? Math.round(presentTrain*100/totalTrain) : 0;
@@ -1495,6 +1499,7 @@ function renderListaStats(container,data){
   html += `<div class="ranking-card"><h3>Ranking de Asistencia</h3>`;
 
   ranking.forEach((r,i)=>{
+
     html+=`
     <div class="rank-row">
 
@@ -1503,8 +1508,13 @@ function renderListaStats(container,data){
       </div>
 
       <div class="rank-name">
-        <div class="avatar">${r.name.charAt(0)}</div>
-        ${r.name}
+
+        <div class="avatar-left">
+          ${r.name.charAt(0)}
+        </div>
+
+        <span>${r.name}</span>
+
       </div>
 
       <strong>${r.pct}%</strong>
@@ -1517,6 +1527,7 @@ function renderListaStats(container,data){
 
   container.innerHTML=html;
 }
+
 
 
 
@@ -1857,9 +1868,22 @@ function selectCalendarDate(dateKey){
 /**************************************************
  * PLANTEL
  **************************************************/
+function getPositionColor(pos){
+
+  const map = {
+    "PO": "#374151",      // gris oscuro
+    "DFC": "#38bdf8",     // celeste
+    "MC": "#1d4ed8",      // azul oscuro
+    "DC": "#2dd4bf"       // celeste verdoso
+  };
+
+  return map[pos] || "#64748b";
+}
+
+
 function renderPlantel(container, data){
 
-  const players = data.players || []; // 👉 data ya es la categoría
+  const players = data.players || [];
 
   container.innerHTML = `
     <h2 class="section-title">Plantel</h2>
@@ -1873,9 +1897,12 @@ function renderPlantel(container, data){
 
       ${players.map(p=>`
 
-        <div class="player-card"
-          onclick="openPlayerModal('${p.id}')"
-          style="background:${getPositionGradient(p.position)}">
+        <div class="player-card blue-card"
+          onclick="openPlayerModal('${p.id}')">
+
+          <div class="pos-dot"
+            style="background:${getPositionColor(p.position)}">
+          </div>
 
           ${
             p.photo
@@ -1898,47 +1925,45 @@ function renderPlantel(container, data){
 }
 
 
+
 function openPlayerModal(id){
 
   const players = state.data[state.user.category].players;
   const p = players.find(pl=>pl.id==id);
-
   if(!p) return;
 
-  const modal = document.createElement("div");
-  modal.className = "modal";
+  const area = document.getElementById("modal-container");
 
-  modal.innerHTML = `
-    <div class="modal-card">
+  area.innerHTML = `
+    <div class="modal-overlay"
+      onclick="closeTraining(event)">
 
-      <h3>${p.name}</h3>
+      <div class="detail-modal slide-up">
 
-      ${
-        p.photo
-          ? `<img src="${p.photo}" class="modal-photo">`
-          : `<div class="avatar-big">${p.name.charAt(0)}</div>`
-      }
+        <h3>${p.name}</h3>
 
-      <p>#${p.number || "-"}</p>
-      <p>${p.position || ""}</p>
+        ${
+          p.photo
+            ? `<img src="${p.photo}" class="modal-photo">`
+            : `<div class="avatar-big">${p.name[0]}</div>`
+        }
 
-      <button onclick="editPlayer('${id}')">
-        Editar
-      </button>
+        <p>#${p.number || "-"}</p>
+        <p>${p.position || ""}</p>
 
-      <button onclick="deletePlayer('${id}')">
-        Eliminar
-      </button>
+        <button onclick="editPlayer('${id}')">
+          Editar
+        </button>
 
-      <button onclick="this.closest('.modal').remove()">
-        Cerrar
-      </button>
+        <button onclick="deletePlayer('${id}')">
+          Eliminar
+        </button>
 
+      </div>
     </div>
   `;
-
-  document.body.appendChild(modal);
 }
+
 
 
 

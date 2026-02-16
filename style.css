@@ -2847,3 +2847,57 @@ button {
   border-radius:16px;
   text-align:center;
 }
+
+.blue-card{
+  background: linear-gradient(135deg,#1d4ed8,#2563eb);
+  color:white;
+  position:relative;
+}
+
+.pos-dot{
+  position:absolute;
+  right:12px;
+  top:12px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+}
+
+.avatar-img{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.avatar-init{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#1e40af;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  font-size:20px;
+}
+
+.rank-name{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.avatar-left{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:#2563eb;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  flex-shrink:0;
+}
+
