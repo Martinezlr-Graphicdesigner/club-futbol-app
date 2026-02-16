@@ -14,17 +14,18 @@ function showToast(msg){
   console.log("TOAST:", msg);
 }
 
+let editingPlayer = null; // 👈 AGREGAR ESTA LÍNEA
+
 let state = {
-  user: null,              // { category, role }
+  user: null,
   currentScreen: "home",
   agendaTab: "cronograma",
   listaTab: "toma",
   selectedWeek: 1,
-
   selectedDate: null,
-
   data: {}
 };
+
 
 /**************************************************
  * INIT
@@ -1886,25 +1887,25 @@ function getPositionColor(pos){
 
 function renderPlantel(container,data){
 
-  const players = data.players || [];
+  const cat = state.user.category;
+  const players = state.data[cat].players || [];
 
-  const posColor = {
-  "PO":"#374151",
-  "DFC":"#38bdf8",
-  "MC":"#1e3a8a",
-  "DC":"#14b8a6"
-};
+  const posGradient = {
+    "PO":"linear-gradient(135deg,#111827,#374151)",
+    "DFC":"linear-gradient(135deg,#1d4ed8,#38bdf8)",
+    "MC":"linear-gradient(135deg,#1e3a8a,#0f172a)",
+    "DC":"linear-gradient(135deg,#0f766e,#14b8a6)"
+  };
 
+  let html=`
 
-  let html = `
-  <div style="display:flex;justify-content:space-between;align-items:center;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
     <h2>Plantel</h2>
-    <button class="btn-antigravity"
-  style="float:right;margin-bottom:15px;"
-  onclick="addPlayer()">
-  + Agregar
-</button>
 
+    <button class="btn-antigravity"
+      onclick="addPlayer()">
+      + Agregar
+    </button>
   </div>
 
   <div class="roster-grid">
@@ -1912,40 +1913,37 @@ function renderPlantel(container,data){
 
   players.forEach(p=>{
 
-    const color = posColor[p.position] || "#2563eb";
-    const photo = p.photo || "";
-    const initial = p.name.charAt(0).toUpperCase();
-
-    html += `
+    html+=`
     <div class="roster-card"
-         onclick="openPlayerCard('${p.id}')"
-         style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
-
-      <div class="pos-dot"
-  style="background:${posColor[p.position]||'#999'}">
-</div>
-
+      onclick="openPlayerCard('${p.id}')"
+      style="background:${posGradient[p.position]||'#1e3a8a'}">
 
       ${
-        photo
-        ? `<img src="${photo}" class="avatar-img">`
-        : `<div class="avatar-big">${initial}</div>`
+        p.photo
+        ? `<img src="${p.photo}" class="roster-photo">`
+        : `<div class="roster-avatar">
+            ${p.name.charAt(0)}
+          </div>`
       }
 
       <div class="roster-info">
-  <strong>${p.name}</strong>
-  <div style="opacity:.8;font-size:13px;">
-    #${p.number||"-"} · ${p.position||""}
-  </div>
-</div>
+        <strong>${p.name}</strong>
+        <span>#${p.number||"-"}</span>
 
+        <div class="pos-badge">
+          ${p.position||"-"}
+        </div>
+      </div>
+
+    </div>
     `;
   });
 
-  html += "</div>";
+  html+=`</div>`;
 
   container.innerHTML=html;
 }
+
 
 function openPlayerCard(id){
 
@@ -1962,8 +1960,8 @@ function openPlayerCard(id){
 
     ${
       p.photo
-      ? `<img src="${p.photo}" class="modal-photo" onclick="changePhoto('${p.id}')">`
-      : `<div class="modal-avatar" onclick="changePhoto('${p.id}')">
+      ? `<img src="${p.photo}" class="modal-photo" onclick="changePlayerPhoto('${p.id}')">`
+      : `<div class="modal-avatar" onclick="changePlayerPhoto('${p.id}')">
           ${p.name.charAt(0)}
         </div>`
     }
@@ -2089,29 +2087,80 @@ function addPlayer(){
 
 function editPlayer(id){
 
-  const players = state.data[state.user.category].players;
-  const p = players.find(pl=>pl.id==id);
+  const cat = state.user.category;
+
+  const original =
+    state.data[cat].players.find(p=>p.id===id);
+
+  if(!original) return;
+
+  // 👉 CLONAMOS (NO tocamos el original)
+  editingPlayer = {...original};
+
+  const modal = document.createElement("div");
+  modal.className="player-modal";
+
+  modal.innerHTML=`
+    <div class="player-sheet">
+
+      <h3>Editar jugador</h3>
+
+      <input id="ep-name" value="${editingPlayer.name||""}" placeholder="Nombre">
+      <input id="ep-number" value="${editingPlayer.number||""}" placeholder="Número">
+      <input id="ep-pos" value="${editingPlayer.position||""}" placeholder="Posición">
+
+      <button onclick="savePlayer('${id}')"
+        class="btn-primary">
+        Guardar
+      </button>
+
+      <button onclick="closeEditModal()"
+        style="margin-top:10px">
+        Cancelar
+      </button>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function savePlayer(id){
+
+  const cat = state.user.category;
+
+  const p =
+    state.data[cat].players.find(x=>x.id===id);
 
   if(!p) return;
 
-  p.name=prompt("Nombre",p.name);
-  p.birth=prompt("Nacimiento",p.birth);
-  p.number=prompt("Número",p.number);
+  // 👉 Actualizamos desde inputs
+  p.name =
+    document.getElementById("ep-name").value;
+
+  p.number =
+    document.getElementById("ep-number").value;
+
+  p.position =
+    document.getElementById("ep-pos").value;
 
   saveData();
+
+  closeEditModal();
   renderScreen("plantel");
+
+  showToast("Jugador actualizado");
 }
 
-function deletePlayer(id){
 
-  const players = state.data[state.user.category].players;
+function closeEditModal(){
+  editingPlayer = null;
 
-  state.data[state.user.category].players =
-    players.filter(p=>p.id!=id);
-
-  saveData();
-  renderScreen("plantel");
+  const m=document.querySelector(".player-modal");
+  if(m) m.remove();
 }
+
+
 
 /**************************************************
  * EVENTS
@@ -2230,3 +2279,17 @@ window.addEventListener("beforeunload", () => {
 
 
 init();
+
+// ===== BACKUP FUNCTION =====
+
+function backupData(){
+  const blob = new Blob(
+    [JSON.stringify(state.data,null,2)],
+    {type:"application/json"}
+  );
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "backup_wilcoop.json";
+  a.click();
+}
