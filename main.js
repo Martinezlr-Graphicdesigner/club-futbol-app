@@ -1859,29 +1859,28 @@ function selectCalendarDate(dateKey){
  **************************************************/
 function renderPlantel(container, data){
 
-  const cat = state.user.category;
-  const players = data[cat].players || {};
+  const players = data.players || []; // 👉 data ya es la categoría
 
   container.innerHTML = `
-    <h2>Plantel</h2>
+    <h2 class="section-title">Plantel</h2>
 
-    <button class="primary-btn"
-      onclick="openAddPlayer()">
+    <button class="btn-main"
+      onclick="addPlayer()">
       + Jugador
     </button>
 
     <div class="plantel-grid">
 
-      ${Object.entries(players).map(([id,p])=>`
+      ${players.map(p=>`
 
         <div class="player-card"
-          onclick="openPlayerModal('${id}')"
+          onclick="openPlayerModal('${p.id}')"
           style="background:${getPositionGradient(p.position)}">
 
           ${
             p.photo
               ? `<img src="${p.photo}" class="avatar-img">`
-              : `<div class="avatar-init">${p.name[0]}</div>`
+              : `<div class="avatar-init">${p.name.charAt(0)}</div>`
           }
 
           <div class="player-info">
@@ -1898,10 +1897,13 @@ function renderPlantel(container, data){
   `;
 }
 
+
 function openPlayerModal(id){
 
-  const cat = state.user.category;
-  const p = state.data[cat].players[id];
+  const players = state.data[state.user.category].players;
+  const p = players.find(pl=>pl.id==id);
+
+  if(!p) return;
 
   const modal = document.createElement("div");
   modal.className = "modal";
@@ -1914,7 +1916,7 @@ function openPlayerModal(id){
       ${
         p.photo
           ? `<img src="${p.photo}" class="modal-photo">`
-          : `<div class="avatar-big">${p.name[0]}</div>`
+          : `<div class="avatar-big">${p.name.charAt(0)}</div>`
       }
 
       <p>#${p.number || "-"}</p>
@@ -1937,6 +1939,7 @@ function openPlayerModal(id){
 
   document.body.appendChild(modal);
 }
+
 
 
 
@@ -1977,22 +1980,23 @@ function changePlayerPhoto(playerId){
 function addPlayer(){
 
   const name = prompt("Nombre y apellido");
-  const birth = prompt("Fecha nacimiento (YYYY-MM-DD)");
-  const number = prompt("Número camiseta");
-
   if(!name) return;
+
+  const number = prompt("Número camiseta");
+  const position = prompt("Posición (ARQ / DF / MC / DEL)");
 
   state.data[state.user.category].players.push({
     id: Date.now(),
     name,
-    birth,
     number,
+    position,
     photo: null
   });
 
   saveData();
   renderScreen("plantel");
 }
+
 
 
 function editPlayer(id){
