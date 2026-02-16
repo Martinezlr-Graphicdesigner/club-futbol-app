@@ -272,27 +272,21 @@ function openSessionDetail(dateKey){
   `;
 }
 
-function saveSessionNote(dateKey){
+function saveSession(dateKey, attendance, isMatchDay=false){
 
-  const cat=state.user.category;
+  const cat = state.user.category;
 
-  const note =
-    document.getElementById("session-note").value;
+  if(!state.data[cat].sessions)
+    state.data[cat].sessions = {};
 
-  const title =
-    document.getElementById("session-title").value;
-
-  const session =
-    state.data[cat].sessions[dateKey];
-
-  session.note = note;
-  session.title = title;
+  state.data[cat].sessions[dateKey] = {
+    attendance,
+    type: isMatchDay ? "match" : "training"
+  };
 
   saveData();
-  closeTraining();
-
-  showToast("Guardado ✅");
 }
+
 
 function saveAttendanceDate(dateKey){
 
@@ -414,18 +408,33 @@ function renderHome(container, data){
   /* ========= STATS ========= */
 
   let entrenamientos = 0;
-  let presentes = 0;
-  let ausencias = 0;
+let presentes = 0;
+let ausencias = 0;
 
-  Object.values(sessions).forEach(s=>{
-    if(s.attendance){
-      Object.values(s.attendance).forEach(v=>{
-        entrenamientos++;
-        if(v) presentes++;
-        else ausencias++;
-      });
-    }
-  });
+let partidosAsist = 0;
+let partidosPresentes = 0;
+
+Object.values(sessions).forEach(s=>{
+
+  if(!s.attendance) return;
+
+  const values = Object.values(s.attendance);
+
+  if(s.type === "match"){
+
+    partidosAsist += values.length;
+    partidosPresentes += values.filter(v=>v).length;
+
+  } else {
+
+    entrenamientos += values.length;
+    presentes += values.filter(v=>v).length;
+    ausencias += values.filter(v=>!v).length;
+
+  }
+
+});
+
 
   const asistenciaPct =
     entrenamientos
@@ -871,6 +880,19 @@ function formatSelectedDate(){
 
   return `${dayName}, ${state.selectedDate.getDate()} ${months[state.selectedDate.getMonth()]}`;
 }
+
+function getPositionGradient(pos){
+
+  const map = {
+    "ARQ": "linear-gradient(135deg,#f59e0b,#d97706)",
+    "DF": "linear-gradient(135deg,#3b82f6,#1d4ed8)",
+    "MC": "linear-gradient(135deg,#10b981,#047857)",
+    "DEL": "linear-gradient(135deg,#ef4444,#b91c1c)"
+  };
+
+  return map[pos] || "linear-gradient(135deg,#1f2937,#111827)";
+}
+
 
 function renderLista(container,data){
 
@@ -1837,46 +1859,35 @@ function selectCalendarDate(dateKey){
  **************************************************/
 function renderPlantel(container, data){
 
-  const players = data.players || [];
+  const cat = state.user.category;
+  const players = data[cat].players || {};
 
   container.innerHTML = `
-    <div class="screen-header">
-      <h2>Plantel</h2>
+    <h2>Plantel</h2>
 
-      <button class="btn-primary" onclick="addPlayer()">
-        + Jugador
-      </button>
-    </div>
+    <button class="primary-btn"
+      onclick="openAddPlayer()">
+      + Jugador
+    </button>
 
-    <div class="players-grid">
+    <div class="plantel-grid">
 
-      ${players.map(p=>`
+      ${Object.entries(players).map(([id,p])=>`
 
-        <div class="player-card-ui">
+        <div class="player-card"
+          onclick="openPlayerModal('${id}')"
+          style="background:${getPositionGradient(p.position)}">
 
-          <div class="player-avatar"
-            onclick="changePlayerPhoto('${p.id}')"
-            style="
-              cursor:pointer;
-              background-image:${p.photo ? `url(${p.photo})` : "none"};
-              background-size:cover;
-              background-position:center;
-            ">
-
-            ${!p.photo ? p.name.charAt(0).toUpperCase() : ""}
-
-          </div>
+          ${
+            p.photo
+              ? `<img src="${p.photo}" class="avatar-img">`
+              : `<div class="avatar-init">${p.name[0]}</div>`
+          }
 
           <div class="player-info">
-            <div class="player-name">${p.name}</div>
-            <div class="player-meta">
-              #${p.number || "-"}
-            </div>
-          </div>
-
-          <div class="player-actions">
-            <button onclick="editPlayer('${p.id}')">✏️</button>
-            <button onclick="deletePlayer('${p.id}')">🗑️</button>
+            <b>${p.name}</b>
+            <span>#${p.number || "-"}</span>
+            <small>${p.position || ""}</small>
           </div>
 
         </div>
@@ -1884,13 +1895,50 @@ function renderPlantel(container, data){
       `).join("")}
 
     </div>
-
-    <input type="file"
-      id="photo-input"
-      accept="image/*"
-      style="display:none;">
   `;
 }
+
+function openPlayerModal(id){
+
+  const cat = state.user.category;
+  const p = state.data[cat].players[id];
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+
+  modal.innerHTML = `
+    <div class="modal-card">
+
+      <h3>${p.name}</h3>
+
+      ${
+        p.photo
+          ? `<img src="${p.photo}" class="modal-photo">`
+          : `<div class="avatar-big">${p.name[0]}</div>`
+      }
+
+      <p>#${p.number || "-"}</p>
+      <p>${p.position || ""}</p>
+
+      <button onclick="editPlayer('${id}')">
+        Editar
+      </button>
+
+      <button onclick="deletePlayer('${id}')">
+        Eliminar
+      </button>
+
+      <button onclick="this.closest('.modal').remove()">
+        Cerrar
+      </button>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+
 
 function changePlayerPhoto(playerId){
 
