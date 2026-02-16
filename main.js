@@ -1371,7 +1371,7 @@ function renderListaStats(container,data){
 
   const players = data.players || [];
   const sessions = data.sessions || {};
-  const matches = state.data[state.user.category].matches || {};
+  const matches = data.matches || {}; // ← FIX CLAVE
 
   let html = "";
 
@@ -1382,7 +1382,6 @@ function renderListaStats(container,data){
 
   players.forEach(p=>{
 
-    // ENTRENAMIENTOS
     Object.values(sessions).forEach(s=>{
       if(s.attendance?.[p.id] !== undefined){
         totalTrain++;
@@ -1390,7 +1389,6 @@ function renderListaStats(container,data){
       }
     });
 
-    // PARTIDOS
     Object.values(matches).forEach(m=>{
       if(m.attendance?.[p.id] !== undefined){
         totalMatch++;
@@ -1407,13 +1405,9 @@ function renderListaStats(container,data){
   const globalPresent = presentTrain + presentMatch;
   const globalPct = globalTotal ? Math.round(globalPresent*100/globalTotal) : 0;
 
-  /* ========= CARD RESUMEN ========= */
-
   html += `
   <div class="stat-summary">
-
     <h3>Resumen Categoría</h3>
-
     <div class="big-percent">${globalPct}%</div>
 
     <div class="gradient-bar">
@@ -1430,7 +1424,6 @@ function renderListaStats(container,data){
         <span>Partidos</span>
       </div>
     </div>
-
   </div>
   `;
 
@@ -1467,7 +1460,6 @@ function renderListaStats(container,data){
 
     html += `
     <div class="player-stat-card">
-
       <div class="ps-top">
         <strong>${p.name}</strong>
         <span>${pct}%</span>
@@ -1487,7 +1479,6 @@ function renderListaStats(container,data){
           <span>PARTIDOS</span>
         </div>
       </div>
-
     </div>
     `;
   });
@@ -1499,22 +1490,14 @@ function renderListaStats(container,data){
   html += `<div class="ranking-card"><h3>Ranking de Asistencia</h3>`;
 
   ranking.forEach((r,i)=>{
-
     html+=`
     <div class="rank-row">
 
-      <div class="rank-num ${i===0?"gold":"gray"}">
-        ${i+1}
-      </div>
+      <div class="rank-num ${i===0?"gold":"gray"}">${i+1}</div>
 
       <div class="rank-name">
-
-        <div class="avatar-left">
-          ${r.name.charAt(0)}
-        </div>
-
+        <div class="avatar">${r.name.charAt(0)}</div>
         <span>${r.name}</span>
-
       </div>
 
       <strong>${r.pct}%</strong>
@@ -1527,6 +1510,7 @@ function renderListaStats(container,data){
 
   container.innerHTML=html;
 }
+
 
 
 
@@ -1881,47 +1865,91 @@ function getPositionColor(pos){
 }
 
 
-function renderPlantel(container, data){
+function renderPlantel(container,data){
 
   const players = data.players || [];
 
-  container.innerHTML = `
-    <h2 class="section-title">Plantel</h2>
+  const posColor = {
+    "PO":"#3a3a3a",
+    "DFC":"#6EC1E4",
+    "MC":"#1E3A8A",
+    "DC":"#2BB3A3"
+  };
 
-    <button class="btn-main"
-      onclick="addPlayer()">
-      + Jugador
-    </button>
+  let html = `
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h2>Plantel</h2>
+    <button class="primary" onclick="addPlayer()">+ Agregar</button>
+  </div>
 
-    <div class="plantel-grid">
+  <div class="roster-grid">
+  `;
 
-      ${players.map(p=>`
+  players.forEach(p=>{
 
-        <div class="player-card blue-card"
-          onclick="openPlayerModal('${p.id}')">
+    const color = posColor[p.position] || "#2563eb";
+    const photo = p.photo || "";
+    const initial = p.name.charAt(0).toUpperCase();
 
-          <div class="pos-dot"
-            style="background:${getPositionColor(p.position)}">
-          </div>
+    html += `
+    <div class="roster-card"
+         onclick="openPlayerCard('${p.id}')"
+         style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
 
-          ${
-            p.photo
-              ? `<img src="${p.photo}" class="avatar-img">`
-              : `<div class="avatar-init">${p.name.charAt(0)}</div>`
-          }
+      <div class="pos-dot"
+           style="background:${color};"></div>
 
-          <div class="player-info">
-            <b>${p.name}</b>
-            <span>#${p.number || "-"}</span>
-            <small>${p.position || ""}</small>
-          </div>
+      ${
+        photo
+        ? `<img src="${photo}" class="avatar-img">`
+        : `<div class="avatar-big">${initial}</div>`
+      }
 
-        </div>
-
-      `).join("")}
+      <div class="roster-info">
+        <strong>${p.name}</strong>
+        <span>#${p.number||"-"}</span>
+        <small>${p.position||""}</small>
+      </div>
 
     </div>
+    `;
+  });
+
+  html += "</div>";
+
+  container.innerHTML=html;
+}
+
+function openPlayerCard(id){
+
+  const players = state.data[state.user.category].players;
+  const p = players.find(x=>x.id===id);
+  if(!p) return;
+
+  const modal = document.createElement("div");
+  modal.className="player-modal";
+
+  modal.innerHTML=`
+  <div class="player-sheet">
+
+    <button class="close-x" onclick="this.parentElement.parentElement.remove()">✕</button>
+
+    ${
+      p.photo
+      ? `<img src="${p.photo}" class="modal-photo">`
+      : `<div class="modal-avatar">${p.name.charAt(0)}</div>`
+    }
+
+    <h2>${p.name}</h2>
+    <p>#${p.number||"-"} - ${p.position||""}</p>
+
+    <button onclick="editPlayer('${p.id}')">Editar</button>
+    <button onclick="deletePlayer('${p.id}')">Eliminar</button>
+
+  </div>
   `;
+
+  document.body.appendChild(modal);
 }
 
 
