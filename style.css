@@ -2948,18 +2948,33 @@ button {
 }
 
 .player-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.5);
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+
   display:flex;
-  align-items:flex-end;
+  align-items:center;
+  justify-content:center;
+
+  z-index:9999;
+
+  /* 👉 CLAVE */
+  padding:20px;
 }
+
 
 .player-sheet{
   background:white;
   width:100%;
-  border-radius:20px 20px 0 0;
+  max-width:420px;
+
+  border-radius:18px;
   padding:20px;
+
+  /* 👉 CLAVE */
+  max-height:90vh;
+  overflow-y:auto;
+
   text-align:center;
 }
 
@@ -3053,3 +3068,11 @@ button {
   margin-top:4px;
 }
 
+.player-sheet::-webkit-scrollbar{
+  width:6px;
+}
+
+.player-sheet::-webkit-scrollbar-thumb{
+  background:#cbd5f5;
+  border-radius:10px;
+}
