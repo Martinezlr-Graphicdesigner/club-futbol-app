@@ -2988,3 +2988,19 @@ button {
   border:none;
   font-size:20px;
 }
+
+.rank-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.rank-name{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  justify-content:flex-start !important;
+  text-align:left !important;
+  flex:1;
+}
+

@@ -291,20 +291,39 @@ function saveSession(dateKey, attendance, isMatchDay=false){
 function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
+
   const session = state.data[cat].sessions[dateKey];
+  const match  = state.data[cat].matches?.[dateKey];
 
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
-      session.attendance[cb.dataset.id]=cb.checked;
+
+      const id = cb.dataset.id;
+      const val = cb.checked;
+
+      // 👉 SI ES PARTIDO
+      if(match){
+        if(!match.attendance) match.attendance = {};
+        match.attendance[id] = val;
+      }
+
+      // 👉 SI ES ENTRENAMIENTO
+      else if(session){
+        if(!session.attendance) session.attendance = {};
+        session.attendance[id] = val;
+      }
+
     });
 
-  session.closed=true;
+  if(match) match.closed = true;
+  if(session) session.closed = true;
 
   saveData();
   showToast("Asistencia guardada");
 
   renderScreen("lista");
 }
+
 
 function ensureDataStructure(){
 
@@ -1870,16 +1889,22 @@ function renderPlantel(container,data){
   const players = data.players || [];
 
   const posColor = {
-    "PO":"#3a3a3a",
-    "DFC":"#6EC1E4",
-    "MC":"#1E3A8A",
-    "DC":"#2BB3A3"
-  };
+  "PO":"#374151",
+  "DFC":"#38bdf8",
+  "MC":"#1e3a8a",
+  "DC":"#14b8a6"
+};
+
 
   let html = `
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <h2>Plantel</h2>
-    <button class="primary" onclick="addPlayer()">+ Agregar</button>
+    <button class="btn-antigravity"
+  style="float:right;margin-bottom:15px;"
+  onclick="addPlayer()">
+  + Agregar
+</button>
+
   </div>
 
   <div class="roster-grid">
@@ -1897,7 +1922,9 @@ function renderPlantel(container,data){
          style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
 
       <div class="pos-dot"
-           style="background:${color};"></div>
+  style="background:${posColor[p.position]||'#999'}">
+</div>
+
 
       ${
         photo
@@ -1906,12 +1933,12 @@ function renderPlantel(container,data){
       }
 
       <div class="roster-info">
-        <strong>${p.name}</strong>
-        <span>#${p.number||"-"}</span>
-        <small>${p.position||""}</small>
-      </div>
+  <strong>${p.name}</strong>
+  <div style="opacity:.8;font-size:13px;">
+    #${p.number||"-"} · ${p.position||""}
+  </div>
+</div>
 
-    </div>
     `;
   });
 
@@ -1922,35 +1949,43 @@ function renderPlantel(container,data){
 
 function openPlayerCard(id){
 
-  const players = state.data[state.user.category].players;
-  const p = players.find(x=>x.id===id);
+  const p = state.data[state.user.category].players.find(x=>x.id===id);
   if(!p) return;
 
-  const modal = document.createElement("div");
+  const modal=document.createElement("div");
   modal.className="player-modal";
 
   modal.innerHTML=`
   <div class="player-sheet">
 
-    <button class="close-x" onclick="this.parentElement.parentElement.remove()">✕</button>
+    <button class="close-x" onclick="this.closest('.player-modal').remove()">✕</button>
 
     ${
       p.photo
-      ? `<img src="${p.photo}" class="modal-photo">`
-      : `<div class="modal-avatar">${p.name.charAt(0)}</div>`
+      ? `<img src="${p.photo}" class="modal-photo" onclick="changePhoto('${p.id}')">`
+      : `<div class="modal-avatar" onclick="changePhoto('${p.id}')">
+          ${p.name.charAt(0)}
+        </div>`
     }
 
-    <h2>${p.name}</h2>
-    <p>#${p.number||"-"} - ${p.position||""}</p>
+    <h3>${p.name}</h3>
+    <p>#${p.number||"-"} · ${p.position||""}</p>
 
-    <button onclick="editPlayer('${p.id}')">Editar</button>
-    <button onclick="deletePlayer('${p.id}')">Eliminar</button>
+    <button class="btn-primary" onclick="editPlayer('${p.id}')">
+      Editar
+    </button>
+
+    <button style="margin-top:10px;background:#ef4444;color:white;padding:12px;border-radius:12px;"
+      onclick="deletePlayer('${p.id}')">
+      Eliminar
+    </button>
 
   </div>
   `;
 
   document.body.appendChild(modal);
 }
+
 
 
 
