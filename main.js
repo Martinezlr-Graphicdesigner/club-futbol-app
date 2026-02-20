@@ -1938,17 +1938,20 @@ const players = (state.data[cat].players || [])
   });
 
   let html = `
-    <div class="plantel-scope">
+  <div class="plantel-scope">
 
-      <div class="plantel-header">
-        <h2>PLANTEL</h2>
+    <div class="app-header">
+      <div class="app-title">PLANTEL</div>
+
+      <div class="app-user">
         <button class="btn-add-player" onclick="addPlayer()">
           + AGREGAR
         </button>
       </div>
+    </div>
 
-      <div class="plantel-list">
-  `;
+    <div class="plantel-list">
+`;
 
   players.forEach(p=>{
 

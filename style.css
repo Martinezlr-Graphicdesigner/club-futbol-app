@@ -194,14 +194,31 @@ button {
 }
 
 /* Header */
-.app-header {
-    background: var(--primary);
-    color: var(--white);
-    padding: 15px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 3px solid var(--accent);
+.app-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 24px;
+  background:white;
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+}
+
+.app-title{
+  font-size:22px;
+  font-weight:800;
+}
+
+.app-user{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.app-user-avatar{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#e5e7eb;
 }
 
 .header-content {
@@ -1329,11 +1346,15 @@ button {
 }
 
 .player-info{
-  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  text-align:left;
 }
 
 .player-name{
-  font-weight:600;
+  text-align:left;
+  line-height:1.2;
 }
 
 .player-meta{
@@ -2931,10 +2952,6 @@ button {
   margin-top:4px;
 }
 
-.plantel-scope .player-right{
-  text-align:right;
-}
-
 .plantel-scope .player-number-label{
   font-size:11px;
   font-weight:800;
@@ -2982,6 +2999,26 @@ button {
 .plantel-scope .pos-DFC{ background:#00a6c8; }
 .plantel-scope .pos-MC{ background:#1e5aa6; }
 .plantel-scope .pos-DC{ background:#d34a6a; }
+
+/* ===============================
+   MOBILE REFINEMENT
+================================ */
+
+@media (max-width: 480px){
+
+  .plantel-scope .player-card{
+    padding:14px;
+  }
+
+  .plantel-scope .player-name{
+    font-size:18px;
+  }
+
+  .plantel-scope .player-number{
+    font-size:32px;
+  }
+
+}
 
 /* ===== PLAYER MODAL REDISEÑO ===== */
 
@@ -3048,6 +3085,17 @@ button {
   font-weight:700;
   color:#888;
   margin-right:6px;
+}
+
+.sheet-actions{
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  margin-top:30px;          
+}
+
+.sheet-actions button{
+  min-width:140px;
 }
 
 /* Colores posición */
