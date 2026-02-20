@@ -1328,12 +1328,9 @@ button {
   font-size:18px;
 }
 
-.player-info{
-  flex:1;
-}
-
 .player-name{
-  font-weight:600;
+  max-width:180px;
+  word-break:break-word;
 }
 
 .player-meta{
@@ -3174,5 +3171,36 @@ button {
   font-weight:700;
 }
 
+/* Centrar acciones en ficha jugador */
 
+.sheet-actions{
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  margin-top:30px;
+}
 
+/* Asegurar alineación consistente nombres */
+
+.player-name{
+  text-align:left;
+  line-height:1.1;
+  word-break:break-word;
+}
+
+.player-info{
+  align-items:flex-start;
+}
+
+.plantel-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.plantel-header h2{
+  margin:0;
+  font-size:22px;
+  font-weight:800;
+}
