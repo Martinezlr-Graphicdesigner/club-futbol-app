@@ -2002,16 +2002,14 @@ function openPlayerCard(id){
       <div class="player-sheet-card">
 
         ${
-          p.photo
-          ? `<img src="${p.photo}"
-                 class="sheet-photo"
-                 draggable="false"
-                 onclick="event.stopPropagation();">`
-          : `<div class="sheet-photo empty"
-                  onclick="event.stopPropagation();">
-              ${p.name?.charAt(0) || "?"}
-            </div>`
-        }
+  p.photo
+  ? `<div class="sheet-photo-wrapper">
+        <img src="${p.photo}">
+     </div>`
+  : `<div class="sheet-photo-wrapper empty">
+        ${p.name?.charAt(0) || "?"}
+     </div>`
+}
 
         <div class="sheet-data">
           <strong>${p.name || "-"}</strong>
