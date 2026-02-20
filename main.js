@@ -419,6 +419,7 @@ function renderScreen(screen) {
 function renderHome(container, data){
 
   const players = data.players || [];
+  const nextBirthday = getNextBirthday(players);
   const sessions = data.sessions || {};
   const matches =
   state.data.globalMatches || {};
@@ -576,6 +577,24 @@ ${renderNextMatchCard(matches)}
           }
         </div>
       </div>
+${
+    nextBirthday
+      ? `
+        <div class="activity-row">
+          <div class="dot green"></div>
+          <div>
+            Próximo cumpleaños:
+            ${nextBirthday.player.name}
+            ${nextBirthday.date.toLocaleDateString("es-AR",{
+              day:"numeric",
+              month:"long"
+            })}
+          </div>
+        </div>
+      `
+      : ""
+  }
+
 
     </div>
   `;
@@ -799,6 +818,28 @@ function formatDateFull(dateKey){
 
   const [y,m,d] = dateKey.split("-");
   return `${d}-${m}-${y}`;
+}
+
+function getNextBirthday(players){
+
+  const today = new Date();
+
+  const upcoming = players
+    .filter(p=>p.birthdate)
+    .map(p=>{
+
+      const [y,m,d] = p.birthdate.split("-");
+      const next = new Date(today.getFullYear(),m-1,d);
+
+      if(next < today){
+        next.setFullYear(today.getFullYear()+1);
+      }
+
+      return {player:p,date:next};
+    })
+    .sort((a,b)=>a.date-b.date);
+
+  return upcoming[0] || null;
 }
 
 function getMonthLabel(year,month){
@@ -1890,101 +1931,126 @@ function renderPlantel(container,data){
   const cat = state.user.category;
   const players = state.data[cat].players || [];
 
-  const posGradient = {
-    "PO":"linear-gradient(135deg,#111827,#374151)",
-    "DFC":"linear-gradient(135deg,#1d4ed8,#38bdf8)",
-    "MC":"linear-gradient(135deg,#1e3a8a,#0f172a)",
-    "DC":"linear-gradient(135deg,#0f766e,#14b8a6)"
-  };
-
-  let html=`
-
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-    <h2>Plantel</h2>
-
-    <button class="btn-antigravity"
-      onclick="addPlayer()">
-      + Agregar
+  let html = `
+  <div class="plantel-header">
+    <h2>PLANTEL</h2>
+    <button class="btn-add-player" onclick="addPlayer()">
+      + AGREGAR
     </button>
   </div>
 
-  <div class="roster-grid">
+  <div class="plantel-list">
   `;
 
   players.forEach(p=>{
 
     html+=`
-    <div class="roster-card"
-      onclick="openPlayerCard('${p.id}')"
-      style="background:${posGradient[p.position]||'#1e3a8a'}">
+      <div class="player-row"
+        onclick="openPlayerCard('${p.id}')">
 
-      ${
-        p.photo
-        ? `<img src="${p.photo}" class="roster-photo">`
-        : `<div class="roster-avatar">
-            ${p.name.charAt(0)}
-          </div>`
-      }
+        ${
+          p.photo
+          ? `<img src="${p.photo}" class="player-thumb">`
+          : `<div class="player-thumb empty">
+              ${p.name?.charAt(0) || "?"}
+            </div>`
+        }
 
-      <div class="roster-info">
-        <strong>${p.name}</strong>
-        <span>#${p.number||"-"}</span>
-
-        <div class="pos-badge">
-          ${p.position||"-"}
+        <div class="player-info">
+          <strong>${p.name || "Sin nombre"}</strong>
+          <span>${p.position || "-"} </span>
         </div>
-      </div>
 
-    </div>
+        <div class="player-number">
+          <small>NÚMERO</small>
+          <strong>${p.number || "-"}</strong>
+        </div>
+
+      </div>
     `;
   });
 
   html+=`</div>`;
 
-  container.innerHTML=html;
+  container.innerHTML = html;
 }
 
 
 function openPlayerCard(id){
 
-  const p = state.data[state.user.category].players.find(x=>x.id===id);
+  const p = state.data[state.user.category]
+    .players.find(x=>x.id==id);
+
   if(!p) return;
 
   const modal=document.createElement("div");
   modal.className="player-modal";
 
   modal.innerHTML=`
-  <div class="player-sheet">
+    <div class="player-sheet">
 
-    <button class="close-x" onclick="this.closest('.player-modal').remove()">✕</button>
+      <h3>FICHA DEL JUGADOR</h3>
 
-    ${
-      p.photo
-      ? `<img src="${p.photo}" class="modal-photo" onclick="changePlayerPhoto('${p.id}')">`
-      : `<div class="modal-avatar" onclick="changePlayerPhoto('${p.id}')">
-          ${p.name.charAt(0)}
-        </div>`
-    }
+      <button class="close-x"
+        onclick="this.closest('.player-modal').remove()">
+        ✕
+      </button>
 
-    <h3>${p.name}</h3>
-    <p>#${p.number||"-"} · ${p.position||""}</p>
+      <div class="player-sheet-card">
 
-    <button class="btn-primary" onclick="editPlayer('${p.id}')">
-      Editar
-    </button>
+        ${
+          p.photo
+          ? `<img src="${p.photo}" class="sheet-photo">`
+          : `<div class="sheet-photo empty">
+              ${p.name?.charAt(0)||"?"}
+            </div>`
+        }
 
-    <button style="margin-top:10px;background:#ef4444;color:white;padding:12px;border-radius:12px;"
-      onclick="deletePlayer('${p.id}')">
-      Eliminar
-    </button>
+        <div class="sheet-data">
+          <strong>${p.name}</strong>
+          <p>Puesto: ${p.position || "-"}</p>
+          <p>Fecha: ${p.birthdate || "-"}</p>
+          <p>Número: ${p.number || "-"}</p>
+        </div>
 
-  </div>
+      </div>
+
+      <div class="sheet-actions">
+        <button class="btn-edit"
+          onclick="editPlayer('${p.id}')">
+          EDITAR
+        </button>
+
+        <button class="btn-delete"
+          onclick="confirmDeletePlayer('${p.id}')">
+          X
+        </button>
+      </div>
+
+    </div>
   `;
 
   document.body.appendChild(modal);
 }
 
+function confirmDeletePlayer(id){
 
+  if(!confirm("¿Eliminar jugador definitivamente?"))
+    return;
+
+  const cat = state.user.category;
+
+  state.data[cat].players =
+    state.data[cat].players.filter(p=>p.id!=id);
+
+  saveData();
+
+  document.querySelector(".player-modal")?.remove();
+
+  renderScreen("plantel");
+
+  showToast("Jugador eliminado");
+}
 
 
 function openPlayerModal(id){

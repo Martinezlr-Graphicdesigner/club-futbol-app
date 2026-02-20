@@ -3076,3 +3076,16 @@ button {
   background:#cbd5f5;
   border-radius:10px;
 }
+
+body{
+  background: linear-gradient(to bottom,#ffffff,#f3f4f6);
+}
+
+.btn-add-player{
+  background:#2563eb;
+  color:white;
+  padding:10px 18px;
+  border:none;
+  border-radius:8px;
+  font-weight:600;
+}
