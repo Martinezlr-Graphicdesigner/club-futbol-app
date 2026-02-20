@@ -1980,12 +1980,11 @@ function openPlayerCard(id){
 
   const cat = state.user.category;
   const p = state.data[cat].players.find(x => x.id == id);
-
   if(!p) return;
 
-  // 🧹 Evita modales duplicados
-  const oldModal = document.querySelector(".player-modal");
-  if(oldModal) oldModal.remove();
+  // 🔹 evitar modales duplicados
+  const existing = document.querySelector(".player-modal");
+  if(existing) existing.remove();
 
   const modal = document.createElement("div");
   modal.className = "player-modal";
@@ -2004,8 +2003,12 @@ function openPlayerCard(id){
 
         ${
           p.photo
-          ? `<img src="${p.photo}" class="sheet-photo">`
-          : `<div class="sheet-photo empty">
+          ? `<img src="${p.photo}"
+                 class="sheet-photo"
+                 draggable="false"
+                 onclick="event.stopPropagation();">`
+          : `<div class="sheet-photo empty"
+                  onclick="event.stopPropagation();">
               ${p.name?.charAt(0) || "?"}
             </div>`
         }
@@ -2021,12 +2024,12 @@ function openPlayerCard(id){
 
       <div class="sheet-actions">
         <button class="btn-edit"
-          onclick="editPlayer('${p.id}')">
+          onclick="event.stopPropagation(); editPlayer('${p.id}')">
           EDITAR
         </button>
 
         <button class="btn-delete"
-          onclick="confirmDeletePlayer('${p.id}')">
+          onclick="event.stopPropagation(); confirmDeletePlayer('${p.id}')">
           ELIMINAR
         </button>
       </div>
@@ -2034,7 +2037,7 @@ function openPlayerCard(id){
     </div>
   `;
 
-  // 👇 cerrar tocando fuera
+  // 🔹 cerrar tocando fondo oscuro
   modal.onclick = () => modal.remove();
 
   document.body.appendChild(modal);
