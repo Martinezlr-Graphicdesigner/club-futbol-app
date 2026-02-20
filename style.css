@@ -2873,10 +2873,17 @@ button {
 ===================================================== */
 
 .plantel-scope .plantel-header{
-  display:flex;
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items:center;
   margin-bottom:20px;
+}
+
+.plantel-scope .plantel-header h2{
+  text-align:center;
+  margin:0;
+  font-size:22px;
+  font-weight:900;
 }
 
 .plantel-scope .btn-add-player{
@@ -2886,6 +2893,18 @@ button {
   border-radius:12px;
   font-weight:700;
   font-size:14px;
+  justify-self:end;
+}
+
+.plantel-scope .btn-logout{
+  justify-self:start;
+  background:#111;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
 }
 
 .plantel-scope .player-card{
