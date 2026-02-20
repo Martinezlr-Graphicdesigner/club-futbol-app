@@ -3122,3 +3122,12 @@ body{
   text-align:center;
   padding:20px;
 }
+
+.player-sheet img{
+  width:120px !important;
+  height:120px !important;
+  object-fit:cover !important;
+  border-radius:50% !important;
+  display:block;
+  margin:20px auto;
+}
