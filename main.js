@@ -1926,40 +1926,25 @@ function getPositionColor(pos){
 }
 
 
-function renderPlantel(container,data){
+function renderPlantel(container, data){
 
   const cat = state.user.category;
   const order = { PO:1, DFC:2, MC:3, DC:4 };
 
-const players = (state.data[cat].players || [])
-  .slice()
-  .sort((a,b)=>{
-    return (order[a.position] || 99) - (order[b.position] || 99);
-  });
+  const players = (state.data[cat].players || [])
+    .slice()
+    .sort((a,b)=>{
+      return (order[a.position] || 99) - (order[b.position] || 99);
+    });
 
   let html = `
-  <div class="plantel-scope">
-
-    <div class="app-header">
-
-      <button class="btn-back" onclick="logout()">
-        ← Salir
-      </button>
-
-      <div class="app-title">PLANTEL</div>
-
-      <button class="btn-add-player" onclick="addPlayer()">
-        + AGREGAR
-      </button>
-
-    </div>
-
-    <div class="plantel-list">
-`;
+    <div class="plantel-scope">
+      <div class="plantel-list">
+  `;
 
   players.forEach(p=>{
 
-    html+=`
+    html += `
       <div class="player-card" onclick="openPlayerCard('${p.id}')">
 
         <div class="player-left">
@@ -1973,27 +1958,27 @@ const players = (state.data[cat].players || [])
           </div>
 
           <div class="player-info">
-  <div class="player-name">${p.name || "Sin nombre"}</div>
-  <div class="player-position">${p.position || "-"}</div>
-</div>
+            <div class="player-name">${p.name || "Sin nombre"}</div>
+            <div class="player-position">${p.position || "-"}</div>
+          </div>
 
         </div>
 
         <div class="player-right">
-  <div class="player-number-label">NÚMERO</div>
-  <div class="number-row">
-    <span class="position-dot pos-${p.position}"></span>
-    <span class="player-number">
-      ${p.number ? String(p.number).padStart(2, '0') : "--"}
-    </span>
-  </div>
-</div>
+          <div class="player-number-label">NÚMERO</div>
+          <div class="number-row">
+            <span class="position-dot pos-${p.position}"></span>
+            <span class="player-number">
+              ${p.number ? String(p.number).padStart(2, '0') : "--"}
+            </span>
+          </div>
+        </div>
 
       </div>
     `;
   });
 
-  html+=`
+  html += `
       </div>
     </div>
   `;
