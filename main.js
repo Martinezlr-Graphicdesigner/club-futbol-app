@@ -1960,19 +1960,23 @@ function renderPlantel(container,data){
           </div>
 
           <div class="player-info">
-            <div class="player-name">${p.name || "Sin nombre"}</div>
-            <div class="player-position">${p.position || "-"}</div>
-          </div>
+  <div class="player-top-row">
+    <span class="player-position">${p.position || "-"}</span>
+    <span class="player-name">${p.name || "Sin nombre"}</span>
+  </div>
+</div>
 
         </div>
 
         <div class="player-right">
-          <div class="player-number-label">NÚMERO</div>
-          <div>
-            <span class="position-dot pos-${p.position}"></span>
-            <span class="player-number">${p.number || "-"}</span>
-          </div>
-        </div>
+  <div class="player-number-label">NÚMERO</div>
+  <div class="number-row">
+    <span class="position-dot pos-${p.position}"></span>
+    <span class="player-number">
+      ${p.number ? String(p.number).padStart(2, '0') : "--"}
+    </span>
+  </div>
+</div>
 
       </div>
     `;
@@ -2001,50 +2005,57 @@ function openPlayerCard(id){
   modal.className = "player-modal";
 
   modal.innerHTML = `
-    <div class="player-sheet" onclick="event.stopPropagation()">
+  <div class="player-sheet" onclick="event.stopPropagation()">
 
-      <button class="close-x"
-        onclick="this.closest('.player-modal').remove()">
-        ✕
-      </button>
+    <button class="close-x"
+      onclick="this.closest('.player-modal').remove()">
+      ✕
+    </button>
 
-      <h3 class="sheet-title">Ficha del Jugador</h3>
+    <div class="sheet-header">
 
-      <div class="player-sheet-card">
-
+      <div class="sheet-avatar">
         ${
-  p.photo
-  ? `<div class="sheet-photo-wrapper">
-        <img src="${p.photo}">
-     </div>`
-  : `<div class="sheet-photo-wrapper empty">
-        ${p.name?.charAt(0) || "?"}
-     </div>`
-}
-
-        <div class="sheet-data">
-          <strong>${p.name || "-"}</strong>
-          <p>Puesto: ${p.position || "-"}</p>
-          <p>Fecha: ${p.birthdate || "-"}</p>
-          <p>Número: ${p.number || "-"}</p>
-        </div>
-
+          p.photo
+          ? `<img src="${p.photo}">`
+          : `<span>${p.name?.charAt(0) || "?"}</span>`
+        }
       </div>
 
-      <div class="sheet-actions">
-        <button class="btn-edit"
-          onclick="event.stopPropagation(); editPlayer('${p.id}')">
-          EDITAR
-        </button>
+      <div class="sheet-main-info">
+        <div class="sheet-position pos-${p.position}">
+          ${p.position || "-"}
+        </div>
 
-        <button class="btn-delete"
-          onclick="event.stopPropagation(); confirmDeletePlayer('${p.id}')">
-          ELIMINAR
-        </button>
+        <div class="sheet-name">
+          ${p.name || "-"}
+        </div>
+
+        <div class="sheet-number">
+          ${p.number ? String(p.number).padStart(2,'0') : "--"}
+        </div>
       </div>
 
     </div>
-  `;
+
+    <div class="sheet-details">
+      <div><span>Fecha</span> ${p.birthdate || "-"}</div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-edit"
+        onclick="event.stopPropagation(); editPlayer('${p.id}')">
+        EDITAR
+      </button>
+
+      <button class="btn-delete"
+        onclick="event.stopPropagation(); confirmDeletePlayer('${p.id}')">
+        ELIMINAR
+      </button>
+    </div>
+
+  </div>
+`;
 
   // 🔹 cerrar tocando fondo oscuro
   modal.onclick = () => modal.remove();

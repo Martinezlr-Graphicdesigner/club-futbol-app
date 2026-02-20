@@ -2955,8 +2955,95 @@ button {
   vertical-align:middle;
 }
 
+.plantel-scope .player-top-row{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+}
+
+.plantel-scope .number-row{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+
 /* Colores por posición */
 .plantel-scope .pos-PO{ background:#1f2a1f; }
 .plantel-scope .pos-DFC{ background:#00a6c8; }
 .plantel-scope .pos-MC{ background:#1e5aa6; }
 .plantel-scope .pos-DC{ background:#d34a6a; }
+
+/* ===== PLAYER MODAL REDISEÑO ===== */
+
+.sheet-header{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  margin-bottom:20px;
+}
+
+.sheet-avatar{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  overflow:hidden;
+  background:#e5e7eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:32px;
+  font-weight:800;
+}
+
+.sheet-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.sheet-main-info{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.sheet-position{
+  font-size:14px;
+  font-weight:800;
+  color:white;
+  padding:4px 10px;
+  border-radius:20px;
+  width:max-content;
+}
+
+.sheet-name{
+  font-size:22px;
+  font-weight:800;
+}
+
+.sheet-number{
+  font-size:46px;
+  font-weight:900;
+  font-family:'Bebas Neue', cursive;
+  line-height:1;
+}
+
+.sheet-details{
+  font-size:14px;
+  color:#555;
+  margin-bottom:20px;
+}
+
+.sheet-details span{
+  font-weight:700;
+  color:#888;
+  margin-right:6px;
+}
+
+/* Colores posición */
+.sheet-position.pos-PO{ background:#1f2a1f; }
+.sheet-position.pos-DFC{ background:#00a6c8; }
+.sheet-position.pos-MC{ background:#1e5aa6; }
+.sheet-position.pos-DC{ background:#d34a6a; }
+
