@@ -1929,7 +1929,13 @@ function getPositionColor(pos){
 function renderPlantel(container,data){
 
   const cat = state.user.category;
-  const players = state.data[cat].players || [];
+  const order = { PO:1, DFC:2, MC:3, DC:4 };
+
+const players = (state.data[cat].players || [])
+  .slice()
+  .sort((a,b)=>{
+    return (order[a.position] || 99) - (order[b.position] || 99);
+  });
 
   let html = `
     <div class="plantel-scope">
@@ -2010,34 +2016,29 @@ function openPlayerCard(id){
       ✕
     </button>
 
-    <div class="sheet-header">
+    <h3 class="sheet-title">Ficha del Jugador</h3>
 
-      <div class="sheet-avatar">
+    <div class="sheet-card">
+
+      <div class="sheet-photo-wrapper">
         ${
           p.photo
           ? `<img src="${p.photo}">`
-          : `<span>${p.name?.charAt(0) || "?"}</span>`
+          : `<div class="sheet-photo-empty">
+              ${p.name?.charAt(0) || "?"}
+            </div>`
         }
       </div>
 
-      <div class="sheet-main-info">
-        <div class="sheet-position pos-${p.position}">
-          ${p.position || "-"}
-        </div>
-
-        <div class="sheet-name">
-          ${p.name || "-"}
-        </div>
-
-        <div class="sheet-number">
-          ${p.number ? String(p.number).padStart(2,'0') : "--"}
-        </div>
+      <div class="sheet-info-box">
+        <div><strong>Nombre:</strong> ${p.name || "-"}</div>
+        <div><strong>Puesto:</strong> ${p.position || "-"}</div>
+        <div><strong>Fecha:</strong> ${p.birthdate || "-"}</div>
+        <div><strong>Número:</strong> ${
+          p.number ? String(p.number).padStart(2,'0') : "--"
+        }</div>
       </div>
 
-    </div>
-
-    <div class="sheet-details">
-      <div><span>Fecha</span> ${p.birthdate || "-"}</div>
     </div>
 
     <div class="sheet-actions">
@@ -2182,39 +2183,58 @@ function addPlayer(){
 function editPlayer(id){
 
   const cat = state.user.category;
-
-  const original =
-    state.data[cat].players.find(p=>p.id===id);
-
+  const original = state.data[cat].players.find(p=>p.id===id);
   if(!original) return;
 
-  // 👉 CLONAMOS (NO tocamos el original)
   editingPlayer = {...original};
 
   const modal = document.createElement("div");
   modal.className="player-modal";
 
   modal.innerHTML=`
-    <div class="player-sheet">
+    <div class="player-sheet" onclick="event.stopPropagation()">
 
-      <h3>Editar jugador</h3>
+      <h3 class="sheet-title">Editar Jugador</h3>
 
-      <input id="ep-name" value="${editingPlayer.name||""}" placeholder="Nombre">
-      <input id="ep-number" value="${editingPlayer.number||""}" placeholder="Número">
-      <input id="ep-pos" value="${editingPlayer.position||""}" placeholder="Posición">
+      <div class="sheet-info-box">
 
-      <button onclick="savePlayer('${id}')"
-        class="btn-primary">
-        Guardar
-      </button>
+        <label>Nombre y Apellido</label>
+        <input id="ep-name" value="${editingPlayer.name||""}">
 
-      <button onclick="closeEditModal()"
-        style="margin-top:10px">
-        Cancelar
-      </button>
+        <label>Puesto</label>
+        <select id="ep-pos">
+          <option value="PO" ${editingPlayer.position==="PO"?"selected":""}>PO</option>
+          <option value="DFC" ${editingPlayer.position==="DFC"?"selected":""}>DFC</option>
+          <option value="MC" ${editingPlayer.position==="MC"?"selected":""}>MC</option>
+          <option value="DC" ${editingPlayer.position==="DC"?"selected":""}>DC</option>
+        </select>
+
+        <label>Fecha</label>
+        <input type="date" id="ep-date"
+          value="${editingPlayer.birthdate||""}">
+
+        <label>Número</label>
+        <input type="number" id="ep-number"
+          value="${editingPlayer.number||""}">
+
+      </div>
+
+      <div class="sheet-actions">
+        <button class="btn-edit"
+          onclick="savePlayer('${id}')">
+          GUARDAR
+        </button>
+
+        <button class="btn-delete"
+          onclick="closeEditModal()">
+          CANCELAR
+        </button>
+      </div>
 
     </div>
   `;
+
+  modal.onclick = ()=> modal.remove();
 
   document.body.appendChild(modal);
 }
@@ -2223,24 +2243,18 @@ function savePlayer(id){
 
   const cat = state.user.category;
 
-  const p =
-    state.data[cat].players.find(x=>x.id===id);
+  const player = state.data[cat].players.find(p=>p.id===id);
+  if(!player) return;
 
-  if(!p) return;
-
-  // 👉 Actualizamos desde inputs
-  p.name =
-    document.getElementById("ep-name").value;
-
-  p.number =
-    document.getElementById("ep-number").value;
-
-  p.position =
-    document.getElementById("ep-pos").value;
+  player.name = document.getElementById("ep-name").value;
+  player.position = document.getElementById("ep-pos").value;
+  player.birthdate = document.getElementById("ep-date").value;
+  player.number = document.getElementById("ep-number").value;
 
   saveData();
 
-  closeEditModal();
+  document.querySelector(".player-modal")?.remove();
+
   renderScreen("plantel");
 
   showToast("Jugador actualizado");
