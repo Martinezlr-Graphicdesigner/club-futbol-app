@@ -3259,5 +3259,24 @@ button {
   font-weight:700;
 }
 
+/* FIX HEADER PLANTEL */
 
+.plantel-scope .plantel-header{
+  display:grid !important;
+  grid-template-columns: auto 1fr auto;
+  align-items:center;
+}
+
+.plantel-scope #logout-btn{
+  margin-left:0 !important;
+  justify-self:start;
+}
+
+.plantel-scope .plantel-header h2{
+  justify-self:center;
+}
+
+.plantel-scope .btn-add-player{
+  justify-self:end;
+}
 
