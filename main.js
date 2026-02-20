@@ -1960,10 +1960,8 @@ function renderPlantel(container,data){
           </div>
 
           <div class="player-info">
-  <div class="player-top-row">
-    <span class="player-position">${p.position || "-"}</span>
-    <span class="player-name">${p.name || "Sin nombre"}</span>
-  </div>
+  <div class="player-name">${p.name || "Sin nombre"}</div>
+  <div class="player-position">${p.position || "-"}</div>
 </div>
 
         </div>
