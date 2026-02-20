@@ -1939,7 +1939,7 @@ function renderPlantel(container,data){
     </button>
   </div>
 
-  <div class="plantel-list">
+  <div class="plantel-list plantel-scope">
   `;
 
   players.forEach(p=>{

@@ -429,3 +429,123 @@ button{
   padding:12px;
   border-radius:12px;
 }
+
+/* =====================================================
+   PLANTEL ESTILO FINAL (ENCAPSULADO)
+===================================================== */
+
+.plantel-scope .plantel-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.plantel-scope .btn-add-player{
+  background:#1f5fbf;
+  color:white;
+  padding:10px 20px;
+  border-radius:12px;
+  font-weight:700;
+  font-size:14px;
+}
+
+/* CARD */
+
+.plantel-scope .player-card{
+  background:white;
+  border-radius:18px;
+  padding:18px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
+  margin-bottom:16px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.plantel-scope .player-card:hover{
+  transform:translateY(-3px);
+}
+
+/* IZQUIERDA */
+
+.plantel-scope .player-left{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+/* FOTO */
+
+.plantel-scope .player-avatar{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  overflow:hidden;
+  background:#ccc;
+  flex-shrink:0;
+}
+
+.plantel-scope .player-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* INFO */
+
+.plantel-scope .player-info{
+  display:flex;
+  flex-direction:column;
+}
+
+.plantel-scope .player-name{
+  font-size:22px;
+  font-weight:700;
+  color:#222;
+}
+
+.plantel-scope .player-position{
+  font-size:16px;
+  color:#888;
+  margin-top:4px;
+}
+
+/* DERECHA */
+
+.plantel-scope .player-right{
+  text-align:right;
+}
+
+.plantel-scope .player-number-label{
+  font-size:12px;
+  font-weight:700;
+  color:#666;
+  letter-spacing:1px;
+}
+
+.plantel-scope .player-number{
+  font-size:40px;
+  font-weight:800;
+  color:#111;
+}
+
+/* PUNTO COLOR */
+
+.plantel-scope .position-dot{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  display:inline-block;
+  margin-right:8px;
+  vertical-align:middle;
+}
+
+/* COLORES */
+
+.plantel-scope .pos-PO{ background:#1f2a1f; }
+.plantel-scope .pos-DFC{ background:#00a6c8; }
+.plantel-scope .pos-MC{ background:#1e5aa6; }
+.plantel-scope .pos-DC{ background:#d34a6a; }
