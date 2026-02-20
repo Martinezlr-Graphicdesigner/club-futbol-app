@@ -1944,31 +1944,37 @@ function renderPlantel(container,data){
 
   players.forEach(p=>{
 
-    html+=`
-      <div class="player-row"
-        onclick="openPlayerCard('${p.id}')">
+  html+=`
+    <div class="player-card" onclick="openPlayerCard('${p.id}')">
 
-        ${
-          p.photo
-          ? `<img src="${p.photo}" class="player-thumb">`
-          : `<div class="player-thumb empty">
-              ${p.name?.charAt(0) || "?"}
-            </div>`
-        }
+      <div class="player-left">
 
-        <div class="player-info">
-          <strong>${p.name || "Sin nombre"}</strong>
-          <span>${p.position || "-"} </span>
+        <div class="player-avatar">
+          ${
+            p.photo
+            ? `<img src="${p.photo}">`
+            : ""
+          }
         </div>
 
-        <div class="player-number">
-          <small>NÚMERO</small>
-          <strong>${p.number || "-"}</strong>
+        <div class="player-info">
+          <div class="player-name">${p.name || "Sin nombre"}</div>
+          <div class="player-position">${p.position || "-"}</div>
         </div>
 
       </div>
-    `;
-  });
+
+      <div class="player-right">
+        <div class="player-number-label">NÚMERO</div>
+        <div>
+          <span class="position-dot pos-${p.position}"></span>
+          <span class="player-number">${p.number || "-"}</span>
+        </div>
+      </div>
+
+    </div>
+  `;
+});
 
   html+=`</div>`;
 
