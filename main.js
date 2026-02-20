@@ -1978,23 +1978,27 @@ function renderPlantel(container,data){
 
 function openPlayerCard(id){
 
-  const p = state.data[state.user.category]
-    .players.find(x=>x.id==id);
+  const cat = state.user.category;
+  const p = state.data[cat].players.find(x => x.id == id);
 
   if(!p) return;
 
-  const modal=document.createElement("div");
-  modal.className="player-modal";
+  // 🧹 Evita modales duplicados
+  const oldModal = document.querySelector(".player-modal");
+  if(oldModal) oldModal.remove();
 
-  modal.innerHTML=`
-    <div class="player-sheet">
+  const modal = document.createElement("div");
+  modal.className = "player-modal";
 
-      <h3>FICHA DEL JUGADOR</h3>
+  modal.innerHTML = `
+    <div class="player-sheet" onclick="event.stopPropagation()">
 
       <button class="close-x"
         onclick="this.closest('.player-modal').remove()">
         ✕
       </button>
+
+      <h3 class="sheet-title">Ficha del Jugador</h3>
 
       <div class="player-sheet-card">
 
@@ -2002,12 +2006,12 @@ function openPlayerCard(id){
           p.photo
           ? `<img src="${p.photo}" class="sheet-photo">`
           : `<div class="sheet-photo empty">
-              ${p.name?.charAt(0)||"?"}
+              ${p.name?.charAt(0) || "?"}
             </div>`
         }
 
         <div class="sheet-data">
-          <strong>${p.name}</strong>
+          <strong>${p.name || "-"}</strong>
           <p>Puesto: ${p.position || "-"}</p>
           <p>Fecha: ${p.birthdate || "-"}</p>
           <p>Número: ${p.number || "-"}</p>
@@ -2023,12 +2027,15 @@ function openPlayerCard(id){
 
         <button class="btn-delete"
           onclick="confirmDeletePlayer('${p.id}')">
-          X
+          ELIMINAR
         </button>
       </div>
 
     </div>
   `;
+
+  // 👇 cerrar tocando fuera
+  modal.onclick = () => modal.remove();
 
   document.body.appendChild(modal);
 }

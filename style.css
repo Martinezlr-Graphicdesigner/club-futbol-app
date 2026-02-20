@@ -2947,22 +2947,6 @@ button {
   font-weight:bold;
 }
 
-.player-modal{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  z-index:9999;
-
-  /* 👉 CLAVE */
-  padding:20px;
-}
-
-
 .player-sheet{
   background:white;
   width:100%;
@@ -3134,21 +3118,11 @@ body{
 
 /* ===== PLAYER MODAL FIX ===== */
 
-.player-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.5);
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  z-index:9999;
-}
-
 .player-sheet{
   background:white;
   width:100%;
   max-width:500px;
-  border-radius:24px 24px 0 0;
+  border-radius:24px;
   padding:24px;
   max-height:85vh;
   overflow-y:auto;
@@ -3197,4 +3171,15 @@ body{
   color:white;
   border:none;
   border-radius:12px;
+}
+
+.player-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:20px;
 }
