@@ -1941,13 +1941,17 @@ const players = (state.data[cat].players || [])
   <div class="plantel-scope">
 
     <div class="app-header">
+
+      <button class="btn-back" onclick="logout()">
+        ← Salir
+      </button>
+
       <div class="app-title">PLANTEL</div>
 
-      <div class="app-user">
-        <button class="btn-add-player" onclick="addPlayer()">
-          + AGREGAR
-        </button>
-      </div>
+      <button class="btn-add-player" onclick="addPlayer()">
+        + AGREGAR
+      </button>
+
     </div>
 
     <div class="plantel-list">

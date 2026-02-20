@@ -194,13 +194,12 @@ button {
 }
 
 /* Header */
-.app-header{
+
+.plantel-scope .app-header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:18px 24px;
-  background:white;
-  box-shadow:0 4px 12px rgba(0,0,0,.06);
+  margin-bottom:20px;
 }
 
 .app-title{
@@ -2992,6 +2991,25 @@ button {
   align-items:center;
   justify-content:flex-end;
   gap:8px;
+}
+
+.plantel-scope .app-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.plantel-scope .app-title{
+  font-size:22px;
+  font-weight:900;
+}
+
+.plantel-scope .btn-back{
+  background:none;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
 }
 
 /* Colores por posición */
