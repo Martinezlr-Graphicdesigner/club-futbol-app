@@ -3089,3 +3089,36 @@ body{
   border-radius:8px;
   font-weight:600;
 }
+
+.dot.green{
+  background:#22c55e;
+}
+
+.activity-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  font-size:14px;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+
+.sheet-photo{
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  object-fit:cover;
+  margin:20px auto;
+  display:block;
+  box-shadow:0 8px 20px rgba(0,0,0,0.15);
+}
+
+.player-sheet-card{
+  text-align:center;
+  padding:20px;
+}
