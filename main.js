@@ -2020,15 +2020,19 @@ function openPlayerCard(id){
 
     <div class="sheet-card">
 
-      <div class="sheet-photo-wrapper">
-        ${
-          p.photo
-          ? `<img src="${p.photo}">`
-          : `<div class="sheet-photo-empty">
-              ${p.name?.charAt(0) || "?"}
-            </div>`
-        }
-      </div>
+      <div class="sheet-photo-wrapper" onclick="changePlayerPhoto('${p.id}')">
+  ${
+    p.photo
+    ? `<img src="${p.photo}">`
+    : `<div class="sheet-photo-empty">
+        ${p.name?.charAt(0) || "?"}
+      </div>`
+  }
+  <input type="file" accept="image/*"
+    id="photo-input-${p.id}"
+    style="display:none"
+    onchange="handlePhotoUpload(event, '${p.id}')">
+</div>
 
       <div class="sheet-info-box">
         <div><strong>Nombre:</strong> ${p.name || "-"}</div>
@@ -2060,6 +2064,34 @@ function openPlayerCard(id){
   modal.onclick = () => modal.remove();
 
   document.body.appendChild(modal);
+}
+
+function changePlayerPhoto(id){
+  const input = document.getElementById(`photo-input-${id}`);
+  if(input) input.click();
+}
+
+function handlePhotoUpload(event, id){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+
+    const cat = state.user.category;
+    const player = state.data[cat].players.find(p=>p.id==id);
+    if(!player) return;
+
+    player.photo = e.target.result;
+
+    saveData();
+
+    document.querySelector(".player-modal")?.remove();
+    openPlayerCard(id);
+  };
+
+  reader.readAsDataURL(file);
 }
 
 function confirmDeletePlayer(id){

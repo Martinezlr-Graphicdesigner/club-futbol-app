@@ -3153,6 +3153,16 @@ button {
   border-radius:16px;
 }
 
+/* Permitir que parezca clickeable */
+.sheet-photo-wrapper{
+  cursor:pointer;
+  transition:0.2s ease;
+}
+
+.sheet-photo-wrapper:hover{
+  opacity:0.85;
+}
+
 .btn-edit{
   flex:1;
   background:#2563eb;
@@ -3203,4 +3213,51 @@ button {
   margin:0;
   font-size:22px;
   font-weight:800;
+}
+
+/* ===== HEADER ESTILO FIGMA ===== */
+
+.app-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #e5e7eb;
+}
+
+/* Botón salir gris oscuro */
+.btn-back{
+  background:transparent;
+  border:none;
+  color:#374151; /* gris oscuro elegante */
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.btn-back:hover{
+  opacity:0.7;
+}
+
+/* Título centrado visualmente */
+.app-title{
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+
+/* Botón agregar estilo Figma */
+.btn-add-player{
+  background:#1f5fbf;
+  color:white;
+  padding:10px 18px;
+  border-radius:12px;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+}
+
+.btn-add-player:hover{
+  opacity:0.9;
 }
