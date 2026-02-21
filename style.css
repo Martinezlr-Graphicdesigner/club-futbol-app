@@ -93,7 +93,7 @@ button {
 
 .btn-icon {
     background: rgba(255, 255, 255, 0.15);
-    color: var(--white);
+    color:#374151;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -217,13 +217,14 @@ button {
 
 .header-info h2 {
     font-size: 1.5rem;
+    color:#374151;
     margin: 0;
     line-height: 1;
 }
 
 .header-info span {
     font-size: 0.75rem;
-    color: var(--accent);
+    color:#374151;
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -3260,4 +3261,16 @@ button {
 
 .btn-add-player:hover{
   opacity:0.9;
+}
+
+.btn-back{
+  background:transparent;
+  border:none;
+  color:#374151 !important;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.btn-back:hover{
+  opacity:0.7;
 }
