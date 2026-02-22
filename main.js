@@ -1480,11 +1480,14 @@ function renderListaStats(container,data){
 
     Object.values(sessions).forEach(s=>{
   if(s.attendance && Object.keys(s.attendance).length > 0){
+
     if(s.attendance[p.id] !== undefined){
-        totalTrain++;
-        if(s.attendance[p.id]) presentTrain++;
-      }
-    });
+      total++;
+      if(s.attendance[p.id]) present++;
+    }
+
+  }
+});
 
     Object.values(matches).forEach(m=>{
       if(m.attendance?.[p.id] !== undefined){
