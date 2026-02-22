@@ -210,6 +210,10 @@ button {
     gap: 15px;
 }
 
+#logout-btn{
+  margin-left:auto;
+}
+
 .header-logo {
     width: 45px;
     height: 45px;
@@ -3263,7 +3267,6 @@ button {
 
 .btn-back{
   background:transparent;
-  margin-left:auto; 
   border:none;
   color:#374151; /* gris oscuro elegante */
   font-weight:600;
