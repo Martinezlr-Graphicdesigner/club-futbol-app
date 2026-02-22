@@ -3131,6 +3131,8 @@ button {
   display:flex;
   align-items:center;
   justify-content:center;
+  position:relative; 
+  cursor:pointer;     
 }
 
 .sheet-photo-wrapper img{
@@ -3142,6 +3144,14 @@ button {
 .sheet-photo-empty{
   font-size:36px;
   font-weight:800;
+}
+
+
+.photo-input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
 }
 
 .sheet-info-box{
@@ -3230,6 +3240,7 @@ button {
 /* Botón salir gris oscuro */
 .btn-back{
   background:transparent;
+  margin-left:auto; 
   border:none;
   color:#374151; /* gris oscuro elegante */
   font-weight:600;

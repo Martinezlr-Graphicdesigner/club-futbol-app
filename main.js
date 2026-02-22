@@ -2001,7 +2001,7 @@ function openPlayerCard(id){
   const p = state.data[cat].players.find(x => x.id == id);
   if(!p) return;
 
-  // 🔹 evitar modales duplicados
+  // Evitar modales duplicados
   const existing = document.querySelector(".player-modal");
   if(existing) existing.remove();
 
@@ -2020,19 +2020,23 @@ function openPlayerCard(id){
 
     <div class="sheet-card">
 
-      <div class="sheet-photo-wrapper" onclick="changePlayerPhoto('${p.id}')">
-  ${
-    p.photo
-    ? `<img src="${p.photo}">`
-    : `<div class="sheet-photo-empty">
-        ${p.name?.charAt(0) || "?"}
-      </div>`
-  }
-  <input type="file" accept="image/*"
-    id="photo-input-${p.id}"
-    style="display:none"
-    onchange="handlePhotoUpload(event, '${p.id}')">
-</div>
+      <div class="sheet-photo-wrapper">
+        ${
+          p.photo
+          ? `<img src="${p.photo}">`
+          : `<div class="sheet-photo-empty">
+              ${p.name?.charAt(0) || "?"}
+            </div>`
+        }
+
+        <!-- input invisible encima de la foto -->
+        <input 
+          type="file" 
+          accept="image/*"
+          class="photo-input"
+          onchange="handlePhotoUpload(event, '${p.id}')"
+        >
+      </div>
 
       <div class="sheet-info-box">
         <div><strong>Nombre:</strong> ${p.name || "-"}</div>
@@ -2058,18 +2062,12 @@ function openPlayerCard(id){
     </div>
 
   </div>
-`;
+  `;
 
-  // 🔹 cerrar tocando fondo oscuro
   modal.onclick = () => modal.remove();
-
   document.body.appendChild(modal);
 }
 
-function changePlayerPhoto(id){
-  const input = document.getElementById(`photo-input-${id}`);
-  if(input) input.click();
-}
 
 function handlePhotoUpload(event, id){
   const file = event.target.files[0];
