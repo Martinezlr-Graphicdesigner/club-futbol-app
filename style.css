@@ -3278,3 +3278,12 @@ button {
 .btn-back:hover{
   opacity:0.7;
 }
+
+.header-content{
+  display:flex;
+  align-items:center;
+}
+
+#logout-btn{
+  margin-left:auto;
+}
