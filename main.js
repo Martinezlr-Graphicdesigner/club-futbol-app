@@ -293,8 +293,14 @@ function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
 
+  if(!state.data[cat].sessions)
+    state.data[cat].sessions = {};
+
+  if(!state.data[cat].matches)
+    state.data[cat].matches = {};
+
   const session = state.data[cat].sessions[dateKey];
-  const match  = state.data[cat].matches?.[dateKey];
+  const match   = state.data[cat].matches[dateKey];
 
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
@@ -302,13 +308,10 @@ function saveAttendanceDate(dateKey){
       const id = cb.dataset.id;
       const val = cb.checked;
 
-      // 👉 SI ES PARTIDO
       if(match){
         if(!match.attendance) match.attendance = {};
         match.attendance[id] = val;
       }
-
-      // 👉 SI ES ENTRENAMIENTO
       else if(session){
         if(!session.attendance) session.attendance = {};
         session.attendance[id] = val;
@@ -333,7 +336,6 @@ function saveSessionNote(dateKey){
     state.data[cat].sessions = {};
 
   const session = state.data[cat].sessions[dateKey];
-
   if(!session) return;
 
   const titleInput = document.getElementById("session-title");
@@ -344,6 +346,12 @@ function saveSessionNote(dateKey){
 
   saveData();
   showToast("Entrenamiento actualizado");
+
+  // 🔥 cerrar modal correctamente
+  const modal = document.querySelector(".modal-overlay");
+  if(modal) modal.remove();
+
+  renderScreen("lista");
 }
 
 
@@ -1775,10 +1783,14 @@ function saveMatch(date, rival, goalsFor, goalsAgainst){
     state.data[cat].matches = {};
   }
 
+  // Si ya existe el partido, mantener attendance
+  const existingMatch = state.data[cat].matches[date];
+
   state.data[cat].matches[date] = {
     rival: rival,
     goalsFor: goalsFor,
-    goalsAgainst: goalsAgainst
+    goalsAgainst: goalsAgainst,
+    attendance: existingMatch?.attendance || {}
   };
 
   database.ref("data/" + cat + "/matches")
@@ -1828,19 +1840,25 @@ function openMatchAttendance(dateKey){
 
 function saveMatchAttendance(dateKey){
 
+  const cat = state.user.category;
+
   const match =
-  state.data[state.user.category].matches[dateKey];
+    state.data[cat].matches[dateKey];
+
+  // 🔥 BLINDAJE CLAVE
+  if(!match.attendance){
+    match.attendance = {};
+  }
 
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
       match.attendance[cb.dataset.id] = cb.checked;
     });
 
-  match.closed = true; // 🔒 bloquea partido
+  match.closed = true;
 
   saveData();
   showToast("Asistencia guardada");
-
   renderScreen("lista");
 }
 
@@ -2019,6 +2037,13 @@ const players = (state.data[cat].players || [])
 function openPlayerCard(id){
 
   const cat = state.user.category;
+
+  // Seguridad extra por si la categoría no tiene players
+  if(!state.data[cat] || !Array.isArray(state.data[cat].players)){
+    console.warn("No hay players en esta categoría");
+    return;
+  }
+
   const p = state.data[cat].players.find(x => x.id == id);
   if(!p) return;
 
@@ -2030,12 +2055,9 @@ function openPlayerCard(id){
   modal.className = "player-modal";
 
   modal.innerHTML = `
-  <div class="player-sheet" onclick="event.stopPropagation()">
+  <div class="player-sheet">
 
-    <button class="close-x"
-      onclick="this.closest('.player-modal').remove()">
-      ✕
-    </button>
+    <button class="close-x">✕</button>
 
     <h3 class="sheet-title">Ficha del Jugador</h3>
 
@@ -2050,12 +2072,10 @@ function openPlayerCard(id){
             </div>`
         }
 
-        <!-- input invisible encima de la foto -->
         <input 
           type="file" 
           accept="image/*"
           class="photo-input"
-          onchange="handlePhotoUpload(event, '${p.id}')"
         >
       </div>
 
@@ -2071,22 +2091,35 @@ function openPlayerCard(id){
     </div>
 
     <div class="sheet-actions">
-      <button class="btn-edit"
-        onclick="event.stopPropagation(); editPlayer('${p.id}')">
-        EDITAR
-      </button>
-
-      <button class="btn-delete"
-        onclick="event.stopPropagation(); confirmDeletePlayer('${p.id}')">
-        ELIMINAR
-      </button>
+      <button class="btn-edit">EDITAR</button>
+      <button class="btn-delete">ELIMINAR</button>
     </div>
 
   </div>
   `;
 
-  modal.onclick = () => modal.remove();
   document.body.appendChild(modal);
+
+  // 🔹 Cerrar modal
+  modal.querySelector(".close-x").onclick = () => modal.remove();
+  modal.onclick = () => modal.remove();
+  modal.querySelector(".player-sheet").onclick = e => e.stopPropagation();
+
+  // 🔹 Upload foto
+  const fileInput = modal.querySelector(".photo-input");
+  fileInput.onchange = (e) => handlePhotoUpload(e, p.id);
+
+  // 🔹 Editar
+  modal.querySelector(".btn-edit").onclick = (e) => {
+    e.stopPropagation();
+    editPlayer(p.id);
+  };
+
+  // 🔹 Eliminar
+  modal.querySelector(".btn-delete").onclick = (e) => {
+    e.stopPropagation();
+    confirmDeletePlayer(p.id);
+  };
 }
 
 
