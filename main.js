@@ -138,7 +138,6 @@ function generateYearSessions(cat){
 
       if(!sessions[key]){
         sessions[key] = {
-  closed:false,
   attendance:{},
   note:"",
   title:""
@@ -319,13 +318,8 @@ function saveAttendanceDate(dateKey){
 
     });
 
-  if(match) match.closed = true;
-  if(session) session.closed = true;
-
   saveData();
   showToast("Asistencia guardada");
-
-  renderScreen("lista");
 }
 
 function saveSessionNote(dateKey){
@@ -1824,29 +1818,24 @@ function openMatchAttendance(dateKey){
     match.attendance = {};
   }
 
-  const locked = match.closed === true;
-
   const area = document.getElementById("attendance-area");
 
   area.innerHTML = `
-    <h3>Asistencia partido</h3>
+  <h3>Asistencia partido</h3>
 
-    ${players.map(p=>`
-      <label style="display:block;margin:6px 0;">
-        <input type="checkbox"
-          data-id="${p.id}"
-          ${match.attendance[p.id]?"checked":""}
-          ${(locked && !isAdmin) ? "disabled":""}>
-        ${p.name}
-      </label>
-    `).join("")}
+  ${players.map(p=>`
+    <label style="display:block;margin:6px 0;">
+      <input type="checkbox"
+        data-id="${p.id}"
+        ${match.attendance?.[p.id] ? "checked":""}>
+      ${p.name}
+    </label>
+  `).join("")}
 
-    ${(!locked || isAdmin) ? `
-      <button onclick="saveMatchAttendance('${dateKey}')">
-        Confirmar
-      </button>
-    `:"<p>Partido cerrado</p>"}
-  `;
+  <button onclick="saveMatchAttendance('${dateKey}')">
+    Confirmar
+  </button>
+`;
 }
 
 function saveMatchAttendance(dateKey){
