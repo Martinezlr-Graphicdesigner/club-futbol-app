@@ -325,6 +325,27 @@ function saveAttendanceDate(dateKey){
   renderScreen("lista");
 }
 
+function saveSessionNote(dateKey){
+
+  const cat = state.user.category;
+
+  if(!state.data[cat].sessions)
+    state.data[cat].sessions = {};
+
+  const session = state.data[cat].sessions[dateKey];
+
+  if(!session) return;
+
+  const titleInput = document.getElementById("session-title");
+  const noteInput  = document.getElementById("session-note");
+
+  if(titleInput) session.title = titleInput.value;
+  if(noteInput)  session.note  = noteInput.value;
+
+  saveData();
+  showToast("Entrenamiento actualizado");
+}
+
 
 function ensureDataStructure(){
 

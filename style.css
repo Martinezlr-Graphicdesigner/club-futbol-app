@@ -3238,19 +3238,6 @@ button {
 }
 
 /* Botón salir gris oscuro */
-.btn-back{
-  background:transparent;
-  margin-left:auto; 
-  border:none;
-  color:#374151; /* gris oscuro elegante */
-  font-weight:600;
-  font-size:14px;
-  cursor:pointer;
-}
-
-.btn-back:hover{
-  opacity:0.7;
-}
 
 /* Título centrado visualmente */
 .app-title{
@@ -3276,11 +3263,14 @@ button {
 
 .btn-back{
   background:transparent;
+  margin-left:auto; 
   border:none;
-  color:#374151 !important;
+  color:#374151; /* gris oscuro elegante */
   font-weight:600;
+  font-size:14px;
   cursor:pointer;
 }
+
 
 .btn-back:hover{
   opacity:0.7;
