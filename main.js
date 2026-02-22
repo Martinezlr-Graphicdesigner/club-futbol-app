@@ -451,7 +451,7 @@ function renderHome(container, data){
   const nextBirthday = getNextBirthday(players);
   const sessions = data.sessions || {};
   const matches =
-  state.data.globalMatches || {};
+  state.data[state.user.category].matches || {};
 
 
 
@@ -1793,8 +1793,7 @@ function saveMatch(date, rival, goalsFor, goalsAgainst){
     attendance: existingMatch?.attendance || {}
   };
 
-  database.ref("data/" + cat + "/matches")
-    .set(state.data[cat].matches);
+ saveData();
 
   showToast("Partido guardado ✅");
 }
@@ -1842,23 +1841,41 @@ function saveMatchAttendance(dateKey){
 
   const cat = state.user.category;
 
-  const match =
-    state.data[cat].matches[dateKey];
+  // 🔒 Aseguramos que exista la estructura
+  if (!state.data[cat].matches) {
+    state.data[cat].matches = {};
+  }
 
-  // 🔥 BLINDAJE CLAVE
-  if(!match.attendance){
+  if (!state.data[cat].matches[dateKey]) {
+    state.data[cat].matches[dateKey] = {
+      attendance: {},
+      goals: {},
+      closed: false
+    };
+  }
+
+  const match = state.data[cat].matches[dateKey];
+
+  // 🔄 Si no existe attendance lo creamos
+  if (!match.attendance) {
     match.attendance = {};
   }
 
+  // ✅ Guardamos estado de checkboxes
   document.querySelectorAll("#attendance-area input")
-    .forEach(cb=>{
+    .forEach(cb => {
       match.attendance[cb.dataset.id] = cb.checked;
     });
 
+  // 🔒 Cerramos partido
   match.closed = true;
 
+  // 💾 Guardamos TODO el state de forma unificada
   saveData();
+
   showToast("Asistencia guardada");
+
+  // 🔁 Volvemos a la lista sin efectos raros
   renderScreen("lista");
 }
 
