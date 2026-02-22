@@ -1463,69 +1463,46 @@ function cancelMatch(dateKey){
 
 
 
-function renderListaStats(container,data){
+function renderListaStats(){
 
-  const players = data.players || [];
-  const sessions = data.sessions || {};
-  const matches = data.matches || {}; // ← FIX CLAVE
+  const cat = state.user.category;
+  const players = state.data[cat].players || [];
+  const sessions = state.data[cat].sessions || {};
 
-  let html = "";
+  const container = document.getElementById("stats-container");
 
-  /* ========= RESUMEN GLOBAL ========= */
-
-  let totalTrain=0, presentTrain=0;
-  let totalMatch=0, presentMatch=0;
+  container.innerHTML = "";
 
   players.forEach(p=>{
 
+    let total = 0;
+    let present = 0;
+
     Object.values(sessions).forEach(s=>{
-  if(s.attendance && Object.keys(s.attendance).length > 0){
+      if(s.attendance && Object.keys(s.attendance).length > 0){
 
-    if(s.attendance[p.id] !== undefined){
-      total++;
-      if(s.attendance[p.id]) present++;
-    }
+        if(s.attendance[p.id] !== undefined){
+          total++;
+          if(s.attendance[p.id] === true){
+            present++;
+          }
+        }
 
-  }
-});
-
-    Object.values(matches).forEach(m=>{
-      if(m.attendance?.[p.id] !== undefined){
-        totalMatch++;
-        if(m.attendance[p.id]) presentMatch++;
       }
     });
 
+    const percent = total > 0
+      ? Math.round((present / total) * 100)
+      : 0;
+
+    container.innerHTML += `
+      <div class="stat-card">
+        <div>${p.name}</div>
+        <div>${percent}%</div>
+      </div>
+    `;
   });
-
-  const trainPct = totalTrain ? Math.round(presentTrain*100/totalTrain) : 0;
-  const matchPct = totalMatch ? Math.round(presentMatch*100/totalMatch) : 0;
-
-  const globalTotal = totalTrain + totalMatch;
-  const globalPresent = presentTrain + presentMatch;
-  const globalPct = globalTotal ? Math.round(globalPresent*100/globalTotal) : 0;
-
-  html += `
-  <div class="stat-summary">
-    <h3>Resumen Categoría</h3>
-    <div class="big-percent">${globalPct}%</div>
-
-    <div class="gradient-bar">
-      <div style="width:${globalPct}%"></div>
-    </div>
-
-    <div class="split-stats">
-      <div>
-        <strong>${trainPct}%</strong>
-        <span>Entrenamientos</span>
-      </div>
-      <div>
-        <strong>${matchPct}%</strong>
-        <span>Partidos</span>
-      </div>
-    </div>
-  </div>
-  `;
+}
 
   /* ========= JUGADORES ========= */
 
