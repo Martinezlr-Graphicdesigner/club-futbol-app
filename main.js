@@ -1479,7 +1479,8 @@ function renderListaStats(container,data){
   players.forEach(p=>{
 
     Object.values(sessions).forEach(s=>{
-      if(s.attendance?.[p.id] !== undefined){
+  if(s.attendance && Object.keys(s.attendance).length > 0){
+    if(s.attendance[p.id] !== undefined){
         totalTrain++;
         if(s.attendance[p.id]) presentTrain++;
       }
@@ -1809,10 +1810,7 @@ function openMatchAttendance(dateKey){
 
   const cat = state.user.category;
   const players = state.data[cat].players || [];
-  const isAdmin = state.user.role === "admin";
-
-  const match =
-  state.data[state.user.category].matches[dateKey];
+  const match = state.data[cat].matches[dateKey];
 
   if(!match.attendance){
     match.attendance = {};
@@ -1821,21 +1819,44 @@ function openMatchAttendance(dateKey){
   const area = document.getElementById("attendance-area");
 
   area.innerHTML = `
-  <h3>Asistencia partido</h3>
+    ${players.map(p=>`
 
-  ${players.map(p=>`
-    <label style="display:block;margin:6px 0;">
-      <input type="checkbox"
-        data-id="${p.id}"
-        ${match.attendance?.[p.id] ? "checked":""}>
-      ${p.name}
-    </label>
-  `).join("")}
+      <div class="attendance-card">
 
-  <button onclick="saveMatchAttendance('${dateKey}')">
-    Confirmar
-  </button>
-`;
+        <div class="player-avatar">
+          ${p.name ? p.name.charAt(0) : "?"}
+        </div>
+
+        <div class="player-name-attendance">
+          ${p.name}
+        </div>
+
+        <div 
+          class="check-circle ${match.attendance[p.id] ? "checked" : ""}"
+          onclick="toggleMatchPlayer('${dateKey}','${p.id}', this)">
+        </div>
+
+      </div>
+
+    `).join("")}
+
+    <button class="btn-primary"
+      style="margin-top:20px;"
+      onclick="saveMatchAttendance('${dateKey}')">
+      GUARDAR SESIÓN
+    </button>
+  `;
+}
+
+function toggleMatchPlayer(dateKey, playerId, el){
+
+  const cat = state.user.category;
+  const match = state.data[cat].matches[dateKey];
+
+  const current = match.attendance[playerId] || false;
+  match.attendance[playerId] = !current;
+
+  el.classList.toggle("checked");
 }
 
 function saveMatchAttendance(dateKey){
@@ -1866,8 +1887,6 @@ function saveMatchAttendance(dateKey){
   saveData();
   showToast("Asistencia guardada");
 
-  // Refresca solo la vista actual
-  openMatchAttendance(dateKey);
 }
 
 function drawCalendar(container,data){
