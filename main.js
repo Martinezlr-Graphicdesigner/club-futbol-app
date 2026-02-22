@@ -937,19 +937,31 @@ function renderCalendar(container, year, month){
   container.innerHTML=html;
 }
 
-function selectDate(year,month,day){
+function selectDate(year, month, day){
 
-  state.selectedDate = new Date(year,month,day);
+  state.selectedDate = new Date(year, month, day);
 
   const cal = document.getElementById("calendar");
   if(cal){
-    renderCalendar(cal,year,month);
+    renderCalendar(cal, year, month);
   }
 
   const dateKey = getLocalDateKey(state.selectedDate);
 
-  // 👉 ESTA LÍNEA ES LA CLAVE
-  openAttendance(dateKey);
+  const cat = state.user.category;
+
+  const match = state.data[cat].matches?.[dateKey];
+  const session = state.data[cat].sessions?.[dateKey];
+
+  // 👉 PRIORIDAD: si hay partido, abrir partido
+  if(match){
+    openMatchAttendance(dateKey);
+    return;
+  }
+
+  if(session){
+    openAttendance(dateKey);
+  }
 }
 
 function formatSelectedDate(){
@@ -1841,42 +1853,32 @@ function saveMatchAttendance(dateKey){
 
   const cat = state.user.category;
 
-  // 🔒 Aseguramos que exista la estructura
-  if (!state.data[cat].matches) {
+  if(!state.data[cat].matches){
     state.data[cat].matches = {};
   }
 
-  if (!state.data[cat].matches[dateKey]) {
+  if(!state.data[cat].matches[dateKey]){
     state.data[cat].matches[dateKey] = {
-      attendance: {},
-      goals: {},
-      closed: false
+      attendance:{}
     };
   }
 
   const match = state.data[cat].matches[dateKey];
 
-  // 🔄 Si no existe attendance lo creamos
-  if (!match.attendance) {
+  if(!match.attendance){
     match.attendance = {};
   }
 
-  // ✅ Guardamos estado de checkboxes
   document.querySelectorAll("#attendance-area input")
-    .forEach(cb => {
+    .forEach(cb=>{
       match.attendance[cb.dataset.id] = cb.checked;
     });
 
-  // 🔒 Cerramos partido
-  match.closed = true;
-
-  // 💾 Guardamos TODO el state de forma unificada
   saveData();
-
   showToast("Asistencia guardada");
 
-  // 🔁 Volvemos a la lista sin efectos raros
-  renderScreen("lista");
+  // Refresca solo la vista actual
+  openMatchAttendance(dateKey);
 }
 
 function drawCalendar(container,data){
