@@ -1469,8 +1469,11 @@ function renderListaStats(container){
   // =============================
 
   const validTrainings = Object.values(sessions).filter(s=>{
-    return s.attendance && Object.keys(s.attendance).length > 0;
-  });
+  if(!s.attendance) return false;
+
+  const values = Object.values(s.attendance);
+  return values.some(v => v === true);
+});
 
   const totalTrainingDays = validTrainings.length;
 
@@ -1479,8 +1482,11 @@ function renderListaStats(container){
   // =============================
 
   const validMatches = Object.values(matches).filter(m=>{
-    return m.attendance && Object.keys(m.attendance).length > 0;
-  });
+  if(!m.attendance) return false;
+
+  const values = Object.values(m.attendance);
+  return values.some(v => v === true);
+});
 
   const totalMatchDays = validMatches.length;
 
