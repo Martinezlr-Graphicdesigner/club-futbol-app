@@ -2509,7 +2509,7 @@ button {
 
 .ranking-card{
   background:white;
-  padding:18px;
+  padding:20px;
   border-radius:16px;
   margin-top:20px;
 }
@@ -3409,4 +3409,35 @@ button {
   background: linear-gradient(90deg,#3b82f6,#6366f1);
   height:100%;
   border-radius:8px;
+}
+
+.summary-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.summary-numbers{
+  text-align:right;
+  font-size:13px;
+  font-weight:600;
+}
+
+.summary-title{
+  font-weight:600;
+  margin-top:10px;
+}
+
+.summary-title.small{
+  margin-top:16px;
+  font-size:14px;
+}
+
+.stat-section{
+  margin-top:12px;
+}
+
+
+.ranking-content{
+  margin-top:10px;
 }
