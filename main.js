@@ -1464,9 +1464,9 @@ function renderListaStats(container){
 
   container.innerHTML = "";
 
-  // ==============================
-  // CALCULO RESUMEN CATEGORIA
-  // ==============================
+  // ============================
+  // RESUMEN CATEGORIA
+  // ============================
 
   let totalTrain = 0;
   let presentTrain = 0;
@@ -1501,23 +1501,19 @@ function renderListaStats(container){
     : 0;
 
   const globalPercent =
-    (trainPercent + matchPercent) / 2;
-
-  // ==============================
-  // CARD RESUMEN
-  // ==============================
+    Math.round((trainPercent + matchPercent) / 2);
 
   container.innerHTML += `
     <div class="stats-summary">
       <h3>Resumen Categoría</h3>
 
       <div class="summary-global-label">
-        Asistencia Global ${Math.round(globalPercent)}%
+        Asistencia Global ${globalPercent}%
       </div>
 
       <div class="progress-bar big">
         <div class="progress-fill"
-          style="width:${Math.round(globalPercent)}%">
+          style="width:${globalPercent}%">
         </div>
       </div>
 
@@ -1534,32 +1530,41 @@ function renderListaStats(container){
     </div>
   `;
 
-  // ==============================
-  // CARDS POR JUGADOR
-  // ==============================
+  // ============================
+  // JUGADORES
+  // ============================
 
   let ranking = [];
 
   players.forEach(p=>{
 
-    let tTrain = 0;
-    let pTrain = 0;
+    let totalPlayer = 0;
+    let presentPlayer = 0;
 
-    let tMatch = 0;
-    let pMatch = 0;
+    let tTrain = 0, pTrain = 0;
+    let tMatch = 0, pMatch = 0;
 
-    // 🔥 SOLO CUENTA SI ESTUVO PRESENTE
+    // ENTRENAMIENTOS
     Object.values(sessions).forEach(s=>{
-      if(s.attendance && s.attendance[p.id] === true){
+      if(s.attendance && s.attendance[p.id] !== undefined){
         tTrain++;
-        pTrain++;
+        totalPlayer++;
+        if(s.attendance[p.id] === true){
+          pTrain++;
+          presentPlayer++;
+        }
       }
     });
 
+    // PARTIDOS
     Object.values(matches).forEach(m=>{
-      if(m.attendance && m.attendance[p.id] === true){
+      if(m.attendance && m.attendance[p.id] !== undefined){
         tMatch++;
-        pMatch++;
+        totalPlayer++;
+        if(m.attendance[p.id] === true){
+          pMatch++;
+          presentPlayer++;
+        }
       }
     });
 
@@ -1571,17 +1576,16 @@ function renderListaStats(container){
       ? Math.round((pMatch/tMatch)*100)
       : 0;
 
-    const asistencias = pTrain + pMatch;
+    const global = totalPlayer
+      ? Math.round((presentPlayer/totalPlayer)*100)
+      : 0;
 
-    const ausencias =
-      (totalTrain + totalMatch) - asistencias;
-
-    const global =
-      (percentTrain + percentMatch) / 2;
+    const asistencias = presentPlayer;
+    const ausencias = totalPlayer - presentPlayer;
 
     ranking.push({
       name: p.name,
-      percent: Math.round(global)
+      percent: global
     });
 
     container.innerHTML += `
@@ -1596,7 +1600,7 @@ function renderListaStats(container){
 
         <div class="progress-bar">
           <div class="progress-fill"
-            style="width:${Math.round(global)}%">
+            style="width:${global}%">
           </div>
         </div>
 
@@ -1615,9 +1619,9 @@ function renderListaStats(container){
     `;
   });
 
-  // ==============================
-  // RANKING
-  // ==============================
+  // ============================
+  // RANKING (UNA SOLA CARD)
+  // ============================
 
   ranking.sort((a,b)=>b.percent-a.percent);
 
@@ -1644,7 +1648,9 @@ function renderListaStats(container){
     `;
   });
 
-  container.innerHTML += `</div>`;
+  container.innerHTML += `
+    </div>
+  `;
 }
 
 
