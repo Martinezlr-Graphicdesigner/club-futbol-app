@@ -292,34 +292,27 @@ function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
 
-  if(!state.data[cat].sessions)
+  if(!state.data[cat].sessions){
     state.data[cat].sessions = {};
+  }
 
-  if(!state.data[cat].matches)
-    state.data[cat].matches = {};
+  if(!state.data[cat].sessions[dateKey]){
+    state.data[cat].sessions[dateKey] = {
+      attendance:{}
+    };
+  }
 
   const session = state.data[cat].sessions[dateKey];
-  const match   = state.data[cat].matches[dateKey];
 
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
-
-      const id = cb.dataset.id;
-      const val = cb.checked;
-
-      if(match){
-        if(!match.attendance) match.attendance = {};
-        match.attendance[id] = val;
-      }
-      else if(session){
-        if(!session.attendance) session.attendance = {};
-        session.attendance[id] = val;
-      }
-
+      session.attendance[cb.dataset.id] = cb.checked;
     });
 
   saveData();
-  showToast("Asistencia guardada");
+  showToast("Entrenamiento actualizado");
+
+  openSessionAttendance(dateKey);
 }
 
 function saveSessionNote(dateKey){
@@ -444,8 +437,7 @@ function renderHome(container, data){
   const players = data.players || [];
   const nextBirthday = getNextBirthday(players);
   const sessions = data.sessions || {};
-  const matches =
-  state.data[state.user.category].matches || {};
+  const matches = state.data.globalMatches || {};
 
 
 
@@ -1463,13 +1455,11 @@ function cancelMatch(dateKey){
 
 
 
-function renderListaStats(){
+function renderListaStats(container,data){
 
   const cat = state.user.category;
   const players = state.data[cat].players || [];
   const sessions = state.data[cat].sessions || {};
-
-  const container = document.getElementById("stats-container");
 
   container.innerHTML = "";
 
@@ -1479,15 +1469,11 @@ function renderListaStats(){
     let present = 0;
 
     Object.values(sessions).forEach(s=>{
-      if(s.attendance && Object.keys(s.attendance).length > 0){
-
-        if(s.attendance[p.id] !== undefined){
-          total++;
-          if(s.attendance[p.id] === true){
-            present++;
-          }
+      if(s.attendance && s.attendance[p.id] !== undefined){
+        total++;
+        if(s.attendance[p.id]){
+          present++;
         }
-
       }
     });
 
@@ -1768,18 +1754,15 @@ function saveMatchAttendance(dateKey){
 
   const match = state.data[cat].matches[dateKey];
 
-  if(!match.attendance){
-    match.attendance = {};
-  }
-
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
       match.attendance[cb.dataset.id] = cb.checked;
     });
 
   saveData();
-  showToast("Asistencia guardada");
+  showToast("Asistencia del partido guardada");
 
+  openMatchAttendance(dateKey);
 }
 
 function drawCalendar(container,data){
@@ -2246,6 +2229,8 @@ function editPlayer(id){
 function savePlayer(id){
 
   const cat = state.user.category;
+
+  id = Number(id); // 👈 AGREGAR ESTA LÍNEA
 
   const player = state.data[cat].players.find(p=>p.id===id);
   if(!player) return;
