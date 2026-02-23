@@ -3396,3 +3396,17 @@ button {
   font-weight:600;
   color:#3b82f6;
 }
+
+/* Barra jugadores verde → azul */
+.player-bar{
+  background: linear-gradient(90deg,#22c55e,#3b82f6);
+  height:100%;
+  border-radius:8px;
+}
+
+/* Barra global azul → violeta */
+.global-bar{
+  background: linear-gradient(90deg,#3b82f6,#6366f1);
+  height:100%;
+  border-radius:8px;
+}

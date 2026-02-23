@@ -1460,48 +1460,36 @@ function renderListaStats(container){
   const cat = state.user.category;
   const players = state.data[cat].players || [];
   const sessions = state.data[cat].sessions || {};
-  const matches = state.data[cat].matches || {};
 
   container.innerHTML = "";
 
-  // ============================
+  // =========================================
+  // FILTRAR SOLO DIAS QUE REALMENTE HUBO ENTRENO
+  // =========================================
+
+  const validSessions = Object.values(sessions).filter(s=>{
+    if(!s.attendance) return false;
+    return Object.values(s.attendance).some(val => val === true);
+  });
+
+  const totalTrainingDays = validSessions.length;
+
+  // =========================================
   // RESUMEN CATEGORIA
-  // ============================
+  // =========================================
 
-  let totalTrain = 0;
-  let presentTrain = 0;
+  let totalChecks = 0;
+  let totalPossible = totalTrainingDays * players.length;
 
-  let totalMatch = 0;
-  let presentMatch = 0;
-
-  Object.values(sessions).forEach(s=>{
-    if(s.attendance){
-      Object.values(s.attendance).forEach(val=>{
-        totalTrain++;
-        if(val === true) presentTrain++;
-      });
-    }
+  validSessions.forEach(s=>{
+    Object.values(s.attendance).forEach(val=>{
+      if(val === true) totalChecks++;
+    });
   });
 
-  Object.values(matches).forEach(m=>{
-    if(m.attendance){
-      Object.values(m.attendance).forEach(val=>{
-        totalMatch++;
-        if(val === true) presentMatch++;
-      });
-    }
-  });
-
-  const trainPercent = totalTrain
-    ? Math.round((presentTrain/totalTrain)*100)
+  const globalPercent = totalPossible
+    ? Math.round((totalChecks / totalPossible) * 100)
     : 0;
-
-  const matchPercent = totalMatch
-    ? Math.round((presentMatch/totalMatch)*100)
-    : 0;
-
-  const globalPercent =
-    Math.round((trainPercent + matchPercent) / 2);
 
   container.innerHTML += `
     <div class="stats-summary">
@@ -1512,80 +1500,49 @@ function renderListaStats(container){
       </div>
 
       <div class="progress-bar big">
-        <div class="progress-fill"
+        <div class="progress-fill global-bar"
           style="width:${globalPercent}%">
         </div>
       </div>
 
       <div class="summary-row">
         <div>
-          <strong>${trainPercent}%</strong>
-          <small>Entrenamientos</small>
+          <strong>${totalTrainingDays}</strong>
+          <small>Días entrenados</small>
         </div>
         <div>
-          <strong>${matchPercent}%</strong>
-          <small>Partidos</small>
+          <strong>${players.length}</strong>
+          <small>Jugadores</small>
         </div>
       </div>
     </div>
   `;
 
-  // ============================
+  // =========================================
   // JUGADORES
-  // ============================
+  // =========================================
 
   let ranking = [];
 
   players.forEach(p=>{
 
-    let totalPlayer = 0;
-    let presentPlayer = 0;
+    let asistencias = 0;
 
-    let tTrain = 0, pTrain = 0;
-    let tMatch = 0, pMatch = 0;
-
-    // ENTRENAMIENTOS
-    Object.values(sessions).forEach(s=>{
-      if(s.attendance && s.attendance[p.id] !== undefined){
-        tTrain++;
-        totalPlayer++;
-        if(s.attendance[p.id] === true){
-          pTrain++;
-          presentPlayer++;
-        }
+    validSessions.forEach(s=>{
+      if(s.attendance[p.id] === true){
+        asistencias++;
       }
     });
 
-    // PARTIDOS
-    Object.values(matches).forEach(m=>{
-      if(m.attendance && m.attendance[p.id] !== undefined){
-        tMatch++;
-        totalPlayer++;
-        if(m.attendance[p.id] === true){
-          pMatch++;
-          presentPlayer++;
-        }
-      }
-    });
+    const ausencias = totalTrainingDays - asistencias;
 
-    const percentTrain = tTrain
-      ? Math.round((pTrain/tTrain)*100)
+    const percent = totalTrainingDays
+      ? Math.round((asistencias / totalTrainingDays) * 100)
       : 0;
-
-    const percentMatch = tMatch
-      ? Math.round((pMatch/tMatch)*100)
-      : 0;
-
-    const global = totalPlayer
-      ? Math.round((presentPlayer/totalPlayer)*100)
-      : 0;
-
-    const asistencias = presentPlayer;
-    const ausencias = totalPlayer - presentPlayer;
 
     ranking.push({
       name: p.name,
-      percent: global
+      percent: percent
     });
 
     container.innerHTML += `
@@ -1599,19 +1556,15 @@ function renderListaStats(container){
         </div>
 
         <div class="progress-bar">
-          <div class="progress-fill"
-            style="width:${global}%">
+          <div class="progress-fill player-bar"
+            style="width:${percent}%">
           </div>
         </div>
 
         <div class="stat-split">
           <div>
-            <strong>${percentTrain}%</strong>
-            <small>Entrenam.</small>
-          </div>
-          <div>
-            <strong>${percentMatch}%</strong>
-            <small>Partidos</small>
+            <strong>${percent}%</strong>
+            <small>Asistencia</small>
           </div>
         </div>
 
@@ -1619,9 +1572,9 @@ function renderListaStats(container){
     `;
   });
 
-  // ============================
-  // RANKING (UNA SOLA CARD)
-  // ============================
+  // =========================================
+  // RANKING COMPLETO DENTRO DE CARD
+  // =========================================
 
   ranking.sort((a,b)=>b.percent-a.percent);
 
