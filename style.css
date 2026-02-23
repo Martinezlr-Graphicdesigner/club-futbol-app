@@ -3285,3 +3285,67 @@ button {
   gap:15px;
   width:100%;
 }
+
+.stats-summary{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  margin-bottom:20px;
+}
+
+.global-percent{
+  font-size:28px;
+  font-weight:700;
+  margin:10px 0;
+}
+
+.summary-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
+
+.player-stat-card{
+  background:white;
+  padding:18px;
+  border-radius:16px;
+  margin-bottom:18px;
+}
+
+.player-name{
+  font-weight:600;
+  margin-bottom:10px;
+}
+
+.progress-bar{
+  background:#eee;
+  height:8px;
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+
+.progress-fill{
+  background:linear-gradient(90deg,#2ecc71,#3498db);
+  height:100%;
+}
+
+.stat-split{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
+
+.ranking-block{
+  background:white;
+  padding:18px;
+  border-radius:16px;
+  margin-top:20px;
+}
+
+.ranking-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px solid #eee;
+}

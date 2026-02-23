@@ -1455,39 +1455,136 @@ function cancelMatch(dateKey){
 
 
 
-function renderListaStats(container,data){
+function renderListaStats(container){
 
   const cat = state.user.category;
   const players = state.data[cat].players || [];
   const sessions = state.data[cat].sessions || {};
+  const matches = state.data[cat].matches || {};
 
   container.innerHTML = "";
 
+  // ===== CALCULO GENERAL CATEGORIA =====
+
+  let totalTrain = 0;
+  let presentTrain = 0;
+
+  let totalMatch = 0;
+  let presentMatch = 0;
+
+  Object.values(sessions).forEach(s=>{
+    if(s.attendance){
+      Object.values(s.attendance).forEach(val=>{
+        totalTrain++;
+        if(val) presentTrain++;
+      });
+    }
+  });
+
+  Object.values(matches).forEach(m=>{
+    if(m.attendance){
+      Object.values(m.attendance).forEach(val=>{
+        totalMatch++;
+        if(val) presentMatch++;
+      });
+    }
+  });
+
+  const trainPercent = totalTrain ? Math.round((presentTrain/totalTrain)*100) : 0;
+  const matchPercent = totalMatch ? Math.round((presentMatch/totalMatch)*100) : 0;
+
+  const globalPercent =
+    (trainPercent + matchPercent) / 2;
+
+  container.innerHTML += `
+    <div class="stats-summary">
+      <h3>Resumen Categoría</h3>
+      <div class="global-percent">${Math.round(globalPercent)}%</div>
+      <div class="summary-row">
+        <div>Entrenamientos <strong>${trainPercent}%</strong></div>
+        <div>Partidos <strong>${matchPercent}%</strong></div>
+      </div>
+    </div>
+  `;
+
+  // ===== CARDS POR JUGADOR =====
+
+  let ranking = [];
+
   players.forEach(p=>{
 
-    let total = 0;
-    let present = 0;
+    let tTrain=0, pTrain=0;
+    let tMatch=0, pMatch=0;
 
     Object.values(sessions).forEach(s=>{
       if(s.attendance && s.attendance[p.id] !== undefined){
-        total++;
-        if(s.attendance[p.id]){
-          present++;
-        }
+        tTrain++;
+        if(s.attendance[p.id]) pTrain++;
       }
     });
 
-    const percent = total > 0
-      ? Math.round((present / total) * 100)
-      : 0;
+    Object.values(matches).forEach(m=>{
+      if(m.attendance && m.attendance[p.id] !== undefined){
+        tMatch++;
+        if(m.attendance[p.id]) pMatch++;
+      }
+    });
+
+    const percentTrain = tTrain ? Math.round((pTrain/tTrain)*100) : 0;
+    const percentMatch = tMatch ? Math.round((pMatch/tMatch)*100) : 0;
+
+    const global =
+      (percentTrain + percentMatch) / 2;
+
+    ranking.push({
+      name:p.name,
+      percent:Math.round(global)
+    });
 
     container.innerHTML += `
-      <div class="stat-card">
-        <div>${p.name}</div>
-        <div>${percent}%</div>
+      <div class="player-stat-card">
+        <div class="player-name">${p.name}</div>
+
+        <div class="progress-bar">
+          <div class="progress-fill"
+            style="width:${Math.round(global)}%">
+          </div>
+        </div>
+
+        <div class="stat-split">
+          <div>
+            <strong>${percentTrain}%</strong>
+            <small>Entrenam.</small>
+          </div>
+          <div>
+            <strong>${percentMatch}%</strong>
+            <small>Partidos</small>
+          </div>
+        </div>
       </div>
     `;
   });
+
+  // ===== RANKING =====
+
+  ranking.sort((a,b)=>b.percent-a.percent);
+
+  container.innerHTML += `
+    <div class="ranking-block">
+      <h3>Ranking de Asistencia</h3>
+  `;
+
+  ranking.forEach((r,i)=>{
+    container.innerHTML += `
+      <div class="ranking-row">
+        <span>${i+1}</span>
+        <span>${r.name}</span>
+        <span>${r.percent}%</span>
+      </div>
+    `;
+  });
+
+  container.innerHTML += `</div>`;
 }
 
 
