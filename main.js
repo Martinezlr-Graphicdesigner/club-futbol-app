@@ -1464,7 +1464,9 @@ function renderListaStats(container){
 
   container.innerHTML = "";
 
-  // ===== CALCULO GENERAL CATEGORIA =====
+  // ==============================
+  // CALCULO RESUMEN CATEGORIA
+  // ==============================
 
   let totalTrain = 0;
   let presentTrain = 0;
@@ -1476,7 +1478,7 @@ function renderListaStats(container){
     if(s.attendance){
       Object.values(s.attendance).forEach(val=>{
         totalTrain++;
-        if(val) presentTrain++;
+        if(val === true) presentTrain++;
       });
     }
   });
@@ -1485,65 +1487,112 @@ function renderListaStats(container){
     if(m.attendance){
       Object.values(m.attendance).forEach(val=>{
         totalMatch++;
-        if(val) presentMatch++;
+        if(val === true) presentMatch++;
       });
     }
   });
 
-  const trainPercent = totalTrain ? Math.round((presentTrain/totalTrain)*100) : 0;
-  const matchPercent = totalMatch ? Math.round((presentMatch/totalMatch)*100) : 0;
+  const trainPercent = totalTrain
+    ? Math.round((presentTrain/totalTrain)*100)
+    : 0;
+
+  const matchPercent = totalMatch
+    ? Math.round((presentMatch/totalMatch)*100)
+    : 0;
 
   const globalPercent =
     (trainPercent + matchPercent) / 2;
 
+  // ==============================
+  // CARD RESUMEN
+  // ==============================
+
   container.innerHTML += `
     <div class="stats-summary">
       <h3>Resumen Categoría</h3>
-      <div class="global-percent">${Math.round(globalPercent)}%</div>
+
+      <div class="summary-global-label">
+        Asistencia Global ${Math.round(globalPercent)}%
+      </div>
+
+      <div class="progress-bar big">
+        <div class="progress-fill"
+          style="width:${Math.round(globalPercent)}%">
+        </div>
+      </div>
+
       <div class="summary-row">
-        <div>Entrenamientos <strong>${trainPercent}%</strong></div>
-        <div>Partidos <strong>${matchPercent}%</strong></div>
+        <div>
+          <strong>${trainPercent}%</strong>
+          <small>Entrenamientos</small>
+        </div>
+        <div>
+          <strong>${matchPercent}%</strong>
+          <small>Partidos</small>
+        </div>
       </div>
     </div>
   `;
 
-  // ===== CARDS POR JUGADOR =====
+  // ==============================
+  // CARDS POR JUGADOR
+  // ==============================
 
   let ranking = [];
 
   players.forEach(p=>{
 
-    let tTrain=0, pTrain=0;
-    let tMatch=0, pMatch=0;
+    let tTrain = 0;
+    let pTrain = 0;
 
+    let tMatch = 0;
+    let pMatch = 0;
+
+    // 🔥 SOLO CUENTA SI ESTUVO PRESENTE
     Object.values(sessions).forEach(s=>{
-      if(s.attendance && s.attendance[p.id] !== undefined){
+      if(s.attendance && s.attendance[p.id] === true){
         tTrain++;
-        if(s.attendance[p.id]) pTrain++;
+        pTrain++;
       }
     });
 
     Object.values(matches).forEach(m=>{
-      if(m.attendance && m.attendance[p.id] !== undefined){
+      if(m.attendance && m.attendance[p.id] === true){
         tMatch++;
-        if(m.attendance[p.id]) pMatch++;
+        pMatch++;
       }
     });
 
-    const percentTrain = tTrain ? Math.round((pTrain/tTrain)*100) : 0;
-    const percentMatch = tMatch ? Math.round((pMatch/tMatch)*100) : 0;
+    const percentTrain = tTrain
+      ? Math.round((pTrain/tTrain)*100)
+      : 0;
+
+    const percentMatch = tMatch
+      ? Math.round((pMatch/tMatch)*100)
+      : 0;
+
+    const asistencias = pTrain + pMatch;
+
+    const ausencias =
+      (totalTrain + totalMatch) - asistencias;
 
     const global =
       (percentTrain + percentMatch) / 2;
 
     ranking.push({
-      name:p.name,
-      percent:Math.round(global)
+      name: p.name,
+      percent: Math.round(global)
     });
 
     container.innerHTML += `
       <div class="player-stat-card">
-        <div class="player-name">${p.name}</div>
+
+        <div class="player-header">
+          <div class="player-name">${p.name}</div>
+          <div class="assist-numbers">
+            Asist. ${asistencias} | Aus. ${ausencias}
+          </div>
+        </div>
 
         <div class="progress-bar">
           <div class="progress-fill"
@@ -1561,25 +1610,36 @@ function renderListaStats(container){
             <small>Partidos</small>
           </div>
         </div>
+
       </div>
     `;
   });
 
-  // ===== RANKING =====
+  // ==============================
+  // RANKING
+  // ==============================
 
   ranking.sort((a,b)=>b.percent-a.percent);
 
   container.innerHTML += `
-    <div class="ranking-block">
+    <div class="ranking-card">
       <h3>Ranking de Asistencia</h3>
   `;
 
   ranking.forEach((r,i)=>{
+
+    const bgColor = i===0 ? "#facc15" : "#e5e7eb";
+
     container.innerHTML += `
       <div class="ranking-row">
-        <span>${i+1}</span>
-        <span>${r.name}</span>
-        <span>${r.percent}%</span>
+        <div class="rank-left">
+          <div class="rank-circle"
+               style="background:${bgColor}">
+            ${i+1}
+          </div>
+          <span>${r.name}</span>
+        </div>
+        <span class="rank-percent">${r.percent}%</span>
       </div>
     `;
   });

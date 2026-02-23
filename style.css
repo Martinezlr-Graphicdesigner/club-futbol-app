@@ -2510,8 +2510,8 @@ button {
 .ranking-card{
   background:white;
   padding:18px;
-  border-radius:18px;
-  box-shadow:0 4px 14px rgba(0,0,0,.05);
+  border-radius:16px;
+  margin-top:20px;
 }
 
 .rank-row{
@@ -2526,6 +2526,34 @@ button {
   align-items:center;
   gap:10px;
   font-weight:600;
+}
+
+.ranking-card{
+  background:white;
+  padding:18px;
+  border-radius:16px;
+  margin-top:20px;
+}
+
+.rank-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.rank-circle{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+}
+
+.rank-percent{
+  font-weight:600;
+  color:#3b82f6;
 }
 
 .avatar{
@@ -3326,8 +3354,14 @@ button {
 }
 
 .progress-fill{
-  background:linear-gradient(90deg,#2ecc71,#3498db);
+  background: linear-gradient(90deg,#3b82f6,#6366f1);
   height:100%;
+  border-radius:8px;
+}
+
+.progress-bar.big{
+  height:10px;
+  margin:12px 0 16px;
 }
 
 .stat-split{
@@ -3348,4 +3382,17 @@ button {
   justify-content:space-between;
   padding:8px 0;
   border-bottom:1px solid #eee;
+}
+
+.player-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.assist-numbers{
+  font-size:13px;
+  font-weight:600;
+  color:#3b82f6;
 }
