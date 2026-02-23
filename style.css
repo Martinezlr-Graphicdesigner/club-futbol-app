@@ -2508,10 +2508,15 @@ button {
 /* RANKING */
 
 .ranking-card{
-  background:white;
-  padding:20px;
+  background:#ffffff;
   border-radius:16px;
+  padding:20px;
   margin-top:20px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+.ranking-card h3{
+  margin-bottom:15px;
 }
 
 .rank-row{
@@ -2521,6 +2526,13 @@ button {
   margin-top:12px;
 }
 
+.ranking-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+}
+
 .rank-name{
   display:flex;
   align-items:center;
@@ -2528,12 +2540,6 @@ button {
   font-weight:600;
 }
 
-.ranking-card{
-  background:white;
-  padding:18px;
-  border-radius:16px;
-  margin-top:20px;
-}
 
 .rank-left{
   display:flex;

@@ -1886,44 +1886,34 @@ function saveMatch(date, rival, goalsFor, goalsAgainst){
 }
 
 
-function openMatchAttendance(dateKey){
+function openMatchAttendance(id){
 
   const cat = state.user.category;
+  const match = state.data[cat].matches[id];
   const players = state.data[cat].players || [];
-  const match = state.data[cat].matches[dateKey];
-
-  if(!match.attendance){
-    match.attendance = {};
-  }
 
   const area = document.getElementById("attendance-area");
 
   area.innerHTML = `
-    ${players.map(p=>`
+    <h3>${match.date}</h3>
+    <div class="attendance-list">
+      ${players.map(p=>{
+        const checked = match.attendance && match.attendance[p.id] === true
+          ? "checked"
+          : "";
 
-      <div class="attendance-card">
+        return `
+          <label class="attendance-item">
+            <input type="checkbox" data-id="${p.id}" ${checked}>
+            <span>${p.name}</span>
+          </label>
+        `;
+      }).join("")}
+    </div>
 
-        <div class="player-avatar">
-          ${p.name ? p.name.charAt(0) : "?"}
-        </div>
-
-        <div class="player-name-attendance">
-          ${p.name}
-        </div>
-
-        <div 
-          class="check-circle ${match.attendance[p.id] ? "checked" : ""}"
-          onclick="toggleMatchPlayer('${dateKey}','${p.id}', this)">
-        </div>
-
-      </div>
-
-    `).join("")}
-
-    <button class="btn-primary"
-      style="margin-top:20px;"
-      onclick="saveMatchAttendance('${dateKey}')">
-      GUARDAR SESIÓN
+    <button class="btn-confirm"
+      onclick="saveMatchAttendance('${id}')">
+      Confirmar Asistencia
     </button>
   `;
 }
@@ -1939,31 +1929,20 @@ function toggleMatchPlayer(dateKey, playerId, el){
   el.classList.toggle("checked");
 }
 
-function saveMatchAttendance(dateKey){
+function saveMatchAttendance(id){
 
   const cat = state.user.category;
+  const match = state.data[cat].matches[id];
 
-  if(!state.data[cat].matches){
-    state.data[cat].matches = {};
-  }
+  match.attendance = {};
 
-  if(!state.data[cat].matches[dateKey]){
-    state.data[cat].matches[dateKey] = {
-      attendance:{}
-    };
-  }
-
-  const match = state.data[cat].matches[dateKey];
-
-  document.querySelectorAll("#attendance-area input")
+  document.querySelectorAll("#attendance-area input[type='checkbox']")
     .forEach(cb=>{
       match.attendance[cb.dataset.id] = cb.checked;
     });
 
   saveData();
-  showToast("Asistencia del partido guardada");
-
-  openMatchAttendance(dateKey);
+  showToast("Partido actualizado");
 }
 
 function drawCalendar(container,data){
