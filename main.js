@@ -1458,46 +1458,46 @@ function cancelMatch(dateKey){
 function renderListaStats(container){
 
   const cat = state.user.category;
-  const players = state.data[cat].players || {};
-  const sessions = state.data[cat].sessions || {};
-  const matches = state.data[cat].matches || {};
+
+  const playersObj = state.data[cat].players || {};
+  const sessionsObj = state.data[cat].sessions || {};
+  const matchesObj = state.data[cat].matches || {};
+
+  const players = Object.values(playersObj);
 
   container.innerHTML = "";
 
   // =============================
-  // ENTRENAMIENTOS VALIDOS (solo martes y jueves)
+  // ENTRENAMIENTOS VALIDOS (Martes = 2, Jueves = 4)
+  // Solo cuentan si hay al menos un TRUE
   // =============================
 
-  const validTrainings = Object.entries(sessions).filter(([date, s]) => {
+  const validTrainings = Object.entries(sessionsObj).filter(([date, s])=>{
+    if(!s || !s.attendance) return false;
 
-    if (!s || !s.attendance) return false;
+    const d = new Date(date + "T00:00:00");
+    const day = d.getDay();
 
-    const day = new Date(date).getDay();
-    if (day !== 2 && day !== 4) return false; // 2=martes, 4=jueves
+    if(day !== 2 && day !== 4) return false;
 
-    const values = Object.values(s.attendance);
-    if (values.length === 0) return false;
-
-    return values.some(v => v === true);
+    return Object.values(s.attendance).some(v => v === true);
   });
 
   const totalTrainingDays = validTrainings.length;
 
   // =============================
-  // PARTIDOS VALIDOS (solo sábados)
+  // PARTIDOS VALIDOS (Sabado = 6)
   // =============================
 
-  const validMatches = Object.entries(matches).filter(([date, m]) => {
+  const validMatches = Object.entries(matchesObj).filter(([date, m])=>{
+    if(!m || !m.attendance) return false;
 
-    if (!m || !m.attendance) return false;
+    const d = new Date(date + "T00:00:00");
+    const day = d.getDay();
 
-    const day = new Date(date).getDay();
-    if (day !== 6) return false; // 6=sábado
+    if(day !== 6) return false;
 
-    const values = Object.values(m.attendance);
-    if (values.length === 0) return false;
-
-    return values.some(v => v === true);
+    return Object.values(m.attendance).some(v => v === true);
   });
 
   const totalMatchDays = validMatches.length;
@@ -1508,13 +1508,14 @@ function renderListaStats(container){
 
   let totalTrainChecks = 0;
 
-  validTrainings.forEach(([date, s]) => {
-    Object.values(s.attendance).forEach(val => {
+  validTrainings.forEach(([date, s])=>{
+    Object.values(s.attendance).forEach(val=>{
       if(val === true) totalTrainChecks++;
     });
   });
 
-  const totalTrainPossible = totalTrainingDays * Object.keys(players).length;
+  const totalTrainPossible =
+    totalTrainingDays * players.length;
 
   const trainingPercent = totalTrainPossible
     ? Math.round((totalTrainChecks / totalTrainPossible) * 100)
@@ -1526,13 +1527,14 @@ function renderListaStats(container){
 
   let totalMatchChecks = 0;
 
-  validMatches.forEach(([date, m]) => {
-    Object.values(m.attendance).forEach(val => {
+  validMatches.forEach(([date, m])=>{
+    Object.values(m.attendance).forEach(val=>{
       if(val === true) totalMatchChecks++;
     });
   });
 
-  const totalMatchPossible = totalMatchDays * Object.keys(players).length;
+  const totalMatchPossible =
+    totalMatchDays * players.length;
 
   const matchPercent = totalMatchPossible
     ? Math.round((totalMatchChecks / totalMatchPossible) * 100)
@@ -1548,8 +1550,8 @@ function renderListaStats(container){
       <div class="summary-top">
         <h3>Resumen Categoría</h3>
         <div class="summary-numbers">
-          ${totalTrainingDays} días entrenados<br>
-          ${Object.keys(players).length} jugadores
+          ${totalTrainingDays} días<br>
+          ${players.length} jugadores
         </div>
       </div>
 
@@ -1580,41 +1582,49 @@ function renderListaStats(container){
 
   let ranking = [];
 
-  Object.values(players).forEach(p => {
+  players.forEach(p=>{
+
+    const playerId = String(p.id);
 
     // ENTRENAMIENTOS
     let trainAsist = 0;
 
-    validTrainings.forEach(([date, s]) => {
-      if (s.attendance[p.id] === true) {
+    validTrainings.forEach(([date, s])=>{
+      if(s.attendance[playerId] === true){
         trainAsist++;
       }
     });
 
-    const trainPercentPlayer = totalTrainingDays
-      ? Math.round((trainAsist / totalTrainingDays) * 100)
-      : 0;
+    const trainPercentPlayer =
+      totalTrainingDays
+        ? Math.round((trainAsist / totalTrainingDays) * 100)
+        : 0;
 
     // PARTIDOS
     let matchAsist = 0;
 
-    validMatches.forEach(([date, m]) => {
-      if (m.attendance[p.id] === true) {
+    validMatches.forEach(([date, m])=>{
+      if(m.attendance[playerId] === true){
         matchAsist++;
       }
     });
 
-    const matchPercentPlayer = totalMatchDays
-      ? Math.round((matchAsist / totalMatchDays) * 100)
-      : 0;
+    const matchPercentPlayer =
+      totalMatchDays
+        ? Math.round((matchAsist / totalMatchDays) * 100)
+        : 0;
 
     // GLOBAL PARA RANKING
-    const totalPossiblePlayer = totalTrainingDays + totalMatchDays;
-    const totalAsistPlayer = trainAsist + matchAsist;
+    const totalPossiblePlayer =
+      totalTrainingDays + totalMatchDays;
 
-    const globalPercent = totalPossiblePlayer
-      ? Math.round((totalAsistPlayer / totalPossiblePlayer) * 100)
-      : 0;
+    const totalAsistPlayer =
+      trainAsist + matchAsist;
+
+    const globalPercent =
+      totalPossiblePlayer
+        ? Math.round((totalAsistPlayer / totalPossiblePlayer) * 100)
+        : 0;
 
     ranking.push({
       name: p.name,
@@ -1652,7 +1662,7 @@ function renderListaStats(container){
   });
 
   // =============================
-  // RANKING EN UNA SOLA CARD
+  // RANKING COMPLETO EN UNA CARD
   // =============================
 
   ranking.sort((a,b)=>b.percent-a.percent);
@@ -1665,7 +1675,8 @@ function renderListaStats(container){
 
   ranking.forEach((r,i)=>{
 
-    const bgColor = i===0 ? "#facc15" : "#e5e7eb";
+    const bgColor =
+      i===0 ? "#facc15" : "#e5e7eb";
 
     container.innerHTML += `
       <div class="ranking-row">
