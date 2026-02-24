@@ -1465,38 +1465,49 @@ function renderListaStats(container){
   container.innerHTML = "";
 
   // =============================
-  // ENTRENAMIENTOS VALIDOS
-  // =============================
+// ENTRENAMIENTOS (solo martes y jueves)
+// =============================
 
-  const validTrainings = Object.entries(sessions).filter(([date,s])=>{
+const validTrainings = Object.entries(sessions)
+  .filter(([date, s]) => {
 
-  if(!s.attendance) return false;
+    if(!s.attendance) return false;
 
-  const d = new Date(date);
-  const day = d.getDay();
+    const d = new Date(date);
+    const day = d.getDay();
 
-  // Solo martes (2) y jueves (4)
-  if(day !== 2 && day !== 4) return false;
+    // SOLO martes y jueves
+    if(day !== 2 && day !== 4) return false;
 
-  const values = Object.values(s.attendance);
-  return values.some(v => v === true);
+    const values = Object.values(s.attendance);
+    return values.some(v => v === true);
+  })
+  .map(entry => entry[1]);
 
-}).map(entry => entry[1]);
+const totalTrainingDays = validTrainings.length;
 
-  const totalTrainingDays = validTrainings.length;
 
-  // =============================
-  // PARTIDOS VALIDOS
-  // =============================
+// =============================
+// PARTIDOS (solo sábados)
+// =============================
 
-  const validMatches = Object.values(matches).filter(m=>{
-  if(!m.attendance) return false;
+const validMatches = Object.entries(matches)
+  .filter(([date, m]) => {
 
-  const values = Object.values(m.attendance);
-  return values.some(v => v === true);
-});
+    if(!m.attendance) return false;
 
-  const totalMatchDays = validMatches.length;
+    const d = new Date(date);
+    const day = d.getDay();
+
+    // SOLO sábado
+    if(day !== 6) return false;
+
+    const values = Object.values(m.attendance);
+    return values.some(v => v === true);
+  })
+  .map(entry => entry[1]);
+
+const totalMatchDays = validMatches.length;
 
   // =============================
   // RESUMEN ENTRENAMIENTOS
