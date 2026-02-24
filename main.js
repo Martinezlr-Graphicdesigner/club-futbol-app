@@ -1896,34 +1896,53 @@ function saveMatch(date, rival, goalsFor, goalsAgainst){
 }
 
 
-function openMatchAttendance(id){
+function openMatchAttendance(dateKey){
 
   const cat = state.user.category;
-  const match = state.data[cat].matches[id];
+
+  if(!state.data[cat].matches){
+    state.data[cat].matches = {};
+  }
+
+  if(!state.data[cat].matches[dateKey]){
+    state.data[cat].matches[dateKey] = {
+      attendance:{}
+    };
+  }
+
+  const match = state.data[cat].matches[dateKey];
   const players = state.data[cat].players || [];
 
   const area = document.getElementById("attendance-area");
 
   area.innerHTML = `
-  <h3>Asistencia partido</h3>
+    <h3>Asistencia partido</h3>
 
-  ${players.map(p=>`
-    <div class="player-card">
-      <div class="player-info">
-        <strong>${p.name}</strong>
-      </div>
-      <input type="checkbox"
-        data-id="${p.id}"
-        ${match.attendance?.[p.id] ? "checked" : ""}
-      >
-    </div>
-  `).join("")}
+    ${players.map(p=>{
 
-  <button class="btn-primary"
-    onclick="saveMatchAttendance('${dateKey}')">
-    GUARDAR SESIÓN
-  </button>
-`;
+      const checked =
+        match.attendance &&
+        match.attendance[p.id] === true
+          ? "checked"
+          : "";
+
+      return `
+        <div class="attendance-card">
+          <label>
+            <input type="checkbox"
+              data-id="${p.id}"
+              ${checked}>
+            <span>${p.name}</span>
+          </label>
+        </div>
+      `;
+    }).join("")}
+
+    <button class="btn-confirm"
+      onclick="saveMatchAttendance('${dateKey}')">
+      Confirmar
+    </button>
+  `;
 }
 
 function toggleMatchPlayer(dateKey, playerId, el){
