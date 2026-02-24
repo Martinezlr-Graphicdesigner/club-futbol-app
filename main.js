@@ -1654,42 +1654,51 @@ function renderListaStats(container){
     });
 
     container.innerHTML += `
-      <div class="player-stat-card">
+  <div class="player-stat-card">
 
-        <div class="player-header">
-          <div class="player-name">${p.name}</div>
-          <div class="assist-numbers">
-            Asist. ${totalAsistPlayer} | 
-            Aus. ${totalPossiblePlayer - totalAsistPlayer}
-          </div>
-        </div>
+    <div class="player-header">
+      <div class="player-name">${p.name}</div>
+    </div>
 
-        <div class="stat-section">
-          <small>Entrenamientos</small>
-          <div class="progress-bar">
-            <div class="progress-fill global-bar"
-                 style="width:${
-                   totalTrainingDays
-                     ? Math.round((trainAsist / totalTrainingDays) * 100)
-                     : 0
-                 }%"></div>
-          </div>
-        </div>
-
-        <div class="stat-section">
-          <small>Partidos</small>
-          <div class="progress-bar">
-            <div class="progress-fill player-bar"
-                 style="width:${
-                   totalMatchDays
-                     ? Math.round((matchAsist / totalMatchDays) * 100)
-                     : 0
-                 }%"></div>
-          </div>
-        </div>
-
+    <div class="assist-detail">
+      <div>
+        <strong>Entrenamientos:</strong>
+        Asist. ${trainAsist} |
+        Aus. ${totalTrainingDays - trainAsist}
       </div>
-    `;
+      <div>
+        <strong>Partidos:</strong>
+        Asist. ${matchAsist} |
+        Aus. ${totalMatchDays - matchAsist}
+      </div>
+    </div>
+
+    <div class="stat-section">
+      <small>Entrenamientos</small>
+      <div class="progress-bar">
+        <div class="progress-fill global-bar"
+             style="width:${
+               totalTrainingDays
+                 ? Math.round((trainAsist / totalTrainingDays) * 100)
+                 : 0
+             }%"></div>
+      </div>
+    </div>
+
+    <div class="stat-section">
+      <small>Partidos</small>
+      <div class="progress-bar">
+        <div class="progress-fill player-bar"
+             style="width:${
+               totalMatchDays
+                 ? Math.round((matchAsist / totalMatchDays) * 100)
+                 : 0
+             }%"></div>
+      </div>
+    </div>
+
+  </div>
+`;
   });
 
   // =============================

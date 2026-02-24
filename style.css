@@ -2508,11 +2508,11 @@ button {
 /* RANKING */
 
 .ranking-card{
-  background:#ffffff;
+  background:#fff;
   border-radius:16px;
-  padding:20px;
+  padding:16px;
   margin-top:20px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
 }
 
 .ranking-card h3{
