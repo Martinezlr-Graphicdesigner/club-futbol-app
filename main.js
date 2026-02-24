@@ -1473,10 +1473,11 @@ const validTrainings = Object.entries(sessions)
 
     if(!s.attendance) return false;
 
-    const d = new Date(date);
-    const day = d.getDay();
+    // Parse manual YYYY-MM-DD
+    const [y,m,d] = date.split("-").map(Number);
+    const localDate = new Date(y, m-1, d);
+    const day = localDate.getDay();
 
-    // SOLO martes y jueves
     if(day !== 2 && day !== 4) return false;
 
     const values = Object.values(s.attendance);
@@ -1496,10 +1497,10 @@ const validMatches = Object.entries(matches)
 
     if(!m.attendance) return false;
 
-    const d = new Date(date);
-    const day = d.getDay();
+    const [y,mn,d] = date.split("-").map(Number);
+    const localDate = new Date(y, mn-1, d);
+    const day = localDate.getDay();
 
-    // SOLO sábado
     if(day !== 6) return false;
 
     const values = Object.values(m.attendance);
