@@ -1468,8 +1468,7 @@ function renderListaStats(container){
   container.innerHTML = "";
 
   // =============================
-  // ENTRENAMIENTOS VALIDOS (Martes = 2, Jueves = 4)
-  // Solo cuentan si hay al menos un TRUE
+  // ENTRENAMIENTOS VALIDOS
   // =============================
 
   const validTrainings = Object.entries(sessionsObj).filter(([date, s])=>{
@@ -1486,7 +1485,7 @@ function renderListaStats(container){
   const totalTrainingDays = validTrainings.length;
 
   // =============================
-  // PARTIDOS VALIDOS (Sabado = 6)
+  // PARTIDOS VALIDOS
   // =============================
 
   const validMatches = Object.entries(matchesObj).filter(([date, m])=>{
@@ -1550,7 +1549,7 @@ function renderListaStats(container){
       <div class="summary-top">
         <h3>Resumen Categoría</h3>
         <div class="summary-numbers">
-          ${totalTrainingDays} días<br>
+          ${totalTrainingDays} días entrenados<br>
           ${players.length} jugadores
         </div>
       </div>
@@ -1569,7 +1568,7 @@ function renderListaStats(container){
       </div>
 
       <div class="progress-bar">
-        <div class="progress-fill player-bar"
+        <div class="progress-fill match-bar"
              style="width:${matchPercent}%"></div>
       </div>
 
@@ -1595,6 +1594,9 @@ function renderListaStats(container){
       }
     });
 
+    const trainAus =
+      totalTrainingDays - trainAsist;
+
     const trainPercentPlayer =
       totalTrainingDays
         ? Math.round((trainAsist / totalTrainingDays) * 100)
@@ -1608,6 +1610,9 @@ function renderListaStats(container){
         matchAsist++;
       }
     });
+
+    const matchAus =
+      totalMatchDays - matchAsist;
 
     const matchPercentPlayer =
       totalMatchDays
@@ -1634,25 +1639,28 @@ function renderListaStats(container){
     container.innerHTML += `
       <div class="player-stat-card">
 
-        <div class="player-header">
-          <div class="player-name">${p.name}</div>
-          <div class="assist-numbers">
-            Asist. ${totalAsistPlayer} | Aus. ${totalPossiblePlayer - totalAsistPlayer}
-          </div>
-        </div>
+        <div class="player-name">${p.name}</div>
 
         <div class="stat-section">
-          <small>Entrenamientos ${trainPercentPlayer}%</small>
+          <small>
+            Entrenamientos ${trainPercentPlayer}% |
+            Asist. ${trainAsist} |
+            Aus. ${trainAus}
+          </small>
           <div class="progress-bar">
-            <div class="progress-fill player-bar"
+            <div class="progress-fill global-bar"
                  style="width:${trainPercentPlayer}%"></div>
           </div>
         </div>
 
         <div class="stat-section">
-          <small>Partidos ${matchPercentPlayer}%</small>
+          <small>
+            Partidos ${matchPercentPlayer}% |
+            Asist. ${matchAsist} |
+            Aus. ${matchAus}
+          </small>
           <div class="progress-bar">
-            <div class="progress-fill player-bar"
+            <div class="progress-fill match-bar"
                  style="width:${matchPercentPlayer}%"></div>
           </div>
         </div>
