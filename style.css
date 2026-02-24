@@ -3450,3 +3450,8 @@ button {
 .match-bar{
   background: linear-gradient(90deg,#10b981,#3b82f6);
 }
+
+.ag-day.match-day{
+  background:#0ea5e9;
+  color:white;
+}
