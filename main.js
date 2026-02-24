@@ -1472,46 +1472,50 @@ function renderListaStats(container){
   container.innerHTML = "";
 
   // =============================
-  // FILTRAR ENTRENAMIENTOS VALIDOS (MARTES Y JUEVES)
+  // ENTRENAMIENTOS (MARTES Y JUEVES)
   // =============================
 
-  const validTrainings = Object.entries(sessions).filter(([dateKey, s])=>{
+  const validTrainings = Object.entries(sessions).filter(([dateKey,s]) => {
+
+    const d = new Date(dateKey);
+    const day = d.getDay(); // 2 = martes, 4 = jueves
+
+    if(day !== 2 && day !== 4) return false;
     if(!s.attendance) return false;
 
-    const date = new Date(dateKey);
-    const day = date.getDay(); // 2 martes, 4 jueves
-    if(day !== 2 && day !== 4) return false;
-
     return Object.values(s.attendance).some(v => v === true);
+
   });
 
   const totalTrainingDays = validTrainings.length;
 
   // =============================
-  // FILTRAR PARTIDOS VALIDOS (SABADOS)
+  // PARTIDOS (SÁBADOS)
   // =============================
 
-  const validMatches = Object.entries(matches).filter(([dateKey, m])=>{
+  const validMatches = Object.entries(matches).filter(([dateKey,m]) => {
+
+    const d = new Date(dateKey);
+    const day = d.getDay(); // 6 = sábado
+
+    if(day !== 6) return false;
     if(!m.attendance) return false;
 
-    const date = new Date(dateKey);
-    const day = date.getDay(); // 6 sabado
-    if(day !== 6) return false;
-
     return Object.values(m.attendance).some(v => v === true);
+
   });
 
   const totalMatchDays = validMatches.length;
 
   // =============================
-  // RESUMEN ENTRENAMIENTOS
+  // RESUMEN GENERAL
   // =============================
 
   let totalTrainChecks = 0;
 
-  validTrainings.forEach(([_, s])=>{
-    Object.values(s.attendance).forEach(val=>{
-      if(val === true) totalTrainChecks++;
+  validTrainings.forEach(([_,s])=>{
+    Object.values(s.attendance).forEach(v=>{
+      if(v === true) totalTrainChecks++;
     });
   });
 
@@ -1521,15 +1525,11 @@ function renderListaStats(container){
     ? Math.round((totalTrainChecks / totalTrainPossible) * 100)
     : 0;
 
-  // =============================
-  // RESUMEN PARTIDOS
-  // =============================
-
   let totalMatchChecks = 0;
 
-  validMatches.forEach(([_, m])=>{
-    Object.values(m.attendance).forEach(val=>{
-      if(val === true) totalMatchChecks++;
+  validMatches.forEach(([_,m])=>{
+    Object.values(m.attendance).forEach(v=>{
+      if(v === true) totalMatchChecks++;
     });
   });
 
@@ -1539,10 +1539,6 @@ function renderListaStats(container){
     ? Math.round((totalMatchChecks / totalMatchPossible) * 100)
     : 0;
 
-  // =============================
-  // CARD RESUMEN
-  // =============================
-
   container.innerHTML += `
     <div class="stats-summary">
 
@@ -1550,7 +1546,6 @@ function renderListaStats(container){
         <h3>Resumen Categoría</h3>
         <div class="summary-numbers">
           ${totalTrainingDays} entrenamientos<br>
-          ${totalMatchDays} partidos<br>
           ${players.length} jugadores
         </div>
       </div>
@@ -1569,14 +1564,9 @@ function renderListaStats(container){
       </div>
 
       <div class="progress-bar">
-        <div class="progress-fill match-bar"
+        <div class="progress-fill player-bar"
              style="width:${matchPercent}%"></div>
       </div>
-
-      <button class="btn-secondary"
-        onclick="exportStatsPDF()">
-        Descargar PDF
-      </button>
 
     </div>
   `;
@@ -1589,42 +1579,27 @@ function renderListaStats(container){
 
   players.forEach(p=>{
 
-    // ENTRENAMIENTOS
     let trainAsist = 0;
 
-    validTrainings.forEach(([_, s])=>{
+    validTrainings.forEach(([_,s])=>{
       if(s.attendance[p.id] === true){
         trainAsist++;
       }
     });
 
-    const trainAus = totalTrainingDays - trainAsist;
-
-    const trainPercentPlayer = totalTrainingDays
-      ? Math.round((trainAsist / totalTrainingDays) * 100)
-      : 0;
-
-    // PARTIDOS
     let matchAsist = 0;
 
-    validMatches.forEach(([_, m])=>{
+    validMatches.forEach(([_,m])=>{
       if(m.attendance[p.id] === true){
         matchAsist++;
       }
     });
 
-    const matchAus = totalMatchDays - matchAsist;
+    const totalPossible = totalTrainingDays + totalMatchDays;
+    const totalAsist = trainAsist + matchAsist;
 
-    const matchPercentPlayer = totalMatchDays
-      ? Math.round((matchAsist / totalMatchDays) * 100)
-      : 0;
-
-    // GLOBAL
-    const totalPossiblePlayer = totalTrainingDays + totalMatchDays;
-    const totalAsistPlayer = trainAsist + matchAsist;
-
-    const globalPercent = totalPossiblePlayer
-      ? Math.round((totalAsistPlayer / totalPossiblePlayer) * 100)
+    const globalPercent = totalPossible
+      ? Math.round((totalAsist / totalPossible) * 100)
       : 0;
 
     ranking.push({
@@ -1638,24 +1613,23 @@ function renderListaStats(container){
         <div class="player-header">
           <div class="player-name">${p.name}</div>
           <div class="assist-numbers">
-            Ent: ${trainAsist}/${totalTrainingDays} |
-            Par: ${matchAsist}/${totalMatchDays}
+            Asist. ${totalAsist} | Aus. ${totalPossible - totalAsist}
           </div>
         </div>
 
         <div class="stat-section">
-          <small>Entrenamientos ${trainPercentPlayer}%</small>
+          <small>Entrenamientos ${totalTrainingDays ? Math.round((trainAsist/totalTrainingDays)*100) : 0}%</small>
           <div class="progress-bar">
             <div class="progress-fill global-bar"
-                 style="width:${trainPercentPlayer}%"></div>
+                 style="width:${totalTrainingDays ? (trainAsist/totalTrainingDays)*100 : 0}%"></div>
           </div>
         </div>
 
         <div class="stat-section">
-          <small>Partidos ${matchPercentPlayer}%</small>
+          <small>Partidos ${totalMatchDays ? Math.round((matchAsist/totalMatchDays)*100) : 0}%</small>
           <div class="progress-bar">
-            <div class="progress-fill match-bar"
-                 style="width:${matchPercentPlayer}%"></div>
+            <div class="progress-fill player-bar"
+                 style="width:${totalMatchDays ? (matchAsist/totalMatchDays)*100 : 0}%"></div>
           </div>
         </div>
 
@@ -1669,7 +1643,7 @@ function renderListaStats(container){
 
   ranking.sort((a,b)=>b.percent-a.percent);
 
-  let rankingHTML = `
+  container.innerHTML += `
     <div class="ranking-card">
       <h3>Ranking de Asistencia</h3>
       <div class="ranking-content">
@@ -1677,13 +1651,12 @@ function renderListaStats(container){
 
   ranking.forEach((r,i)=>{
 
-    const bgColor = i===0 ? "#facc15" : "#e5e7eb";
+    const bg = i===0 ? "#facc15" : "#e5e7eb";
 
-    rankingHTML += `
+    container.innerHTML += `
       <div class="ranking-row">
         <div class="rank-left">
-          <div class="rank-circle"
-               style="background:${bgColor}">
+          <div class="rank-circle" style="background:${bg}">
             ${i+1}
           </div>
           <span>${r.name}</span>
@@ -1693,12 +1666,10 @@ function renderListaStats(container){
     `;
   });
 
-  rankingHTML += `
+  container.innerHTML += `
       </div>
     </div>
   `;
-
-  container.innerHTML += rankingHTML;
 }
 
 
