@@ -292,27 +292,58 @@ function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
 
-  if(!state.data[cat].sessions){
+  if(!state.data[cat].sessions)
     state.data[cat].sessions = {};
-  }
 
-  if(!state.data[cat].sessions[dateKey]){
-    state.data[cat].sessions[dateKey] = {
-      attendance:{}
-    };
-  }
+  if(!state.data[cat].matches)
+    state.data[cat].matches = {};
 
-  const session = state.data[cat].sessions[dateKey];
+  const date = new Date(dateKey + "T00:00:00");
+  const day = date.getDay();
+
+  const isTrainingDay = (day === 2 || day === 4);
+  const isMatchDay = (day === 6);
 
   document.querySelectorAll("#attendance-area input")
     .forEach(cb=>{
-      session.attendance[cb.dataset.id] = cb.checked;
+
+      const id = cb.dataset.id;
+      const val = cb.checked;
+
+      // SOLO MARTES Y JUEVES
+      if(isTrainingDay){
+
+        if(!state.data[cat].sessions[dateKey]){
+          state.data[cat].sessions[dateKey] = { attendance:{} };
+        }
+
+        const session = state.data[cat].sessions[dateKey];
+
+        if(!session.attendance)
+          session.attendance = {};
+
+        session.attendance[id] = val;
+      }
+
+      // SOLO SABADOS
+      if(isMatchDay){
+
+        if(!state.data[cat].matches[dateKey]){
+          state.data[cat].matches[dateKey] = { attendance:{} };
+        }
+
+        const match = state.data[cat].matches[dateKey];
+
+        if(!match.attendance)
+          match.attendance = {};
+
+        match.attendance[id] = val;
+      }
+
     });
 
   saveData();
-  showToast("Entrenamiento actualizado");
-
-  openSessionAttendance(dateKey);
+  showToast("Asistencia guardada");
 }
 
 function saveSessionNote(dateKey){
