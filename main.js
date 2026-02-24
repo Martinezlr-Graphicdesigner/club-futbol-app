@@ -1468,12 +1468,20 @@ function renderListaStats(container){
   // ENTRENAMIENTOS VALIDOS
   // =============================
 
-  const validTrainings = Object.values(sessions).filter(s=>{
+  const validTrainings = Object.entries(sessions).filter(([date,s])=>{
+
   if(!s.attendance) return false;
+
+  const d = new Date(date);
+  const day = d.getDay();
+
+  // Solo martes (2) y jueves (4)
+  if(day !== 2 && day !== 4) return false;
 
   const values = Object.values(s.attendance);
   return values.some(v => v === true);
-});
+
+}).map(entry => entry[1]);
 
   const totalTrainingDays = validTrainings.length;
 
