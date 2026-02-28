@@ -296,9 +296,14 @@ function saveAttendanceDate(dateKey){
   const day = d.getDay();
 
   // 🔥 Soporta ambos modales
-  let checkboxes = document.querySelectorAll(
-    "#attendanceList input[type='checkbox']"
-  );
+  const modal =
+  document.getElementById("attendanceModal") ||
+  document.getElementById("matchModal");
+
+if(!modal) return;
+
+const checkboxes =
+  modal.querySelectorAll("input[type='checkbox']");
 
   if(checkboxes.length === 0){
     checkboxes = document.querySelectorAll(
@@ -860,7 +865,15 @@ function closeTraining(e){
   document.getElementById("modal-container").innerHTML="";
 }
 
-function saveTrainingText(w, day){
+function saveTrainingText(){
+
+  const modal = document.getElementById("trainingModal");
+  if(!modal) return;
+
+  const w = modal.getAttribute("data-week");
+  const day = modal.getAttribute("data-day");
+
+  if(w === null || !day) return;
 
   const cat = state.user.category;
 
@@ -874,9 +887,9 @@ function saveTrainingText(w, day){
 
   state.data[cat].agenda[w][day] = newText;
 
-  saveData(); // 🔥 Guarda en Firebase + localStorage
+  saveData();
 
-  closeTraining();
+  modal.classList.remove("active");
 }
 
 
@@ -1554,62 +1567,44 @@ function renderListaStats(container, data){
     };
   });
 
-  // ENTRENAMIENTOS
   Object.keys(sessions).forEach(dateKey=>{
-
     const d = new Date(dateKey+"T00:00:00");
-    const day = d.getDay();
-
-    if(day !== 2 && day !== 4) return;
+    if(d.getDay()!==2 && d.getDay()!==4) return;
 
     const att = sessions[dateKey].attendance || {};
-    const hasTrue = Object.values(att).some(v=>v===true);
-    if(!hasTrue) return;
+    if(!Object.values(att).some(v=>v===true)) return;
 
-    Object.keys(att).forEach(playerId=>{
-      if(att[playerId] === true && stats[playerId]){
-        stats[playerId].training++;
-      }
+    Object.keys(att).forEach(id=>{
+      if(att[id] && stats[id]) stats[id].training++;
     });
   });
 
-  // PARTIDOS
   Object.keys(matches).forEach(dateKey=>{
-
     const d = new Date(dateKey+"T00:00:00");
-    if(d.getDay() !== 6) return;
+    if(d.getDay()!==6) return;
 
     const att = matches[dateKey].attendance || {};
-    const hasTrue = Object.values(att).some(v=>v===true);
-    if(!hasTrue) return;
+    if(!Object.values(att).some(v=>v===true)) return;
 
-    Object.keys(att).forEach(playerId=>{
-      if(att[playerId] === true && stats[playerId]){
-        stats[playerId].matches++;
-      }
+    Object.keys(att).forEach(id=>{
+      if(att[id] && stats[id]) stats[id].matches++;
     });
   });
 
   const sorted = Object.values(stats)
     .sort((a,b)=>
-      (b.training + b.matches) -
-      (a.training + a.matches)
+      (b.training+b.matches)-(a.training+a.matches)
     );
 
   container.innerHTML = "";
 
-  sorted.forEach(p=>{
-
+  sorted.forEach((p,i)=>{
     const total = p.training + p.matches;
 
     container.innerHTML += `
       <div class="ranking-row">
-        <div class="ranking-name">${p.name}</div>
-        <div class="ranking-stats">
-          Entrenamientos: ${p.training} |
-          Partidos: ${p.matches} |
-          Total: ${total}
-        </div>
+        <span>${i+1}. ${p.name}</span>
+        <span>${total}</span>
       </div>
     `;
   });
