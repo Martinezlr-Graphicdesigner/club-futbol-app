@@ -873,7 +873,7 @@ function saveTrainingText(){
   const w = modal.getAttribute("data-week");
   const day = modal.getAttribute("data-day");
 
-  if(w === null || !day) return;
+  if(!w || !day) return;
 
   const cat = state.user.category;
 
