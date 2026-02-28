@@ -292,58 +292,70 @@ function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
 
-  if(!state.data[cat].sessions)
-    state.data[cat].sessions = {};
+  const d = new Date(dateKey+"T00:00:00");
+  const day = d.getDay();
 
-  if(!state.data[cat].matches)
-    state.data[cat].matches = {};
+  const checkboxes =
+    document.querySelectorAll(
+      "#attendanceList input[type='checkbox']"
+    );
 
-  const date = new Date(dateKey + "T00:00:00");
-  const day = date.getDay();
+  const attendance = {};
 
-  const isTrainingDay = (day === 2 || day === 4);
-  const isMatchDay = (day === 6);
+  checkboxes.forEach(cb=>{
+    attendance[cb.dataset.player] = cb.checked;
+  });
 
-  document.querySelectorAll("#attendance-area input")
-    .forEach(cb=>{
+  const hasTrue =
+    Object.values(attendance).some(v=>v===true);
 
-      const id = cb.dataset.id;
-      const val = cb.checked;
+  // =============================
+  // ENTRENAMIENTOS (2 y 4)
+  // =============================
+  if(day===2 || day===4){
 
-      // SOLO MARTES Y JUEVES
-      if(isTrainingDay){
+    if(!state.data[cat].sessions){
+      state.data[cat].sessions = {};
+    }
 
-        if(!state.data[cat].sessions[dateKey]){
-          state.data[cat].sessions[dateKey] = { attendance:{} };
-        }
+    if(!hasTrue){
+      delete state.data[cat].sessions[dateKey];
+    } else {
 
-        const session = state.data[cat].sessions[dateKey];
-
-        if(!session.attendance)
-          session.attendance = {};
-
-        session.attendance[id] = val;
+      if(!state.data[cat].sessions[dateKey]){
+        state.data[cat].sessions[dateKey] = {};
       }
 
-      // SOLO SABADOS
-      if(isMatchDay){
+      state.data[cat].sessions[dateKey].attendance = attendance;
+    }
+  }
 
-        if(!state.data[cat].matches[dateKey]){
-          state.data[cat].matches[dateKey] = { attendance:{} };
-        }
+  // =============================
+  // PARTIDOS (6)
+  // =============================
+  if(day===6){
 
-        const match = state.data[cat].matches[dateKey];
+    if(!state.data[cat].matches){
+      state.data[cat].matches = {};
+    }
 
-        if(!match.attendance)
-          match.attendance = {};
+    if(!hasTrue){
+      delete state.data[cat].matches[dateKey];
+    } else {
 
-        match.attendance[id] = val;
+      if(!state.data[cat].matches[dateKey]){
+        state.data[cat].matches[dateKey] = {};
       }
 
-    });
+      state.data[cat].matches[dateKey].attendance = attendance;
+    }
+  }
 
+  // 🔥 Guardado centralizado seguro
   saveData();
-  showToast("Asistencia guardada");
+
+  document.getElementById("attendanceModal")
+    .classList.remove("active");
 }
 
 function saveSessionNote(dateKey){
@@ -838,17 +850,36 @@ function closeTraining(e){
   document.getElementById("modal-container").innerHTML="";
 }
 
-function saveTrainingText(w,day){
+function saveTrainingText(){
 
-  const val = document.getElementById("edit-text").value;
-  const week = state.data[state.user.category].agenda[w];
+  const modal = document.getElementById("trainingModal");
+  if(!modal) return;
 
-  if(day==="tue") week.tue = val;
-  if(day==="thu") week.thu = val;
+  const dateKey = modal.getAttribute("data-date");
+  if(!dateKey) return;
 
-  saveData();
-  closeTraining();
-  renderScreen("agenda");
+  const cat = state.user.category;
+
+  const checkboxes =
+    modal.querySelectorAll("input[type='checkbox']");
+
+  const attendance = {};
+
+  checkboxes.forEach(cb=>{
+    attendance[cb.dataset.player] = cb.checked;
+  });
+
+  if(!state.data[cat].sessions){
+    state.data[cat].sessions = {};
+  }
+
+  state.data[cat].sessions[dateKey] = {
+    attendance: attendance
+  };
+
+  saveData(); // 🔥 usa tu sistema seguro
+
+  modal.classList.remove("active");
 }
 
 
@@ -893,6 +924,16 @@ function getNextBirthday(players){
 function getMonthLabel(year,month){
   return new Date(year,month)
     .toLocaleString("es-AR",{month:"long",year:"numeric"});
+}
+
+function getDayClass(date){
+
+  const day = date.getDay();
+
+  if(day === 2 || day === 4) return "training-day";
+  if(day === 6) return "match-day";
+
+  return "";
 }
 
 function renderCalendar(container, year, month){
@@ -1500,236 +1541,106 @@ function cancelMatch(dateKey){
 
 
 
-function renderListaStats(container){
+function renderListaStats(container,data){
 
   const cat = state.user.category;
-  const players = state.data[cat].players || {};
-  const sessions = state.data[cat].sessions || {};
-  const matches = state.data[cat].matches || {};
 
-  container.innerHTML = "";
+  const players = data.players || [];
+  const sessions = data.sessions || {};
+  const matches  = data.matches || {};
 
-  const playerList = Object.values(players);
+  const stats = {};
 
-  // ==============================
-  // ENTRENAMIENTOS VALIDOS
-  // ==============================
-
-  const validTrainings = Object.entries(sessions)
-    .filter(([k,v]) =>
-      v.attendance &&
-      Object.values(v.attendance).some(x=>x===true)
-    );
-
-  const totalTrainingDays = validTrainings.length;
-
-  // ==============================
-  // PARTIDOS VALIDOS
-  // ==============================
-
-  const validMatches = Object.entries(matches)
-    .filter(([k,v]) =>
-      v.attendance &&
-      Object.values(v.attendance).some(x=>x===true)
-    );
-
-  const totalMatchDays = validMatches.length;
-
-  // ==============================
-  // RESUMEN GLOBAL
-  // ==============================
-
-  let totalTrainChecks = 0;
-  validTrainings.forEach(([k,v])=>{
-    totalTrainChecks += Object.values(v.attendance)
-      .filter(x=>x===true).length;
+  players.forEach(p=>{
+    stats[p.id] = {
+      name: p.name,
+      training: 0,
+      matches: 0
+    };
   });
 
-  let totalMatchChecks = 0;
-  validMatches.forEach(([k,v])=>{
-    totalMatchChecks += Object.values(v.attendance)
-      .filter(x=>x===true).length;
-  });
+  // =============================
+  // ENTRENAMIENTOS (MARTES/JUEVES)
+  // =============================
+  Object.keys(sessions).forEach(dateKey=>{
 
-  const totalTrainPossible =
-    totalTrainingDays * playerList.length;
+    const d = new Date(dateKey+"T00:00:00");
+    const day = d.getDay();
 
-  const totalMatchPossible =
-    totalMatchDays * playerList.length;
+    if(day !== 2 && day !== 4) return;
 
-  const trainingPercent =
-    totalTrainPossible
-      ? Math.round((totalTrainChecks/totalTrainPossible)*100)
-      : 0;
+    const att = sessions[dateKey].attendance || {};
 
-  const matchPercent =
-    totalMatchPossible
-      ? Math.round((totalMatchChecks/totalMatchPossible)*100)
-      : 0;
+    const hasTrue = Object.values(att).some(v=>v===true);
+    if(!hasTrue) return;
 
-  // ==============================
-  // CARD RESUMEN
-  // ==============================
-
-  container.innerHTML += `
-    <div class="stats-summary">
-
-      <div class="summary-top">
-        <h3>Resumen Categoría</h3>
-        <div class="summary-numbers">
-          ${totalTrainingDays} entrenamientos<br>
-          ${totalMatchDays} partidos<br>
-          ${playerList.length} jugadores
-        </div>
-      </div>
-
-      <div class="summary-title">
-        Asistencia a Entrenamientos ${trainingPercent}%
-      </div>
-
-      <div class="progress-bar big">
-        <div class="progress-fill global-bar"
-             style="width:${trainingPercent}%"></div>
-      </div>
-
-      <div class="summary-title small">
-        Asistencia a Partidos ${matchPercent}%
-      </div>
-
-      <div class="progress-bar">
-        <div class="progress-fill player-bar"
-             style="width:${matchPercent}%"></div>
-      </div>
-
-    </div>
-  `;
-
-  // ==============================
-  // JUGADORES
-  // ==============================
-
-  let ranking = [];
-
-  playerList.forEach(p=>{
-
-    let trainAsist = 0;
-    validTrainings.forEach(([k,v])=>{
-      if(v.attendance[p.id] === true){
-        trainAsist++;
+    Object.keys(att).forEach(playerId=>{
+      if(att[playerId] === true && stats[playerId]){
+        stats[playerId].training++;
       }
     });
 
-    let matchAsist = 0;
-    validMatches.forEach(([k,v])=>{
-      if(v.attendance[p.id] === true){
-        matchAsist++;
+  });
+
+  // =============================
+  // PARTIDOS (SÁBADOS)
+  // =============================
+  Object.keys(matches).forEach(dateKey=>{
+
+    const d = new Date(dateKey+"T00:00:00");
+    if(d.getDay() !== 6) return;
+
+    const att = matches[dateKey].attendance || {};
+
+    const hasTrue = Object.values(att).some(v=>v===true);
+    if(!hasTrue) return;
+
+    Object.keys(att).forEach(playerId=>{
+      if(att[playerId] === true && stats[playerId]){
+        stats[playerId].matches++;
       }
     });
 
-    const trainAus = totalTrainingDays - trainAsist;
-    const matchAus = totalMatchDays - matchAsist;
-
-    const trainPercentPlayer =
-      totalTrainingDays
-        ? Math.round((trainAsist/totalTrainingDays)*100)
-        : 0;
-
-    const matchPercentPlayer =
-      totalMatchDays
-        ? Math.round((matchAsist/totalMatchDays)*100)
-        : 0;
-
-    const totalPossible =
-      totalTrainingDays + totalMatchDays;
-
-    const totalAsist =
-      trainAsist + matchAsist;
-
-    const globalPercent =
-      totalPossible
-        ? Math.round((totalAsist/totalPossible)*100)
-        : 0;
-
-    ranking.push({
-      name:p.name,
-      percent:globalPercent
-    });
-
-    container.innerHTML += `
-      <div class="player-stat-card">
-
-        <div class="player-header">
-          <div class="player-name">${p.name}</div>
-          <div class="assist-numbers">
-            Entr: ${trainAsist}/${totalTrainingDays}
-            | Part: ${matchAsist}/${totalMatchDays}
-          </div>
-        </div>
-
-        <div class="stat-section">
-          <small>Entrenamientos ${trainPercentPlayer}%</small>
-          <div class="progress-bar">
-            <div class="progress-fill global-bar"
-                 style="width:${trainPercentPlayer}%"></div>
-          </div>
-        </div>
-
-        <div class="stat-section">
-          <small>Partidos ${matchPercentPlayer}%</small>
-          <div class="progress-bar">
-            <div class="progress-fill player-bar"
-                 style="width:${matchPercentPlayer}%"></div>
-          </div>
-        </div>
-
-      </div>
-    `;
   });
 
-  // ==============================
-  // RANKING COMPLETO EN UNA CARD
-  // ==============================
+  const sorted = Object.values(stats)
+    .sort((a,b)=>
+      (b.training + b.matches) -
+      (a.training + a.matches)
+    );
 
-  ranking.sort((a,b)=>b.percent-a.percent);
-
-  container.innerHTML += `
-    <div class="ranking-card">
-      <h3>Ranking de Asistencia</h3>
-      <div class="ranking-content">
-  `;
-
-  ranking.forEach((r,i)=>{
-
-    const bgColor =
-      i===0 ? "#facc15" : "#e5e7eb";
-
-    container.innerHTML += `
-      <div class="ranking-row">
-        <div class="rank-left">
-          <div class="rank-circle"
-               style="background:${bgColor}">
-            ${i+1}
-          </div>
-          <span>${r.name}</span>
-        </div>
-        <span class="rank-percent">${r.percent}%</span>
-      </div>
-    `;
-  });
-
-  container.innerHTML += `
-      </div>
-    </div>
-
-    <div class="pdf-card">
-      <button 
-        type="button"
-        class="cta-btn"
-        onclick="exportStatsPDF()">
-        Descargar Estadísticas en PDF
+  container.innerHTML = `
+    <div class="stats-header">
+      <button class="btn-primary" onclick="exportStatsPDF()">
+        Descargar PDF
       </button>
     </div>
+
+    <div class="card ranking-card">
+      <h3>Ranking de Asistencia</h3>
+      <div id="rankingContainer"></div>
+    </div>
   `;
+
+  const rankingContainer =
+    document.getElementById("rankingContainer");
+
+  sorted.forEach(p=>{
+
+    const total = p.training + p.matches;
+
+    rankingContainer.innerHTML += `
+      <div class="ranking-row">
+        <div class="ranking-name">${p.name}</div>
+        <div class="ranking-stats">
+          Entrenamientos: ${p.training} |
+          Partidos: ${p.matches} |
+          Total: ${total}
+        </div>
+      </div>
+    `;
+  });
+
 }
 
 
@@ -1930,50 +1841,45 @@ function saveMatch(date, rival, goalsFor, goalsAgainst){
 function openMatchAttendance(dateKey){
 
   const cat = state.user.category;
+  const data = state.data[cat];
 
-  if(!state.data[cat].matches){
-    state.data[cat].matches = {};
+  if(!data.matches){
+    data.matches = {};
   }
 
-  if(!state.data[cat].matches[dateKey]){
-    state.data[cat].matches[dateKey] = {
-      attendance:{}
-    };
+  if(!data.matches[dateKey]){
+    data.matches[dateKey] = { attendance: {} };
   }
 
-  const match = state.data[cat].matches[dateKey];
-  const players = state.data[cat].players || [];
+  const attendance = data.matches[dateKey].attendance || {};
+  const players = data.players || [];
 
-  const area = document.getElementById("attendance-area");
+  const modal = document.getElementById("matchModal");
+  const container = document.getElementById("matchAttendanceList");
 
-  area.innerHTML = `
-    <h3>Asistencia partido</h3>
+  container.innerHTML = "";
 
-    ${players.map(p=>{
+  players.forEach(player => {
 
-      const checked =
-        match.attendance &&
-        match.attendance[p.id] === true
-          ? "checked"
-          : "";
+    const checked = attendance[player.id] === true;
 
-      return `
-        <div class="attendance-card">
-          <label>
-            <input type="checkbox"
-              data-id="${p.id}"
-              ${checked}>
-            <span>${p.name}</span>
-          </label>
-        </div>
-      `;
-    }).join("")}
+    const row = document.createElement("div");
+    row.className = "attendance-row";
 
-    <button class="btn-confirm"
-      onclick="saveMatchAttendance('${dateKey}')">
-      Confirmar
-    </button>
-  `;
+    row.innerHTML = `
+      <label>
+        <input type="checkbox"
+               data-player="${player.id}"
+               ${checked ? "checked" : ""}>
+        ${player.name}
+      </label>
+    `;
+
+    container.appendChild(row);
+  });
+
+  modal.setAttribute("data-date", dateKey);
+  modal.classList.add("active");
 }
 
 function toggleMatchPlayer(dateKey, playerId, el){
@@ -1987,20 +1893,48 @@ function toggleMatchPlayer(dateKey, playerId, el){
   el.classList.toggle("checked");
 }
 
-function saveMatchAttendance(id){
+function saveMatchAttendance(){
+
+  const modal = document.getElementById("matchModal");
+  if(!modal) return;
+
+  const dateKey = modal.getAttribute("data-date");
+  if(!dateKey) return;
 
   const cat = state.user.category;
-  const match = state.data[cat].matches[id];
 
-  match.attendance = {};
+  const checkboxes =
+    modal.querySelectorAll("input[type='checkbox']");
 
-  document.querySelectorAll("#attendance-area input[type='checkbox']")
-    .forEach(cb=>{
-      match.attendance[cb.dataset.id] = cb.checked;
-    });
+  const attendance = {};
 
+  checkboxes.forEach(cb=>{
+    attendance[cb.dataset.player] = cb.checked;
+  });
+
+  const hasTrue =
+    Object.values(attendance).some(v=>v===true);
+
+  if(!state.data[cat].matches){
+    state.data[cat].matches = {};
+  }
+
+  if(!hasTrue){
+    // Si nadie asistió → no se considera partido jugado
+    delete state.data[cat].matches[dateKey];
+  } else {
+    // Guardamos SOLO attendance
+    if(!state.data[cat].matches[dateKey]){
+      state.data[cat].matches[dateKey] = {};
+    }
+
+    state.data[cat].matches[dateKey].attendance = attendance;
+  }
+
+  // 🔥 Guardado centralizado (seguro)
   saveData();
-  showToast("Partido actualizado");
+
+  modal.classList.remove("active");
 }
 
 function drawCalendar(container,data){
@@ -2495,25 +2429,85 @@ function closeEditModal(){
   if(m) m.remove();
 }
 
-async function exportStatsPDF(){
+function exportStatsPDF(){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
   const cat = state.user.category;
-  const players = state.data[cat].players || [];
-  const sessions = state.data[cat].sessions || {};
-  const matches = state.data[cat].matches || {};
+  const data = state.data[cat];
+
+  const players = data.players || [];
+  const sessions = data.sessions || {};
+  const matches  = data.matches || {};
+
+  const stats = {};
+
+  players.forEach(p=>{
+    stats[p.id] = {
+      name: p.name,
+      training: 0,
+      matches: 0
+    };
+  });
+
+  // ENTRENAMIENTOS
+  Object.keys(sessions).forEach(dateKey=>{
+
+    const d = new Date(dateKey+"T00:00:00");
+    const day = d.getDay();
+    if(day!==2 && day!==4) return;
+
+    const att = sessions[dateKey].attendance || {};
+    if(!Object.values(att).some(v=>v===true)) return;
+
+    Object.keys(att).forEach(id=>{
+      if(att[id] && stats[id]){
+        stats[id].training++;
+      }
+    });
+
+  });
+
+  // PARTIDOS
+  Object.keys(matches).forEach(dateKey=>{
+
+    const d = new Date(dateKey+"T00:00:00");
+    if(d.getDay()!==6) return;
+
+    const att = matches[dateKey].attendance || {};
+    if(!Object.values(att).some(v=>v===true)) return;
+
+    Object.keys(att).forEach(id=>{
+      if(att[id] && stats[id]){
+        stats[id].matches++;
+      }
+    });
+
+  });
+
+  const sorted = Object.values(stats)
+    .sort((a,b)=>
+      (b.training+b.matches) -
+      (a.training+a.matches)
+    );
 
   doc.setFontSize(18);
   doc.text(`Estadísticas Categoría ${cat}`, 20, 20);
 
   let y = 35;
 
-  players.forEach(p=>{
+  sorted.forEach(p=>{
+
+    const total = p.training + p.matches;
 
     doc.setFontSize(12);
-    doc.text(p.name, 20, y);
+    doc.text(
+      `${p.name} - Ent: ${p.training} | Part: ${p.matches} | Total: ${total}`,
+      20,
+      y
+    );
+
     y += 8;
 
     if(y > 270){
