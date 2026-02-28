@@ -295,10 +295,16 @@ function saveAttendanceDate(dateKey){
   const d = new Date(dateKey+"T00:00:00");
   const day = d.getDay();
 
-  const checkboxes =
-    document.querySelectorAll(
-      "#attendanceList input[type='checkbox']"
+  // 🔥 Soporta ambos modales
+  let checkboxes = document.querySelectorAll(
+    "#attendanceList input[type='checkbox']"
+  );
+
+  if(checkboxes.length === 0){
+    checkboxes = document.querySelectorAll(
+      "#matchAttendanceList input[type='checkbox']"
     );
+  }
 
   const attendance = {};
 
@@ -351,11 +357,15 @@ function saveAttendanceDate(dateKey){
     }
   }
 
-  // 🔥 Guardado centralizado seguro
-  saveData();
+  saveData(); // 🔥 Guardado único real
 
-  document.getElementById("attendanceModal")
-    .classList.remove("active");
+  const modal =
+    document.getElementById("attendanceModal") ||
+    document.getElementById("matchModal");
+
+  if(modal){
+    modal.classList.remove("active");
+  }
 }
 
 function saveSessionNote(dateKey){
@@ -850,36 +860,23 @@ function closeTraining(e){
   document.getElementById("modal-container").innerHTML="";
 }
 
-function saveTrainingText(){
-
-  const modal = document.getElementById("trainingModal");
-  if(!modal) return;
-
-  const dateKey = modal.getAttribute("data-date");
-  if(!dateKey) return;
+function saveTrainingText(w, day){
 
   const cat = state.user.category;
 
-  const checkboxes =
-    modal.querySelectorAll("input[type='checkbox']");
+  const textarea = document.getElementById("edit-text");
+  if(!textarea) return;
 
-  const attendance = {};
+  const newText = textarea.value;
 
-  checkboxes.forEach(cb=>{
-    attendance[cb.dataset.player] = cb.checked;
-  });
+  if(!state.data[cat].agenda) return;
+  if(!state.data[cat].agenda[w]) return;
 
-  if(!state.data[cat].sessions){
-    state.data[cat].sessions = {};
-  }
+  state.data[cat].agenda[w][day] = newText;
 
-  state.data[cat].sessions[dateKey] = {
-    attendance: attendance
-  };
+  saveData(); // 🔥 Guarda en Firebase + localStorage
 
-  saveData(); // 🔥 usa tu sistema seguro
-
-  modal.classList.remove("active");
+  closeTraining();
 }
 
 
@@ -1541,9 +1538,7 @@ function cancelMatch(dateKey){
 
 
 
-function renderListaStats(container,data){
-
-  const cat = state.user.category;
+function renderListaStats(container, data){
 
   const players = data.players || [];
   const sessions = data.sessions || {};
@@ -1559,9 +1554,7 @@ function renderListaStats(container,data){
     };
   });
 
-  // =============================
-  // ENTRENAMIENTOS (MARTES/JUEVES)
-  // =============================
+  // ENTRENAMIENTOS
   Object.keys(sessions).forEach(dateKey=>{
 
     const d = new Date(dateKey+"T00:00:00");
@@ -1570,7 +1563,6 @@ function renderListaStats(container,data){
     if(day !== 2 && day !== 4) return;
 
     const att = sessions[dateKey].attendance || {};
-
     const hasTrue = Object.values(att).some(v=>v===true);
     if(!hasTrue) return;
 
@@ -1579,19 +1571,15 @@ function renderListaStats(container,data){
         stats[playerId].training++;
       }
     });
-
   });
 
-  // =============================
-  // PARTIDOS (SÁBADOS)
-  // =============================
+  // PARTIDOS
   Object.keys(matches).forEach(dateKey=>{
 
     const d = new Date(dateKey+"T00:00:00");
     if(d.getDay() !== 6) return;
 
     const att = matches[dateKey].attendance || {};
-
     const hasTrue = Object.values(att).some(v=>v===true);
     if(!hasTrue) return;
 
@@ -1600,7 +1588,6 @@ function renderListaStats(container,data){
         stats[playerId].matches++;
       }
     });
-
   });
 
   const sorted = Object.values(stats)
@@ -1609,27 +1596,13 @@ function renderListaStats(container,data){
       (a.training + a.matches)
     );
 
-  container.innerHTML = `
-    <div class="stats-header">
-      <button class="btn-primary" onclick="exportStatsPDF()">
-        Descargar PDF
-      </button>
-    </div>
-
-    <div class="card ranking-card">
-      <h3>Ranking de Asistencia</h3>
-      <div id="rankingContainer"></div>
-    </div>
-  `;
-
-  const rankingContainer =
-    document.getElementById("rankingContainer");
+  container.innerHTML = "";
 
   sorted.forEach(p=>{
 
     const total = p.training + p.matches;
 
-    rankingContainer.innerHTML += `
+    container.innerHTML += `
       <div class="ranking-row">
         <div class="ranking-name">${p.name}</div>
         <div class="ranking-stats">
@@ -1640,7 +1613,6 @@ function renderListaStats(container,data){
       </div>
     `;
   });
-
 }
 
 
@@ -1841,42 +1813,43 @@ function saveMatch(date, rival, goalsFor, goalsAgainst){
 function openMatchAttendance(dateKey){
 
   const cat = state.user.category;
-  const data = state.data[cat];
 
-  if(!data.matches){
-    data.matches = {};
+  if(!state.data[cat].matches){
+    state.data[cat].matches = {};
   }
 
-  if(!data.matches[dateKey]){
-    data.matches[dateKey] = { attendance: {} };
+  if(!state.data[cat].matches[dateKey]){
+    state.data[cat].matches[dateKey] = {
+      attendance: {}
+    };
   }
 
-  const attendance = data.matches[dateKey].attendance || {};
-  const players = data.players || [];
+  const attendance =
+    state.data[cat].matches[dateKey].attendance || {};
 
-  const modal = document.getElementById("matchModal");
-  const container = document.getElementById("matchAttendanceList");
+  const container =
+    document.getElementById("matchAttendanceList");
 
   container.innerHTML = "";
 
-  players.forEach(player => {
+  const players = state.data[cat].players || [];
+
+  players.forEach(player=>{
 
     const checked = attendance[player.id] === true;
 
-    const row = document.createElement("div");
-    row.className = "attendance-row";
-
-    row.innerHTML = `
-      <label>
+    container.innerHTML += `
+      <label class="attendance-row">
         <input type="checkbox"
                data-player="${player.id}"
                ${checked ? "checked" : ""}>
         ${player.name}
       </label>
     `;
-
-    container.appendChild(row);
   });
+
+  const modal =
+    document.getElementById("matchModal");
 
   modal.setAttribute("data-date", dateKey);
   modal.classList.add("active");
