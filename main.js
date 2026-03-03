@@ -848,15 +848,7 @@ function closeTraining(e){
   document.getElementById("modal-container").innerHTML="";
 }
 
-function saveTrainingText(){
-
-  const modal = document.getElementById("trainingModal");
-  if(!modal) return;
-
-  const w = modal.getAttribute("data-week");
-  const day = modal.getAttribute("data-day");
-
-  if(!w || !day) return;
+function saveTrainingText(week, day){
 
   const cat = state.user.category;
 
@@ -866,13 +858,15 @@ function saveTrainingText(){
   const newText = textarea.value;
 
   if(!state.data[cat].agenda) return;
-  if(!state.data[cat].agenda[w]) return;
+  if(!state.data[cat].agenda[week]) return;
 
-  state.data[cat].agenda[w][day] = newText;
+  state.data[cat].agenda[week][day] = newText;
 
   saveData();
 
-  modal.classList.remove("active");
+  document.getElementById("modal-container").innerHTML = "";
+
+  showToast("Entrenamiento guardado");
 }
 
 
@@ -1550,27 +1544,37 @@ function renderListaStats(container, data){
     };
   });
 
+  // ENTRENAMIENTOS (solo martes y jueves reales)
   Object.keys(sessions).forEach(dateKey=>{
+
+    const session = sessions[dateKey];
+    if(!session.attendance) return;
+
     const d = new Date(dateKey+"T00:00:00");
-    if(d.getDay()!==2 && d.getDay()!==4) return;
+    const day = d.getDay();
 
-    const att = sessions[dateKey].attendance || {};
-    if(!Object.values(att).some(v=>v===true)) return;
+    if(day!==2 && day!==4) return;
 
-    Object.keys(att).forEach(id=>{
-      if(att[id] && stats[id]) stats[id].training++;
+    Object.keys(session.attendance).forEach(id=>{
+      if(session.attendance[id] && stats[id]){
+        stats[id].training++;
+      }
     });
   });
 
+  // PARTIDOS (solo sábados reales)
   Object.keys(matches).forEach(dateKey=>{
+
+    const match = matches[dateKey];
+    if(!match.attendance) return;
+
     const d = new Date(dateKey+"T00:00:00");
     if(d.getDay()!==6) return;
 
-    const att = matches[dateKey].attendance || {};
-    if(!Object.values(att).some(v=>v===true)) return;
-
-    Object.keys(att).forEach(id=>{
-      if(att[id] && stats[id]) stats[id].matches++;
+    Object.keys(match.attendance).forEach(id=>{
+      if(match.attendance[id] && stats[id]){
+        stats[id].matches++;
+      }
     });
   });
 
@@ -1582,12 +1586,18 @@ function renderListaStats(container, data){
   container.innerHTML = "";
 
   sorted.forEach((p,i)=>{
+
     const total = p.training + p.matches;
 
     container.innerHTML += `
       <div class="ranking-row">
         <span>${i+1}. ${p.name}</span>
-        <span>${total}</span>
+        <span>
+          ${total}
+          <small style="opacity:0.6">
+            (E:${p.training} P:${p.matches})
+          </small>
+        </span>
       </div>
     `;
   });
