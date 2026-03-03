@@ -295,21 +295,14 @@ function saveAttendanceDate(dateKey){
   const d = new Date(dateKey+"T00:00:00");
   const day = d.getDay();
 
-  // 🔥 Soporta ambos modales
   const modal =
-  document.getElementById("attendanceModal") ||
-  document.getElementById("matchModal");
+    document.getElementById("attendanceModal") ||
+    document.getElementById("matchModal");
 
-if(!modal) return;
+  if(!modal) return;
 
-const checkboxes =
-  modal.querySelectorAll("input[type='checkbox']");
-
-  if(checkboxes.length === 0){
-    checkboxes = document.querySelectorAll(
-      "#matchAttendanceList input[type='checkbox']"
-    );
-  }
+  const checkboxes =
+    modal.querySelectorAll("input[type='checkbox']");
 
   const attendance = {};
 
@@ -320,9 +313,7 @@ const checkboxes =
   const hasTrue =
     Object.values(attendance).some(v=>v===true);
 
-  // =============================
-  // ENTRENAMIENTOS (2 y 4)
-  // =============================
+  // ENTRENAMIENTOS
   if(day===2 || day===4){
 
     if(!state.data[cat].sessions){
@@ -341,9 +332,7 @@ const checkboxes =
     }
   }
 
-  // =============================
-  // PARTIDOS (6)
-  // =============================
+  // PARTIDOS
   if(day===6){
 
     if(!state.data[cat].matches){
@@ -362,15 +351,9 @@ const checkboxes =
     }
   }
 
-  saveData(); // 🔥 Guardado único real
+  saveData();
 
-  const modal =
-    document.getElementById("attendanceModal") ||
-    document.getElementById("matchModal");
-
-  if(modal){
-    modal.classList.remove("active");
-  }
+  modal.classList.remove("active");
 }
 
 function saveSessionNote(dateKey){
