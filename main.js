@@ -482,21 +482,25 @@ function renderHome(container, data){
 
 /* ========= STATS CORREGIDO REAL ========= */
 
+/* ========= STATS ENTRENAMIENTOS CORREGIDO ========= */
+
 let entrenamientos = 0;
 let presentes = 0;
 let ausencias = 0;
 
-Object.values(sessions).forEach(s => {
+Object.entries(sessions).forEach(([date, s]) => {
 
-  if(s.type === "match") return;
   if(!s.attendance) return;
+
+  const day = new Date(date).getDay(); 
+  // 0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab
+
+  // 🔥 Solo contar martes (2) y jueves (4)
+  if(day !== 2 && day !== 4) return;
 
   const values = Object.values(s.attendance);
 
-  // 🔥 Solo contar si realmente se pasó lista
-  const realSession = values.some(v => v === true || v === false);
-
-  if(!realSession) return;
+  if(values.length === 0) return;
 
   entrenamientos++;
 
