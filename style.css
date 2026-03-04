@@ -2508,7 +2508,7 @@ button {
 /* RANKING */
 
 .ranking-card{
-  width:100%
+  width:100%;
   background:#fff;
   border-radius:16px;
   padding:16px;
@@ -3455,4 +3455,18 @@ button {
 .ag-day.match-day{
   background:#0ea5e9;
   color:white;
+}
+
+.btn-download{
+  width:100%;
+  margin-top:20px;
+  padding:16px;
+  border:none;
+  border-radius:18px;
+  background:linear-gradient(135deg,#1e40af,#3b82f6);
+  color:white;
+  font-weight:700;
+  font-size:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.15);
+  cursor:pointer;
 }

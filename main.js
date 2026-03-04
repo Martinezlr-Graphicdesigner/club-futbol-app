@@ -2527,18 +2527,71 @@ async function exportStatsPDF(){
   const cat = state.user.category;
   const players = state.data[cat].players || [];
   const sessions = state.data[cat].sessions || {};
-  const matches = state.data[cat].matches || {};
 
   doc.setFontSize(18);
   doc.text(`Estadísticas Categoría ${cat}`, 20, 20);
 
+  /* ========= FILTRAR SESIONES REALES ========= */
+
+  const validTrainings = Object.values(sessions).filter(s =>
+    s.type !== "match" &&
+    s.attendance &&
+    Object.keys(s.attendance).length > 0
+  );
+
+  const validMatches = Object.values(sessions).filter(s =>
+    s.type === "match" &&
+    s.attendance &&
+    Object.keys(s.attendance).length > 0
+  );
+
+  const totalTrainings = validTrainings.length;
+  const totalMatches = validMatches.length;
+
   let y = 35;
 
-  players.forEach(p=>{
+  /* ========= CALCULAR STATS POR JUGADOR ========= */
 
-    doc.setFontSize(12);
-    doc.text(p.name, 20, y);
-    y += 8;
+  const ranking = players.map(player => {
+
+    let trainPresent = 0;
+    let matchPresent = 0;
+
+    validTrainings.forEach(s=>{
+      if(s.attendance[player.id]) trainPresent++;
+    });
+
+    validMatches.forEach(s=>{
+      if(s.attendance[player.id]) matchPresent++;
+    });
+
+    const pct = totalTrainings
+      ? Math.round((trainPresent / totalTrainings) * 100)
+      : 0;
+
+    return {
+      name: player.name,
+      trainPresent,
+      matchPresent,
+      pct
+    };
+
+  }).sort((a,b)=> b.pct - a.pct);
+
+  /* ========= IMPRIMIR ========= */
+
+  doc.setFontSize(12);
+
+  ranking.forEach((p, index)=>{
+
+    const line = `${index+1}. ${p.name}
+Entrenamientos: ${p.trainPresent}/${totalTrainings}
+Partidos: ${p.matchPresent}/${totalMatches}
+Asistencia: ${p.pct}%`;
+
+    doc.text(line, 20, y);
+
+    y += 22;
 
     if(y > 270){
       doc.addPage();
