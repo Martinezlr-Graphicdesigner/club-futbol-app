@@ -480,27 +480,29 @@ function renderHome(container, data){
 
   /* ========= STATS ========= */
 
+/* ========= STATS CORREGIDO REAL ========= */
+
 let entrenamientos = 0;
 let presentes = 0;
 let ausencias = 0;
 
-let partidosAsist = 0;
-let partidosPresentes = 0;
+Object.values(sessions).forEach(s => {
 
-// 🔥 Solo contar entrenamientos donde realmente se pasó lista
-const validTrainings = Object.values(sessions)
-  .filter(s =>
-    s.attendance &&
-    Object.keys(s.attendance).length > 0 &&
-    s.type !== "match"
-  );
+  if(s.type === "match") return;
+  if(!s.attendance) return;
 
-entrenamientos = validTrainings.length;
-
-validTrainings.forEach(s => {
   const values = Object.values(s.attendance);
-  presentes += values.filter(v => v).length;
-  ausencias += values.filter(v => !v).length;
+
+  // 🔥 Solo contar si realmente se pasó lista
+  const realSession = values.some(v => v === true || v === false);
+
+  if(!realSession) return;
+
+  entrenamientos++;
+
+  presentes += values.filter(v => v === true).length;
+  ausencias += values.filter(v => v === false).length;
+
 });
 
 // 🔥 Solo contar partidos donde realmente se pasó lista
