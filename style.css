@@ -2508,6 +2508,7 @@ button {
 /* RANKING */
 
 .ranking-card{
+  width:100%
   background:#fff;
   border-radius:16px;
   padding:16px;

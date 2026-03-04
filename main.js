@@ -344,6 +344,9 @@ function saveAttendanceDate(dateKey){
 
   saveData();
   showToast("Asistencia guardada");
+
+// 🔥 REFRESH VISUAL
+renderScreen("lista");
 }
 
 function saveSessionNote(dateKey){
@@ -364,6 +367,12 @@ function saveSessionNote(dateKey){
 
   saveData();
   showToast("Entrenamiento actualizado");
+
+// 🔥 CERRAR MODAL
+document.getElementById("modal-container").innerHTML = "";
+
+// 🔥 REFRESH
+renderScreen("agenda");
 
   }
 
@@ -469,32 +478,44 @@ function renderHome(container, data){
 
   /* ========= STATS ========= */
 
-  let entrenamientos = 0;
+  /* ========= STATS ========= */
+
+let entrenamientos = 0;
 let presentes = 0;
 let ausencias = 0;
 
 let partidosAsist = 0;
 let partidosPresentes = 0;
 
-Object.values(sessions).forEach(s=>{
+// 🔥 Solo contar entrenamientos donde realmente se pasó lista
+const validTrainings = Object.values(sessions)
+  .filter(s =>
+    s.attendance &&
+    Object.keys(s.attendance).length > 0 &&
+    s.type !== "match"
+  );
 
-  if(!s.attendance) return;
+entrenamientos = validTrainings.length;
 
+validTrainings.forEach(s => {
   const values = Object.values(s.attendance);
+  presentes += values.filter(v => v).length;
+  ausencias += values.filter(v => !v).length;
+});
 
-  if(s.type === "match"){
+// 🔥 Solo contar partidos donde realmente se pasó lista
+const validMatches = Object.values(sessions)
+  .filter(s =>
+    s.attendance &&
+    Object.keys(s.attendance).length > 0 &&
+    s.type === "match"
+  );
 
-    partidosAsist += values.length;
-    partidosPresentes += values.filter(v=>v).length;
+partidosAsist = validMatches.length;
 
-  } else {
-
-    entrenamientos += values.length;
-    presentes += values.filter(v=>v).length;
-    ausencias += values.filter(v=>!v).length;
-
-  }
-
+validMatches.forEach(s => {
+  const values = Object.values(s.attendance);
+  partidosPresentes += values.filter(v => v).length;
 });
 
 
@@ -1515,11 +1536,11 @@ function renderListaStats(container){
   // ENTRENAMIENTOS VALIDOS
   // ==============================
 
-  const validTrainings = Object.entries(sessions)
-    .filter(([k,v]) =>
-      v.attendance &&
-      Object.values(v.attendance).some(x=>x===true)
-    );
+ const validTrainings = Object.entries(sessions)
+  .filter(([k,v]) =>
+    v.attendance &&
+    Object.keys(v.attendance).length > 0
+  );
 
   const totalTrainingDays = validTrainings.length;
 
@@ -1528,10 +1549,10 @@ function renderListaStats(container){
   // ==============================
 
   const validMatches = Object.entries(matches)
-    .filter(([k,v]) =>
-      v.attendance &&
-      Object.values(v.attendance).some(x=>x===true)
-    );
+  .filter(([k,v]) =>
+    v.attendance &&
+    Object.keys(v.attendance).length > 0
+  );
 
   const totalMatchDays = validMatches.length;
 
@@ -2001,6 +2022,9 @@ function saveMatchAttendance(id){
 
   saveData();
   showToast("Partido actualizado");
+
+// 🔥 REFRESH
+renderScreen("lista");
 }
 
 function drawCalendar(container,data){
