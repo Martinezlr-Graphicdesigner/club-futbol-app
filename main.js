@@ -161,14 +161,18 @@ function generateYearSessions(cat){
   function openAttendance(dateKey){
 
   const cat = state.user.category;
-  const session = state.data[cat].sessions[dateKey];
-  const players = state.data[cat].players || [];
 
-  if(!session.attendance){
-    session.attendance = {};
+  if(!state.data[cat].attendance){
+    state.data[cat].attendance = {};
   }
 
-  // FIX timezone
+  if(!state.data[cat].attendance[dateKey]){
+    state.data[cat].attendance[dateKey] = {};
+  }
+
+  const attendance = state.data[cat].attendance[dateKey];
+  const players = state.data[cat].players || [];
+
   const [y,m,dn] = dateKey.split("-");
   const d = new Date(y, m-1, dn);
 
@@ -200,7 +204,7 @@ function generateYearSessions(cat){
 
           <input type="checkbox"
             data-id="${p.id}"
-            ${session.attendance[p.id]?"checked":""}>
+            ${attendance[p.id]?"checked":""}>
 
         </label>
 
@@ -292,68 +296,24 @@ function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
 
-  const d = new Date(dateKey+"T00:00:00");
-  const day = d.getDay();
-
-  const modal =
-    document.getElementById("attendanceModal") ||
-    document.getElementById("matchModal");
-
-  if(!modal) return;
-
-  const checkboxes =
-    modal.querySelectorAll("input[type='checkbox']");
+  const checks =
+    document.querySelectorAll("#attendance-area input[type='checkbox']");
 
   const attendance = {};
 
-  checkboxes.forEach(cb=>{
-    attendance[cb.dataset.player] = cb.checked;
+  checks.forEach(el=>{
+    attendance[el.dataset.id] = el.checked;
   });
 
-  const hasTrue =
-    Object.values(attendance).some(v=>v===true);
-
-  // ENTRENAMIENTOS
-  if(day===2 || day===4){
-
-    if(!state.data[cat].sessions){
-      state.data[cat].sessions = {};
-    }
-
-    if(!hasTrue){
-      delete state.data[cat].sessions[dateKey];
-    } else {
-
-      if(!state.data[cat].sessions[dateKey]){
-        state.data[cat].sessions[dateKey] = {};
-      }
-
-      state.data[cat].sessions[dateKey].attendance = attendance;
-    }
+  if(!state.data[cat].attendance){
+    state.data[cat].attendance = {};
   }
 
-  // PARTIDOS
-  if(day===6){
-
-    if(!state.data[cat].matches){
-      state.data[cat].matches = {};
-    }
-
-    if(!hasTrue){
-      delete state.data[cat].matches[dateKey];
-    } else {
-
-      if(!state.data[cat].matches[dateKey]){
-        state.data[cat].matches[dateKey] = {};
-      }
-
-      state.data[cat].matches[dateKey].attendance = attendance;
-    }
-  }
+  state.data[cat].attendance[dateKey] = attendance;
 
   saveData();
 
-  modal.classList.remove("active");
+  showToast("Asistencia guardada correctamente");
 }
 
 function saveSessionNote(dateKey){
@@ -804,41 +764,49 @@ function renderCoachDashboard(data){
   `;
 }
 
-function openTrainingDetail(w,day){
+function openTrainingDetail(w, day){
 
-  const week = state.data[state.user.category].agenda[w];
-  const isAdmin = state.user.role==="admin";
+  const cat = state.user.category;
+  const text = state.data[cat].agenda?.[w]?.[day] || "";
 
-  const text = day==="tue" ? week.tue : week.thu;
+  const container = document.getElementById("modal-container");
+  container.innerHTML = "";
 
-  document.getElementById("modal-container").innerHTML=`
-    <div class="modal-overlay">
-      <div class="detail-modal">
+  const modal = document.createElement("div");
+  modal.className = "slide-up";
 
-        <h3>${day==="tue"?"Martes":"Jueves"}</h3>
-        <p><strong>${week.title}</strong></p>
+  modal.innerHTML = `
+      <div class="modal-handle"></div>
+      <div class="training-title">${day}</div>
 
-        ${
-          isAdmin
-? `<textarea id="edit-text">${text||""}</textarea>
-   <button 
-     type="button"
-     class="cta-btn"
-     onclick="saveTrainingText(${w},'${day}')">
-     Guardar
-   </button>`
-: `<p>${text||"Sin descripción"}</p>`
-        }
+      <textarea 
+        id="edit-text" 
+        class="training-textarea"
+        placeholder="Escribir planificación..."
+      >${text}</textarea>
 
-        <button 
-  type="button"
-  onclick="closeTraining()">
-  Cerrar
-</button>
-
-      </div>
-    </div>
+      <button id="saveTrainingBtn" class="btn-antigravity">
+        Guardar
+      </button>
   `;
+
+  container.appendChild(modal);
+
+  document
+    .getElementById("saveTrainingBtn")
+    .addEventListener("click", function(){
+
+      const textarea = document.getElementById("edit-text");
+      if(!textarea) return;
+
+      state.data[cat].agenda[w][day] = textarea.value;
+
+      saveData();
+
+      container.innerHTML = "";
+
+      showToast("Entrenamiento guardado");
+    });
 }
 
 function closeTraining(e){
@@ -1104,9 +1072,6 @@ function renderLista(container,data){
 
 function renderListaToma(container,data){
 
-  const cat = state.user.category;
-  generateYearSessions(cat);
-
   const today=new Date();
 
   container.innerHTML=`
@@ -1125,8 +1090,6 @@ function renderListaToma(container,data){
     <div id="attendance-area"
       style="margin-top:14px;">
     </div>
-
-    <div id="modal-container"></div>
   `;
 
   let currentYear = state.calYear ?? today.getFullYear();
@@ -1528,79 +1491,63 @@ function cancelMatch(dateKey){
 
 
 
-function renderListaStats(container, data){
+function renderListaStats(container,data){
 
-  const players = data.players || [];
-  const sessions = data.sessions || {};
-  const matches  = data.matches || {};
+  const cat = state.user.category;
 
-  const stats = {};
+  // ===== ENTRENAMIENTOS =====
+  const attendanceData =
+    state.data[cat].attendance || {};
 
-  players.forEach(p=>{
-    stats[p.id] = {
-      name: p.name,
-      training: 0,
-      matches: 0
-    };
+  const sessions =
+    Object.keys(attendanceData);
+
+  const totalTrainings = sessions.length;
+
+  // ===== PARTIDOS =====
+  const globalMatches =
+    state.data.globalMatches || {};
+
+  const catMatches =
+    state.data[cat].matches || {};
+
+  let totalMatches = 0;
+  let goalsFor = 0;
+  let goalsAgainst = 0;
+
+  Object.keys(globalMatches).forEach(dateKey=>{
+
+    const g = globalMatches[dateKey];
+    if(!g || g.status === "cancelled") return;
+
+    totalMatches++;
+
+    const c = catMatches[dateKey];
+    if(c){
+      goalsFor += Number(c.goalsFor || 0);
+      goalsAgainst += Number(c.goalsAgainst || 0);
+    }
   });
 
-  // ENTRENAMIENTOS (solo martes y jueves reales)
-  Object.keys(sessions).forEach(dateKey=>{
+  // ===== RENDER =====
 
-    const session = sessions[dateKey];
-    if(!session.attendance) return;
+  container.innerHTML = `
 
-    const d = new Date(dateKey+"T00:00:00");
-    const day = d.getDay();
+    <h3>Estadísticas</h3>
 
-    if(day!==2 && day!==4) return;
+    <div class="stats-box">
+      <h4>Entrenamientos</h4>
+      <p>Total tomados: <strong>${totalTrainings}</strong></p>
+    </div>
 
-    Object.keys(session.attendance).forEach(id=>{
-      if(session.attendance[id] && stats[id]){
-        stats[id].training++;
-      }
-    });
-  });
+    <div class="stats-box">
+      <h4>Partidos</h4>
+      <p>Jugados: <strong>${totalMatches}</strong></p>
+      <p>Goles a favor: <strong>${goalsFor}</strong></p>
+      <p>Goles en contra: <strong>${goalsAgainst}</strong></p>
+    </div>
 
-  // PARTIDOS (solo sábados reales)
-  Object.keys(matches).forEach(dateKey=>{
-
-    const match = matches[dateKey];
-    if(!match.attendance) return;
-
-    const d = new Date(dateKey+"T00:00:00");
-    if(d.getDay()!==6) return;
-
-    Object.keys(match.attendance).forEach(id=>{
-      if(match.attendance[id] && stats[id]){
-        stats[id].matches++;
-      }
-    });
-  });
-
-  const sorted = Object.values(stats)
-    .sort((a,b)=>
-      (b.training+b.matches)-(a.training+a.matches)
-    );
-
-  container.innerHTML = "";
-
-  sorted.forEach((p,i)=>{
-
-    const total = p.training + p.matches;
-
-    container.innerHTML += `
-      <div class="ranking-row">
-        <span>${i+1}. ${p.name}</span>
-        <span>
-          ${total}
-          <small style="opacity:0.6">
-            (E:${p.training} P:${p.matches})
-          </small>
-        </span>
-      </div>
-    `;
-  });
+  `;
 }
 
 
