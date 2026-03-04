@@ -291,10 +291,25 @@ function saveSession(dateKey, attendance, isMatchDay=false){
   saveData();
 }
 
+function selectDate(year,month,day){
+
+  const date = new Date(year,month,day);
+
+  state.selectedDate = date;
+
+  const key = getLocalDateKey(date);
+
+  openAttendance(key);
+}
+
 
 function saveAttendanceDate(dateKey){
 
   const cat = state.user.category;
+
+  if(!state.data[cat].attendance){
+    state.data[cat].attendance = {};
+  }
 
   const checks =
     document.querySelectorAll("#attendance-area input[type='checkbox']");
@@ -305,15 +320,11 @@ function saveAttendanceDate(dateKey){
     attendance[el.dataset.id] = el.checked;
   });
 
-  if(!state.data[cat].attendance){
-    state.data[cat].attendance = {};
-  }
-
   state.data[cat].attendance[dateKey] = attendance;
 
   saveData();
 
-  showToast("Asistencia guardada correctamente");
+  showToast("Sesión guardada");
 }
 
 function saveSessionNote(dateKey){
@@ -764,49 +775,64 @@ function renderCoachDashboard(data){
   `;
 }
 
-function openTrainingDetail(w, day){
+function openTrainingDetail(dateKey){
 
   const cat = state.user.category;
-  const text = state.data[cat].agenda?.[w]?.[day] || "";
 
-  const container = document.getElementById("modal-container");
-  container.innerHTML = "";
+  if(!state.data[cat].agenda){
+    state.data[cat].agenda = {};
+  }
 
-  const modal = document.createElement("div");
-  modal.className = "slide-up";
+  if(!state.data[cat].agenda[dateKey]){
+    state.data[cat].agenda[dateKey] = {
+      title:"",
+      note:"",
+      type:"Entrenamiento"
+    };
+  }
 
-  modal.innerHTML = `
+  const session = state.data[cat].agenda[dateKey];
+
+  const modalContainer =
+    document.getElementById("modal-container");
+
+  modalContainer.innerHTML = `
+
+    <div class="slide-up">
+
       <div class="modal-handle"></div>
-      <div class="training-title">${day}</div>
 
-      <textarea 
-        id="edit-text" 
+      <h3>Editar Entrenamiento</h3>
+
+      <textarea
+        id="training-note"
         class="training-textarea"
-        placeholder="Escribir planificación..."
-      >${text}</textarea>
+        placeholder="Detalle del entrenamiento..."
+      >${session.note || ""}</textarea>
 
-      <button id="saveTrainingBtn" class="btn-antigravity">
+      <button class="btn-antigravity"
+        id="saveTrainingBtn">
         Guardar
       </button>
-  `;
 
-  container.appendChild(modal);
+    </div>
+  `;
 
   document
     .getElementById("saveTrainingBtn")
-    .addEventListener("click", function(){
+    .onclick = function(){
 
-      const textarea = document.getElementById("edit-text");
-      if(!textarea) return;
+      const note =
+        document.getElementById("training-note").value;
 
-      state.data[cat].agenda[w][day] = textarea.value;
+      state.data[cat].agenda[dateKey].note = note;
 
       saveData();
 
-      container.innerHTML = "";
+      modalContainer.innerHTML = "";
 
       showToast("Entrenamiento guardado");
-    });
+    };
 }
 
 function closeTraining(e){
@@ -1494,60 +1520,85 @@ function cancelMatch(dateKey){
 function renderListaStats(container,data){
 
   const cat = state.user.category;
+  const players = state.data[cat].players || [];
 
-  // ===== ENTRENAMIENTOS =====
-  const attendanceData =
+  const attendance =
     state.data[cat].attendance || {};
 
-  const sessions =
-    Object.keys(attendanceData);
+  const matches =
+    state.data[cat].matches || {};
 
-  const totalTrainings = sessions.length;
-
-  // ===== PARTIDOS =====
   const globalMatches =
     state.data.globalMatches || {};
 
-  const catMatches =
-    state.data[cat].matches || {};
+  const trainingDates =
+    Object.keys(attendance);
 
-  let totalMatches = 0;
-  let goalsFor = 0;
-  let goalsAgainst = 0;
+  const matchDates =
+    Object.keys(globalMatches)
+      .filter(d =>
+        globalMatches[d].status !== "cancelled"
+      );
 
-  Object.keys(globalMatches).forEach(dateKey=>{
+  const totalTrainings = trainingDates.length;
+  const totalMatches = matchDates.length;
 
-    const g = globalMatches[dateKey];
-    if(!g || g.status === "cancelled") return;
+  let html = `
+    <div class="stat-summary">
+      <h3>Resumen Categoría</h3>
+  `;
 
-    totalMatches++;
+  players.forEach(p=>{
 
-    const c = catMatches[dateKey];
-    if(c){
-      goalsFor += Number(c.goalsFor || 0);
-      goalsAgainst += Number(c.goalsAgainst || 0);
-    }
+    let playerTrain = 0;
+    let playerMatch = 0;
+
+    trainingDates.forEach(date=>{
+      if(attendance[date][p.id]){
+        playerTrain++;
+      }
+    });
+
+    matchDates.forEach(date=>{
+      if(matches[date] && matches[date].attendance &&
+         matches[date].attendance[p.id]){
+        playerMatch++;
+      }
+    });
+
+    const trainPercent =
+      totalTrainings===0
+        ? 0
+        : Math.round((playerTrain/totalTrainings)*100);
+
+    const matchPercent =
+      totalMatches===0
+        ? 0
+        : Math.round((playerMatch/totalMatches)*100);
+
+    html += `
+      <div class="player-stat-card">
+
+        <div style="display:flex;justify-content:space-between">
+          <strong>${p.name}</strong>
+          <span>${trainPercent}%</span>
+        </div>
+
+        <div class="gradient-bar"
+          style="width:${trainPercent}%"></div>
+
+        <div class="stat-detail">
+          <span>${trainPercent}% Entrenam.</span>
+          <span>${matchPercent}% Partidos</span>
+        </div>
+
+      </div>
+    `;
   });
 
-  // ===== RENDER =====
+  html += `</div>`;
 
-  container.innerHTML = `
-
-    <h3>Estadísticas</h3>
-
-    <div class="stats-box">
-      <h4>Entrenamientos</h4>
-      <p>Total tomados: <strong>${totalTrainings}</strong></p>
-    </div>
-
-    <div class="stats-box">
-      <h4>Partidos</h4>
-      <p>Jugados: <strong>${totalMatches}</strong></p>
-      <p>Goles a favor: <strong>${goalsFor}</strong></p>
-      <p>Goles en contra: <strong>${goalsAgainst}</strong></p>
-    </div>
-
-  `;
+  container.innerHTML = html;
 }
 
 
