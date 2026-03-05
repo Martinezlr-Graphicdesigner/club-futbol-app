@@ -1528,11 +1528,29 @@ function renderListaStats(container){
   // ENTRENAMIENTOS VALIDOS
   // ==============================
 
- const validTrainings = Object.entries(sessions)
-  .filter(([k,v]) =>
-    v.attendance &&
-    Object.keys(v.attendance).length > 0
-  );
+ const fechasPartido = [
+  "2026-01-31",
+  "2026-02-07",
+  "2026-02-14",
+  "2026-02-21"
+];
+
+const validTrainings = Object.entries(sessions)
+  .filter(([date,v]) => {
+
+    if(fechasPartido.includes(date)) return false;
+
+    if(!v.attendance) return false;
+
+    if(Object.keys(v.attendance).length === 0) return false;
+
+    const day = new Date(date + "T00:00:00").getDay();
+
+    // Solo martes y jueves
+    if(day !== 2 && day !== 4) return false;
+
+    return true;
+  });
 
   const totalTrainingDays = validTrainings.length;
 
