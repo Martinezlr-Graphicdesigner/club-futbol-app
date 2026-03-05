@@ -1787,21 +1787,20 @@ ranking.forEach((r,i)=>{
   `;
 });
 
-// 🔥 CERRAR CARD
+// 🔥 CERRAR CARD RANKING
 container.innerHTML += `
     </div>
   </div>
-`;
 
-    <div class="pdf-card">
-      <button 
-        type="button"
-        class="cta-btn"
-        onclick="exportStatsPDF()">
-        Descargar Estadísticas en PDF
-      </button>
-    </div>
-  `;
+  <div class="pdf-card">
+    <button 
+      type="button"
+      class="cta-btn"
+      onclick="exportStatsPDF()">
+      Descargar Estadísticas en PDF
+    </button>
+  </div>
+`;
 }
 
 
@@ -2578,42 +2577,41 @@ async function exportStatsPDF(){
   const cat = state.user.category;
   const players = state.data[cat].players || [];
   const sessions = state.data[cat].sessions || {};
+  const matches = state.data[cat].matches || {};
 
   doc.setFontSize(18);
   doc.text(`Estadísticas Categoría ${cat}`, 20, 20);
 
-  /* ========= FILTRAR SESIONES REALES ========= */
+  /* ========= ENTRENAMIENTOS ========= */
 
-  const validTrainings = Object.values(sessions).filter(s =>
-    s.type !== "match" &&
-    s.attendance &&
-    Object.keys(s.attendance).length > 0
+  const validTrainings = Object.entries(sessions).filter(([k,v]) =>
+    v.attendance &&
+    Object.keys(v.attendance).length > 0
   );
 
-  const validMatches = Object.values(sessions).filter(s =>
-    s.type === "match" &&
-    s.attendance &&
-    Object.keys(s.attendance).length > 0
+  /* ========= PARTIDOS ========= */
+
+  const validMatches = Object.entries(matches).filter(([k,v]) =>
+    v.attendance &&
+    Object.keys(v.attendance).length > 0
   );
 
   const totalTrainings = validTrainings.length;
   const totalMatches = validMatches.length;
 
-  let y = 35;
-
-  /* ========= CALCULAR STATS POR JUGADOR ========= */
+  let y = 40;
 
   const ranking = players.map(player => {
 
     let trainPresent = 0;
     let matchPresent = 0;
 
-    validTrainings.forEach(s=>{
-      if(s.attendance[player.id]) trainPresent++;
+    validTrainings.forEach(([k,v])=>{
+      if(v.attendance[player.id]) trainPresent++;
     });
 
-    validMatches.forEach(s=>{
-      if(s.attendance[player.id]) matchPresent++;
+    validMatches.forEach(([k,v])=>{
+      if(v.attendance[player.id]) matchPresent++;
     });
 
     const pct = totalTrainings
@@ -2629,29 +2627,24 @@ async function exportStatsPDF(){
 
   }).sort((a,b)=> b.pct - a.pct);
 
-  /* ========= IMPRIMIR ========= */
-
   doc.setFontSize(12);
 
-  ranking.forEach((p, index)=>{
+  ranking.forEach((p,index)=>{
 
-    const line = `${index+1}. ${p.name}
-Entrenamientos: ${p.trainPresent}/${totalTrainings}
-Partidos: ${p.matchPresent}/${totalMatches}
-Asistencia: ${p.pct}%`;
+    const line = `${index+1}. ${p.name}  |  Entr: ${p.trainPresent}/${totalTrainings}  |  Part: ${p.matchPresent}/${totalMatches}  |  ${p.pct}%`;
 
-    doc.text(line, 20, y);
+    doc.text(line,20,y);
 
-    y += 22;
+    y+=8;
 
-    if(y > 270){
+    if(y>270){
       doc.addPage();
-      y = 20;
+      y=20;
     }
 
   });
 
-  doc.save(`Estadisticas_${cat}.pdf`);
+  doc.save(`estadisticas-${cat}.pdf`);
 }
 
 /**************************************************
