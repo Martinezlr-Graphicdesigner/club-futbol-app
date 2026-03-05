@@ -1864,7 +1864,13 @@ function drawMonth(monthIndex){
   const filtered=Object.keys(sessions).filter(dateKey=>{
     const d=new Date(dateKey+"T00:00:00");
     const day=d.getDay(); // 2=martes,4=jueves
-    return d.getMonth()===monthIndex && (day===2||day===4);
+    const cat = state.user.category;
+
+if(cat === "2018" || cat === "2019"){
+  return d.getMonth()===monthIndex && (day===2||day===4||day===5);
+}
+
+return d.getMonth()===monthIndex && (day===2||day===4);
   });
 
   if(filtered.length===0){
@@ -2114,9 +2120,12 @@ function drawCalendar(container,data){
     }
 
     // entrenamiento
-    if(s){
-      className+=" training";
-    }
+    const dateObj = new Date(dateKey + "T00:00:00");
+const day = dateObj.getDay();
+
+if(s || day===2 || day===4 || day===5){
+  className+=" training";
+}
 
     // partido
     if(m){
@@ -2149,10 +2158,23 @@ function drawCalendar(container,data){
 
 function selectCalendarDate(dateKey){
 
+  const date = new Date(dateKey + "T00:00:00");
+
+  const label = document.getElementById("selected-date-label");
+
+  if(label){
+    label.textContent = date.toLocaleDateString("es-AR",{
+      weekday:"long",
+      day:"numeric",
+      month:"short"
+    });
+  }
+
   const match =
-  state.data[state.user.category].matches?.[dateKey];
-  const session=state.data[state.user.category]
-    .sessions?.[dateKey];
+    state.data[state.user.category].matches?.[dateKey];
+
+  const session =
+    state.data[state.user.category].sessions?.[dateKey];
 
   if(match){
     openMatchDetail(dateKey);

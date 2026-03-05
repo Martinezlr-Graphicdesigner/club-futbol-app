@@ -3487,3 +3487,7 @@ button {
   background:#1d4ed8;
   transform:translateY(-2px);
 }
+
+.ranking-card{
+width:100%;
+}
