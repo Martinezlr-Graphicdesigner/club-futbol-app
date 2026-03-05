@@ -132,22 +132,48 @@ function generateYearSessions(cat){
 
     const day = d.getDay();
 
+    // 2018 y 2019 → Mar, Jue y Vie
     if(cat==="2018" || cat==="2019"){
-  if(day===2 || day===4 || day===5){
 
-      const key = getLocalDateKey(d);
+      if(day===2 || day===4 || day===5){
 
-      if(!sessions[key]){
-        sessions[key] = {
-  attendance:{},
-  note:"",
-  title:""
-};
-        changed = true;
-      } else if(sessions[key].note === undefined){
-        sessions[key].note = "";
-        changed = true;
+        const key = getLocalDateKey(d);
+
+        if(!sessions[key]){
+          sessions[key] = {
+            attendance:{},
+            note:"",
+            title:""
+          };
+          changed = true;
+        } 
+        else if(sessions[key].note === undefined){
+          sessions[key].note = "";
+          changed = true;
+        }
+
       }
+
+    }
+
+    // 2020 → solo Mar y Jue
+    if(cat==="2020"){
+
+      if(day===2 || day===4){
+
+        const key = getLocalDateKey(d);
+
+        if(!sessions[key]){
+          sessions[key] = {
+            attendance:{},
+            note:"",
+            title:""
+          };
+          changed = true;
+        }
+
+      }
+
     }
 
     d.setDate(d.getDate()+1);
@@ -302,7 +328,10 @@ function saveAttendanceDate(dateKey){
   const date = new Date(dateKey + "T00:00:00");
   const day = date.getDay();
 
-  const isTrainingDay = (day === 2 || day === 4);
+  const isTrainingDay =
+  day === 2 ||
+  day === 4 ||
+  ((cat==="2018" || cat==="2019") && day===5);
   const isMatchDay = (day === 6);
 
   document.querySelectorAll("#attendance-area input")
@@ -1037,8 +1066,7 @@ function renderCalendar(container, year, month){
 
 function selectDate(year, month, day){
 
-  // 🔒 Evita bug de timezone (día anterior)
-  state.selectedDate = new Date(year, month, day, 12, 0, 0);
+  state.selectedDate = new Date(year, month, day, 12);
 
   const cal = document.getElementById("calendar");
   if(cal){
@@ -1049,17 +1077,22 @@ function selectDate(year, month, day){
 
   const cat = state.user.category;
 
-  const match = state.data[cat]?.matches?.[dateKey];
-  const session = state.data[cat]?.sessions?.[dateKey];
+  const match = state.data[cat].matches?.[dateKey];
+  const session = state.data[cat].sessions?.[dateKey];
 
-  // 👉 PRIORIDAD: si hay partido, abrir partido
   if(match){
     openMatchAttendance(dateKey);
     return;
   }
 
-  // 👉 Si no hay partido pero hay entrenamiento
   if(session){
+    openAttendance(dateKey);
+    return;
+  }
+
+  const dayOfWeek = state.selectedDate.getDay();
+
+  if((cat === "2018" || cat === "2019") && dayOfWeek === 5){
     openAttendance(dateKey);
   }
 }
