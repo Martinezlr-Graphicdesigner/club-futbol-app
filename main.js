@@ -132,7 +132,8 @@ function generateYearSessions(cat){
 
     const day = d.getDay();
 
-    if(day===2 || day===4){
+    if(cat==="2018" || cat==="2019"){
+  if(day===2 || day===4 || day===5){
 
       const key = getLocalDateKey(d);
 
@@ -1762,10 +1763,10 @@ const totalTrainingDays = validTrainings.length;
 
   ranking.sort((a,b)=>b.percent-a.percent);
 
-  container.innerHTML += `
-  <div class="ranking-card">
-    <h3>Ranking de Asistencia</h3>
-    <div class="ranking-content">
+let rankingHTML = `
+<div class="ranking-card">
+  <h3>Ranking de Asistencia</h3>
+  <div class="ranking-content">
 `;
 
 ranking.forEach((r,i)=>{
@@ -1773,11 +1774,10 @@ ranking.forEach((r,i)=>{
   const bgColor =
     i===0 ? "#facc15" : "#e5e7eb";
 
-  container.innerHTML += `
+  rankingHTML += `
     <div class="ranking-row">
       <div class="rank-left">
-        <div class="rank-circle"
-             style="background:${bgColor}">
+        <div class="rank-circle" style="background:${bgColor}">
           ${i+1}
         </div>
         <span>${r.name}</span>
@@ -1787,20 +1787,21 @@ ranking.forEach((r,i)=>{
   `;
 });
 
-// 🔥 CERRAR CARD RANKING
-container.innerHTML += `
-    </div>
+rankingHTML += `
   </div>
+</div>
 
-  <div class="pdf-card">
-    <button 
-      type="button"
-      class="cta-btn"
-      onclick="exportStatsPDF()">
-      Descargar Estadísticas en PDF
-    </button>
-  </div>
+<div class="pdf-card">
+  <button 
+    type="button"
+    class="cta-btn"
+    onclick="exportStatsPDF()">
+    Descargar Estadísticas en PDF
+  </button>
+</div>
 `;
+
+container.innerHTML += rankingHTML;
 }
 
 
