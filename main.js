@@ -477,28 +477,29 @@ function renderHome(container, data){
   /* ========= STATS ========= */
 
   let entrenamientos = 0;
-  let presentes = 0;
-  let ausencias = 0;
+let presentes = 0;
+let ausencias = 0;
 
-  Object.entries(sessions).forEach(([date, s]) => {
+Object.entries(sessions).forEach(([date, s]) => {
 
-    if(!s.attendance) return;
+  // 🔥 SOLO entrenamientos reales
+  if(s.type === "match") return;
 
-    const day = new Date(date).getDay(); 
-    // 0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab
+  if(!s.attendance) return;
 
-    // SOLO martes y jueves = entrenamientos reales
-    if(day !== 2 && day !== 4) return;
+  const day = new Date(date + "T00:00:00").getDay();
 
-    const values = Object.values(s.attendance);
-    if(values.length === 0) return;
+  if(day !== 2 && day !== 4) return;
 
-    entrenamientos++; // cuenta 1 por sesión
+  const values = Object.values(s.attendance);
+  if(values.length === 0) return;
 
-    presentes += values.filter(v => v === true).length;
-    ausencias += values.filter(v => v === false).length;
+  entrenamientos++;
 
-  });
+  presentes += values.filter(v => v === true).length;
+  ausencias += values.filter(v => v === false).length;
+
+});
 
   // ✅ porcentaje correcto
   const totalRegistros = presentes + ausencias;
