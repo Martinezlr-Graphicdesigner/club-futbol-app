@@ -108,7 +108,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(160deg, #134d8e 0%, #42cae2 100%);
+    background: linear-gradient(160deg, #42cae2 0%, #134d8e 100%);
     color: var(--white);
 }
 
@@ -159,7 +159,7 @@ button {
 
 .brand-subtitle{
     font-size:1.1rem;
-    color:var(--accent);
+    color:var(--white);
     margin-top:-6px;
     margin-bottom:40px;
 }
