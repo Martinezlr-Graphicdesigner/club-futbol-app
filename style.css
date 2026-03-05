@@ -2508,12 +2508,11 @@ button {
 /* RANKING */
 
 .ranking-card{
-  width:100%;
-  background:#fff;
-  border-radius:16px;
+  background:white;
+  border-radius:14px;
   padding:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
   margin-top:20px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
 }
 
 .ranking-card h3{
@@ -3445,7 +3444,7 @@ button {
 }
 
 .ranking-content{
-  margin-top:10px;
+  margin-top:12px;
 }
 
 .match-bar{

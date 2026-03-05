@@ -476,7 +476,9 @@ function renderHome(container, data){
 
   /* ========= STATS ========= */
 
-  const cat = state.user.category;
+  /* ========= STATS ========= */
+
+const cat = state.user.category;
 
 const validTrainings = getValidTrainingSessions(cat, sessions);
 
@@ -491,12 +493,28 @@ validTrainings.forEach(([date, s]) => {
   ausencias += values.filter(v => v === false).length;
 });
 
-  const asistenciaPct =
-    entrenamientos
-      ? Math.round((presentes / entrenamientos) * 100)
-      : 0;
+const totalJugadores = players.length;
+const totalPosible = entrenamientos * totalJugadores;
 
-  const partidosJugados = Object.keys(matches).length;
+const asistenciaPct =
+  totalPosible
+    ? Math.round((presentes / totalPosible) * 100)
+    : 0;
+
+const ausenciasPct =
+  totalPosible
+    ? Math.round((ausencias / totalPosible) * 100)
+    : 0;
+
+
+// 🔵 SOLO PARTIDOS DESDE 07/03
+const startChampionship = new Date("2026-03-07T00:00:00");
+
+const partidosJugados = Object.entries(matches)
+  .filter(([date])=>{
+    const dateObj=new Date(date+"T00:00:00");
+    return dateObj>=startChampionship;
+  }).length;
 
   /* ========= ÚLTIMOS ========= */
 
@@ -563,27 +581,27 @@ ${renderNextMatchCard(matches)}
     <!-- STATS -->
     <div class="stats-grid">
 
-      <div class="stat-card">
-        <h3>${entrenamientos}</h3>
-        <span>Entrenamientos</span>
-      </div>
+  <div class="stat-card">
+    <h3>${entrenamientos}</h3>
+    <span>Entrenamientos</span>
+  </div>
 
-      <div class="stat-card">
-        <h3>${ausencias}</h3>
-        <span>Ausencias</span>
-      </div>
+  <div class="stat-card">
+    <h3>${partidosJugados}</h3>
+    <span>Partidos</span>
+  </div>
 
-      <div class="stat-card">
-        <h3>${asistenciaPct}%</h3>
-        <span>Asistencia</span>
-      </div>
+  <div class="stat-card">
+    <h3>${asistenciaPct}%</h3>
+    <span>Asistencia</span>
+  </div>
 
-      <div class="stat-card">
-        <h3>${partidosJugados}</h3>
-        <span>Partidos</span>
-      </div>
+  <div class="stat-card">
+    <h3>${ausenciasPct}%</h3>
+    <span>Ausencias</span>
+  </div>
 
-    </div>
+</div>
 
     <!-- ACTIVIDAD RECIENTE -->
     <h3 class="section-title">Actividad Reciente</h3>
@@ -945,6 +963,8 @@ function getMonthLabel(year,month){
 
 function renderCalendar(container, year, month){
 
+  const cat = state.user.category;
+
   const monthNames=[
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
@@ -957,31 +977,29 @@ function renderCalendar(container, year, month){
   const daysInMonth=new Date(year,month+1,0).getDate();
 
   let html=`
-
     <div class="ag-calendar-card">
-
       <div class="ag-week">
         ${daysShort.map(d=>`<div>${d}</div>`).join("")}
       </div>
-
       <div class="ag-grid">
   `;
 
-  // espacios vacíos
   for(let i=0;i<startDay;i++){
     html+=`<div></div>`;
   }
 
   for(let d=1;d<=daysInMonth;d++){
 
-    const date=new Date(year,month,d);
-    const day=date.getDay();
+    const dateObj=new Date(year,month,d);
+    const day=dateObj.getDay();
 
-    // 🔵 MARTES Y JUEVES
-    const isTraining=(day===2 || day===4);
+    const dateStr =
+      dateObj.getFullYear()+"-"+
+      String(month+1).padStart(2,"0")+"-"+
+      String(d).padStart(2,"0");
 
-    // 🔷 SABADOS
-    const isSaturday=(day===6);
+    const isTraining = isValidTrainingDay(cat, dateStr);
+    const isSaturday = (day===6);
 
     const selected=
       state.selectedDate &&
