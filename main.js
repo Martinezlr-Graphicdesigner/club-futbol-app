@@ -474,63 +474,44 @@ function renderHome(container, data){
   const sessions = data.sessions || {};
   const matches = state.data.globalMatches || {};
 
-
-
   /* ========= STATS ========= */
 
-  /* ========= STATS ========= */
+  let entrenamientos = 0;
+  let presentes = 0;
+  let ausencias = 0;
 
-/* ========= STATS CORREGIDO REAL ========= */
+  Object.entries(sessions).forEach(([date, s]) => {
 
-/* ========= STATS ENTRENAMIENTOS CORREGIDO ========= */
+    if(!s.attendance) return;
 
-let entrenamientos = 0;
-let presentes = 0;
-let ausencias = 0;
+    const day = new Date(date).getDay(); 
+    // 0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab
 
-Object.entries(sessions).forEach(([date, s]) => {
+    // SOLO martes y jueves = entrenamientos reales
+    if(day !== 2 && day !== 4) return;
 
-  if(!s.attendance) return;
+    const values = Object.values(s.attendance);
+    if(values.length === 0) return;
 
-  const day = new Date(date).getDay(); 
-  // 0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab
+    entrenamientos++; // cuenta 1 por sesión
 
-  // 🔥 Solo contar martes (2) y jueves (4)
-  if(day !== 2 && day !== 4) return;
+    presentes += values.filter(v => v === true).length;
+    ausencias += values.filter(v => v === false).length;
 
-  const values = Object.values(s.attendance);
+  });
 
-  if(values.length === 0) return;
-
-  entrenamientos++;
-
-  presentes += values.filter(v => v === true).length;
-  ausencias += values.filter(v => v === false).length;
-
-});
-
-// 🔥 Solo contar partidos donde realmente se pasó lista
-const validMatches = Object.values(sessions)
-  .filter(s =>
-    s.attendance &&
-    Object.keys(s.attendance).length > 0 &&
-    s.type === "match"
-  );
-
-partidosAsist = validMatches.length;
-
-validMatches.forEach(s => {
-  const values = Object.values(s.attendance);
-  partidosPresentes += values.filter(v => v).length;
-});
-
+  // ✅ porcentaje correcto
+  const totalRegistros = presentes + ausencias;
 
   const asistenciaPct =
-    entrenamientos
-      ? Math.round((presentes/entrenamientos)*100)
+    totalRegistros
+      ? Math.round((presentes / totalRegistros) * 100)
       : 0;
 
-  const partidosJugados = Object.keys(matches).length;
+  // ✅ partidos reales (solo los type match)
+  const partidosJugados = Object.values(sessions)
+    .filter(s => s.type === "match")
+    .length;
 
   /* ========= ÚLTIMOS ========= */
 
@@ -541,7 +522,13 @@ validMatches.forEach(s => {
     lastMatchKey ? matches[lastMatchKey] : null;
 
   const lastTrainingKey =
-    Object.keys(sessions).sort().slice(-1)[0];
+    Object.keys(sessions)
+      .filter(d => {
+        const day = new Date(d).getDay();
+        return day === 2 || day === 4;
+      })
+      .sort()
+      .slice(-1)[0];
 
   /* ========= HTML ========= */
 
@@ -550,7 +537,6 @@ validMatches.forEach(s => {
  
 ${renderNextMatchCard(matches)}
 
-    <!-- CARDS PRINCIPALES -->
     <div class="home-cards">
 
       <div class="home-card" onclick="navigateTo('agenda')">
@@ -594,7 +580,6 @@ ${renderNextMatchCard(matches)}
 
     </div>
 
-    <!-- STATS -->
     <div class="stats-grid">
 
       <div class="stat-card">
@@ -619,7 +604,6 @@ ${renderNextMatchCard(matches)}
 
     </div>
 
-    <!-- ACTIVIDAD RECIENTE -->
     <h3 class="section-title">Actividad Reciente</h3>
 
     <div class="activity-card">
@@ -645,6 +629,7 @@ ${renderNextMatchCard(matches)}
           }
         </div>
       </div>
+
 ${
     nextBirthday
       ? `
@@ -662,7 +647,6 @@ ${
       `
       : ""
   }
-
 
     </div>
   `;
