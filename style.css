@@ -108,7 +108,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--primary) 0%, #001f3d 100%);
+    background: linear-gradient(160deg, #134d8e 0%, #42cae2 100%);
     color: var(--white);
 }
 
@@ -157,11 +157,11 @@ button {
     margin-bottom: 0;
 }
 
-.brand-subtitle {
-    font-size: 1.1rem;
-    color: var(--accent);
-    margin-bottom: 40px;
-    font-weight: 600;
+.brand-subtitle{
+    font-size:1.1rem;
+    color:var(--accent);
+    margin-top:-6px;
+    margin-bottom:40px;
 }
 
 .form-group {
