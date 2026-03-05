@@ -1036,7 +1036,8 @@ function renderCalendar(container, year, month){
 
 function selectDate(year, month, day){
 
-  state.selectedDate = new Date(year, month, day);
+  // 🔒 Evita bug de timezone (día anterior)
+  state.selectedDate = new Date(year, month, day, 12, 0, 0);
 
   const cal = document.getElementById("calendar");
   if(cal){
@@ -1047,8 +1048,8 @@ function selectDate(year, month, day){
 
   const cat = state.user.category;
 
-  const match = state.data[cat].matches?.[dateKey];
-  const session = state.data[cat].sessions?.[dateKey];
+  const match = state.data[cat]?.matches?.[dateKey];
+  const session = state.data[cat]?.sessions?.[dateKey];
 
   // 👉 PRIORIDAD: si hay partido, abrir partido
   if(match){
@@ -1056,6 +1057,7 @@ function selectDate(year, month, day){
     return;
   }
 
+  // 👉 Si no hay partido pero hay entrenamiento
   if(session){
     openAttendance(dateKey);
   }
@@ -1761,33 +1763,35 @@ const totalTrainingDays = validTrainings.length;
   ranking.sort((a,b)=>b.percent-a.percent);
 
   container.innerHTML += `
-    <div class="ranking-card">
-      <h3>Ranking de Asistencia</h3>
-      <div class="ranking-content">
-  `;
+  <div class="ranking-card">
+    <h3>Ranking de Asistencia</h3>
+    <div class="ranking-content">
+`;
 
-  ranking.forEach((r,i)=>{
+ranking.forEach((r,i)=>{
 
-    const bgColor =
-      i===0 ? "#facc15" : "#e5e7eb";
-
-    container.innerHTML += `
-      <div class="ranking-row">
-        <div class="rank-left">
-          <div class="rank-circle"
-               style="background:${bgColor}">
-            ${i+1}
-          </div>
-          <span>${r.name}</span>
-        </div>
-        <span class="rank-percent">${r.percent}%</span>
-      </div>
-    `;
-  });
+  const bgColor =
+    i===0 ? "#facc15" : "#e5e7eb";
 
   container.innerHTML += `
+    <div class="ranking-row">
+      <div class="rank-left">
+        <div class="rank-circle"
+             style="background:${bgColor}">
+          ${i+1}
+        </div>
+        <span>${r.name}</span>
       </div>
+      <span class="rank-percent">${r.percent}%</span>
     </div>
+  `;
+});
+
+// 🔥 CERRAR CARD
+container.innerHTML += `
+    </div>
+  </div>
+`;
 
     <div class="pdf-card">
       <button 
