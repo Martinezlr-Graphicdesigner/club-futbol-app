@@ -477,42 +477,46 @@ function renderHome(container, data){
   /* ========= STATS ========= */
 
   let entrenamientos = 0;
-let presentes = 0;
-let ausencias = 0;
+  let presentes = 0;
+  let ausencias = 0;
 
-Object.entries(sessions).forEach(([date, s]) => {
+  // 🔥 Fechas que son partidos y NO deben contar como entrenamiento
+  const fechasPartido = [
+    "2026-01-31",
+    "2026-02-07",
+    "2026-02-14",
+    "2026-02-21"
+  ];
 
-  // 🔥 SOLO entrenamientos reales
-  if(s.type === "match") return;
+  Object.entries(sessions).forEach(([date, s]) => {
 
-  if(!s.attendance) return;
+    // 🚫 Excluir partidos manualmente
+    if(fechasPartido.includes(date)) return;
 
-  const day = new Date(date + "T00:00:00").getDay();
+    if(!s.attendance) return;
 
-  if(day !== 2 && day !== 4) return;
+    const day = new Date(date + "T00:00:00").getDay();
+    // 0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab
 
-  const values = Object.values(s.attendance);
-  if(values.length === 0) return;
+    // Solo martes y jueves
+    if(day !== 2 && day !== 4) return;
 
-  entrenamientos++;
+    const values = Object.values(s.attendance);
+    if(values.length === 0) return;
 
-  presentes += values.filter(v => v === true).length;
-  ausencias += values.filter(v => v === false).length;
+    entrenamientos++;
 
-});
+    presentes += values.filter(v => v === true).length;
+    ausencias += values.filter(v => v === false).length;
 
-  // ✅ porcentaje correcto
-  const totalRegistros = presentes + ausencias;
+  });
 
   const asistenciaPct =
-    totalRegistros
-      ? Math.round((presentes / totalRegistros) * 100)
+    entrenamientos
+      ? Math.round((presentes / entrenamientos) * 100)
       : 0;
 
-  // ✅ partidos reales (solo los type match)
-  const partidosJugados = Object.values(sessions)
-    .filter(s => s.type === "match")
-    .length;
+  const partidosJugados = Object.keys(matches).length;
 
   /* ========= ÚLTIMOS ========= */
 
@@ -523,13 +527,7 @@ Object.entries(sessions).forEach(([date, s]) => {
     lastMatchKey ? matches[lastMatchKey] : null;
 
   const lastTrainingKey =
-    Object.keys(sessions)
-      .filter(d => {
-        const day = new Date(d).getDay();
-        return day === 2 || day === 4;
-      })
-      .sort()
-      .slice(-1)[0];
+    Object.keys(sessions).sort().slice(-1)[0];
 
   /* ========= HTML ========= */
 
@@ -538,6 +536,7 @@ Object.entries(sessions).forEach(([date, s]) => {
  
 ${renderNextMatchCard(matches)}
 
+    <!-- CARDS PRINCIPALES -->
     <div class="home-cards">
 
       <div class="home-card" onclick="navigateTo('agenda')">
@@ -581,6 +580,7 @@ ${renderNextMatchCard(matches)}
 
     </div>
 
+    <!-- STATS -->
     <div class="stats-grid">
 
       <div class="stat-card">
@@ -605,6 +605,7 @@ ${renderNextMatchCard(matches)}
 
     </div>
 
+    <!-- ACTIVIDAD RECIENTE -->
     <h3 class="section-title">Actividad Reciente</h3>
 
     <div class="activity-card">
@@ -632,22 +633,22 @@ ${renderNextMatchCard(matches)}
       </div>
 
 ${
-    nextBirthday
-      ? `
-        <div class="activity-row">
-          <div class="dot green"></div>
-          <div>
-            Próximo cumpleaños:
-            ${nextBirthday.player.name}
-            ${nextBirthday.date.toLocaleDateString("es-AR",{
-              day:"numeric",
-              month:"long"
-            })}
-          </div>
+  nextBirthday
+    ? `
+      <div class="activity-row">
+        <div class="dot green"></div>
+        <div>
+          Próximo cumpleaños:
+          ${nextBirthday.player.name}
+          ${nextBirthday.date.toLocaleDateString("es-AR",{
+            day:"numeric",
+            month:"long"
+          })}
         </div>
-      `
-      : ""
-  }
+      </div>
+    `
+    : ""
+}
 
     </div>
   `;
