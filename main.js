@@ -476,40 +476,20 @@ function renderHome(container, data){
 
   /* ========= STATS ========= */
 
-  let entrenamientos = 0;
-  let presentes = 0;
-  let ausencias = 0;
+  const cat = state.user.category;
 
-  // 🔥 Fechas que son partidos y NO deben contar como entrenamiento
-  const fechasPartido = [
-    "2026-01-31",
-    "2026-02-07",
-    "2026-02-14",
-    "2026-02-21"
-  ];
+const validTrainings = getValidTrainingSessions(cat, sessions);
 
-  Object.entries(sessions).forEach(([date, s]) => {
+let entrenamientos = validTrainings.length;
 
-    // 🚫 Excluir partidos manualmente
-    if(fechasPartido.includes(date)) return;
+let presentes = 0;
+let ausencias = 0;
 
-    if(!s.attendance) return;
-
-    const day = new Date(date + "T00:00:00").getDay();
-    // 0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab
-
-    // Solo martes y jueves
-    if(day !== 2 && day !== 4) return;
-
-    const values = Object.values(s.attendance);
-    if(values.length === 0) return;
-
-    entrenamientos++;
-
-    presentes += values.filter(v => v === true).length;
-    ausencias += values.filter(v => v === false).length;
-
-  });
+validTrainings.forEach(([date, s]) => {
+  const values = Object.values(s.attendance);
+  presentes += values.filter(v => v === true).length;
+  ausencias += values.filter(v => v === false).length;
+});
 
   const asistenciaPct =
     entrenamientos
@@ -901,6 +881,61 @@ function getNextBirthday(players){
     .sort((a,b)=>a.date-b.date);
 
   return upcoming[0] || null;
+}
+
+// ==========================================
+// CONFIGURACIÓN DE DÍAS DE ENTRENAMIENTO
+// ==========================================
+
+function isValidTrainingDay(category, dateStr){
+
+  const dateObj = new Date(dateStr + "T00:00:00");
+  const day = dateObj.getDay(); // 0=Dom ... 5=Vie
+  const startFriday = new Date("2026-03-06T00:00:00");
+
+  // CATEGORIA 2020 → solo Mar y Jue
+  if(category === "2020"){
+    return day === 2 || day === 4;
+  }
+
+  // CATEGORIAS 2018 y 2019
+  if(category === "2018" || category === "2019"){
+
+    // Antes del 06/03/2026
+    if(dateObj < startFriday){
+      return day === 2 || day === 4;
+    }
+
+    // Desde 06/03/2026
+    return day === 2 || day === 4 || day === 5;
+  }
+
+  return false;
+}
+
+// ==========================================
+// OBTENER ENTRENAMIENTOS VÁLIDOS
+// ==========================================
+
+function getValidTrainingSessions(category, sessions){
+
+  const fechasPartido = [
+    "2026-01-31",
+    "2026-02-07",
+    "2026-02-14",
+    "2026-02-21"
+  ];
+
+  return Object.entries(sessions)
+    .filter(([date, v]) => {
+
+      if(fechasPartido.includes(date)) return false;
+
+      if(!v.attendance) return false;
+      if(Object.keys(v.attendance).length === 0) return false;
+
+      return isValidTrainingDay(category, date);
+    });
 }
 
 function getMonthLabel(year,month){
@@ -1535,24 +1570,8 @@ function renderListaStats(container){
   "2026-02-21"
 ];
 
-const validTrainings = Object.entries(sessions)
-  .filter(([date,v]) => {
-
-    if(fechasPartido.includes(date)) return false;
-
-    if(!v.attendance) return false;
-
-    if(Object.keys(v.attendance).length === 0) return false;
-
-    const day = new Date(date + "T00:00:00").getDay();
-
-    // Solo martes y jueves
-    if(day !== 2 && day !== 4) return false;
-
-    return true;
-  });
-
-  const totalTrainingDays = validTrainings.length;
+const validTrainings = getValidTrainingSessions(cat, sessions);
+const totalTrainingDays = validTrainings.length;
 
   // ==============================
   // PARTIDOS VALIDOS
