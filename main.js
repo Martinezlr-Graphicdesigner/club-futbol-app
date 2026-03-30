@@ -31,9 +31,21 @@ let state = {
  * INIT
  **************************************************/
 function init() {
+
   setupEventListeners();
-  checkSession();
   initTheme();
+
+  // 🔐 Autenticación anónima Firebase
+  firebase.auth().signInAnonymously()
+    .then(() => {
+      console.log("🔥 Firebase Auth OK");
+
+      // 👇 recién ahora chequea sesión y carga datos
+      checkSession();
+    })
+    .catch((error) => {
+      console.error("❌ Auth error:", error);
+    });
 
 }
 
