@@ -248,10 +248,7 @@ function openSessionDetail(dateKey){
   const cat=state.user.category;
   const session=state.data[cat].sessions[dateKey];
 
-  const canEdit =
-    state.user.role==="admin" ||
-    state.user.role==="coach" ||
-    state.user.role==="prof";
+  const canEdit = true;
 
   const area=document.getElementById("modal-container");
 
@@ -838,7 +835,7 @@ function renderCoachDashboard(data){
 function openTrainingDetail(w,day){
 
   const week = state.data[state.user.category].agenda[w];
-  const isAdmin = state.user.role==="admin";
+  const isAdmin = true;
 
   const text = day==="tue" ? week.tue : week.thu;
 
